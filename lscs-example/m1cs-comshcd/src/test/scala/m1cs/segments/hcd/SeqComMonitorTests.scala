@@ -245,8 +245,8 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   test("492 segments - send 1 - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
-    val range    = 1 to 60
-    val segments = makeAllSegments(range, external = true)
+    val range    = 1 to SegmentId.MAX_SEGMENT_NUMBER
+    val segments = makeAllSegments(range, external = false)  // This can be set to true to make connections to socket server
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
