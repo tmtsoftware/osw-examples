@@ -6,4 +6,5 @@ project/target
 target
 .idea
 *.iml
+*.DS_STORE
 .bsp
