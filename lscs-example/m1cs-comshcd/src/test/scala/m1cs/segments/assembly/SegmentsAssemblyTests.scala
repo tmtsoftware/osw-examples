@@ -1,0 +1,103 @@
+package m1cs.segments.assembly
+
+import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
+import csw.command.client.CommandServiceFactory
+import csw.command.client.models.framework.LocationServiceUsage
+import csw.framework.scaladsl.DefaultComponentHandlers
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{ComponentId, ComponentType}
+import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
+import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
+import csw.params.commands.{ControlCommand, Setup}
+import csw.params.core.models.Id
+import csw.prefix.models.Prefix
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
+import m1cs.segments.shared.SegmentCommands.ACTUATOR.toActuator
+import m1cs.segments.shared.SegmentId
+import org.scalatest.funsuite.AnyFunSuiteLike
+import org.scalatest.matchers.should.Matchers
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
+
+  import frameworkTestKit._
+
+  // Load the config to fetch prefix
+  val config = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
+
+  // Hard-coding HCD and Assembly prefixes because they are not easily available
+  private val hcdPrefix                 = Prefix("M1CS.segmentsHCD")
+  private val hcdConnection             = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
+  private val assemblyPrefix            = Prefix("M1CS.segmentsAssembly")
+  private val assemblyConnection        = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
+  private implicit val timeout: Timeout = 5.seconds
+
+  private val lastHcdCommands = List.empty[(Id, Setup)]
+
+  LoggingSystemFactory.forTestingOnly()
+  val log = GenericLoggerFactory.getLogger
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    // uncomment if you want one Assembly run for all tests
+    spawnStandalone(config)
+
+    // For testing here
+    //spawnHCD(hcdPrefix, (ctx, cswCtx) => MyHandlers(ctx, cswCtx))
+  }
+
+  test("Assembly should be locatable using Location Service") {
+    val akkaLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+
+    akkaLocation.connection shouldBe assemblyConnection
+  }
+
+  test("Assembly should see HCD") {
+    val akkaLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    akkaLocation.connection shouldBe assemblyConnection
+
+    val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    hcdLocation.connection shouldBe hcdConnection
+
+    Thread.sleep(2000)
+  }
+
+  trait onSumbiter {
+    def onSubmit(runId: Id, command: ControlCommand): SubmitResponse
+  }
+
+  test("Assembly receives a command") {
+    val assLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+
+    // Start the test HCD here and wait
+    spawnHCD(
+      hcdPrefix,
+      (ctx, cswCtx) =>
+        new DefaultComponentHandlers(ctx, cswCtx) {
+          override def onSubmit(id: Id, controlCommand: ControlCommand): SubmitResponse = {
+            log.info(">>>>>>>>>>>>>>>>>>>>>>>onSubmit actually called")
+            controlCommand.commandName.name shouldBe "ACTUATOR"
+            Completed(id)
+          }
+        },
+      LocationServiceUsage.RegisterAndTrackServices
+    )
+    Await.ready(locationService.resolve(hcdConnection, 10.seconds), 10.seconds)
+
+    // Form the external command going to the Assembly
+    val to    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5"))
+    val setup = to.asSetup
+
+    val cs     = CommandServiceFactory.make(assLocation)
+    val result = Await.result(cs.submitAndWait(setup), 10.seconds)
+
+    result shouldBe a[Completed]
+    log.info(s"Last Command: $lastHcdCommands")
+
+  }
+
+}
