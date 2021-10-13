@@ -47,8 +47,8 @@ object SegmentStreamActor {
             replyTo ! SegmentActor.Started(commandName, nextCommandId, segmentId)
           }
           // ignoring future for right now
-          io.send(nextCommandId, simCommand).map { x =>
-            println(s"$x, $replyTo, $commandName, $nextCommandId, $segmentId")
+          io.send(nextCommandId, simCommand).foreach { x =>
+//            println(s"$x, $replyTo, $commandName, $nextCommandId, $segmentId")
             replyTo ! SegmentActor.Completed(commandName, nextCommandId, segmentId)
           }
           handle(io, nextCommandId + 1, segmentId, log)

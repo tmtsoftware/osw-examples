@@ -32,9 +32,9 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
   override def beforeAll(): Unit = {
     // Start an external socket server
-    //println("Starting an external socket server")
-    //new SocketServerStream()(testKit.internalSystem.classicSystem)
-    //Thread.sleep(2000)
+    println("Starting an external socket server")
+    new SocketServerStream()(testKit.internalSystem.classicSystem)
+//    Thread.sleep(2000)
   }
 
   override def afterAll(): Unit = {
@@ -238,6 +238,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     resultRunIds.contains(runId1) shouldBe true
     resultRunIds.contains(runId2) shouldBe true
 
+    // XXX TODO FIXME: Need to also call terminate() on each SocketClientStream to close the socket and kill the internal actor
     segments.foreach(tup => testKit.stop(tup))
   }
 
