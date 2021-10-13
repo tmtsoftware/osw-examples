@@ -33,7 +33,7 @@ class SegmentActorStreamTests extends ScalaTestFrameworkTestKit() with AnyFunSui
   override def beforeAll(): Unit = {
     // Start the server
     // XXX TODO FIXME: Use typed system
-    new SocketServerStream()(testKit.internalSystem.classicSystem)
+    //new SocketServerStream()(testKit.internalSystem.classicSystem)
   }
 
   override def afterAll(): Unit = {
@@ -76,7 +76,7 @@ class SegmentActorStreamTests extends ScalaTestFrameworkTestKit() with AnyFunSui
 
   test("One Segment - interleave") {
     val s1id = SegmentId(A, 1)
-    val s1   = testKit.spawn(hcd.SegmentActor(s1id, log), s1id.toString)
+    val s1   = testKit.spawn(hcd.SegmentStreamActor(s1id, log), s1id.toString)
 
     val com1Response = TestProbe[SegmentActor.Response]()
 

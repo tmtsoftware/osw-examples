@@ -1,21 +1,19 @@
 package m1cs.segments.streams.client
 
-import akka.NotUsed
-import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Framing, Sink, Source, Tcp}
 import akka.util.{ByteString, Timeout}
-import akka.actor.typed.scaladsl.adapter._
-import akka.actor.typed.scaladsl.AskPattern._
-import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
-import m1cs.segments.streams.shared.Command
-import m1cs.segments.streams.client.SocketClientActor._
 
 import scala.concurrent.{ExecutionContext, Future}
+import akka.NotUsed
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Props, SpawnProtocol}
+import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
+import akka.actor.typed.scaladsl.adapter.*
+import akka.actor.typed.scaladsl.AskPattern.*
+import m1cs.segments.streams.client.SocketClientActor.*
+import m1cs.segments.streams.client.SocketClientStream.SpawnHelper
+import m1cs.segments.streams.shared.Command
 
-// Actor used to keep track of the server responses and match them with ids
 // Actor used to keep track of the server responses and match them with ids
 private[client] object SocketClientActor {
   sealed trait SocketClientActorMessage
@@ -27,10 +25,10 @@ private[client] object SocketClientActor {
   case object Stop extends SocketClientActorMessage
 
   def behavior(name: String): Behavior[SocketClientActorMessage] =
-    Behaviors.setup[SocketClientActorMessage](new SocketClientActor(name, _))
+    Behaviors.setup[SocketClientActorMessage](new SocketClientActor(_))
 }
 
-private[client] class SocketClientActor(name: String, ctx: ActorContext[SocketClientActorMessage])
+private[client] class SocketClientActor(ctx: ActorContext[SocketClientActorMessage])
     extends AbstractBehavior[SocketClientActorMessage](ctx) {
   // Maps command id to server response
   private var responseMap = Map.empty[Int, String]
@@ -65,8 +63,41 @@ private[client] class SocketClientActor(name: String, ctx: ActorContext[SocketCl
   }
 }
 
-class SocketClientStream(name: String, host: String = "127.0.0.1", port: Int = 8888)(implicit
-    system: ActorSystem[SpawnProtocol.Command]
+object SocketClientStream {
+
+  /**
+   * Should be ActorSystem or ActorContext, needed to create a child actor
+   */
+  private trait SpawnHelper {
+    def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U]
+  }
+
+  def withSystem(name: String, host: String = "127.0.0.1", port: Int = 8888)(implicit
+      system: ActorSystem[SpawnProtocol.Command]
+  ): SocketClientStream = {
+    val spawnHelper = new SpawnHelper {
+      def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U] = {
+        import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
+        system.spawn(behavior, name, props)
+      }
+    }
+    new SocketClientStream(spawnHelper, name, host, port)(system)
+  }
+
+  def apply(ctx: ActorContext[?], name: String, host: String = "127.0.0.1", port: Int = 8888): SocketClientStream = {
+    val spawnHelper = new SpawnHelper {
+      def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U] = {
+        ctx.spawn(behavior, name, props)
+      }
+    }
+    new SocketClientStream(spawnHelper, name, host, port)(ctx.system)
+  }
+
+}
+
+//noinspection DuplicatedCode
+class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: String = "127.0.0.1", port: Int = 8888)(implicit
+    system: ActorSystem[?]
 ) {
   implicit val ec: ExecutionContext = system.executionContext
   private val connection            = Tcp()(system.toClassic).outgoingConnection(host, port)
@@ -75,12 +106,11 @@ class SocketClientStream(name: String, host: String = "127.0.0.1", port: Int = 8
   private val (queue, source) = Source.queue[String](bufferSize = 2, OverflowStrategy.backpressure).preMaterialize()
 
   // An actor to manage the server responses and match them to command ids
-  private val clientActor = system.spawn(SocketClientActor.behavior(name), "SocketClientActor")
+  private val clientActor = spawnHelper.spawn(SocketClientActor.behavior(name), s"$name-actor")
 
   // A sink for responses from the server
   private val sink = Sink.foreach[String] { s =>
     val (id, resp) = Command.parse(s)
-
     clientActor ! SetResponse(id, resp)
   }
 
@@ -104,7 +134,7 @@ class SocketClientStream(name: String, host: String = "127.0.0.1", port: Int = 8
 
   private val connectedFlow = connection.join(flow).run()
   connectedFlow.foreach { c =>
-    println(s"XXX local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
+    println(s"XXX $name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
   }
 
   /**

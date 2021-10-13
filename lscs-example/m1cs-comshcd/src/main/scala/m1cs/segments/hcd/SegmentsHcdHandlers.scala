@@ -29,10 +29,11 @@ import scala.concurrent.duration.DurationInt
  */
 class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
-  import cswCtx._
+//  import cswCtx._
+  implicit val system = ctx.system
 
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
-  private val log                           = loggerFactory.getLogger
+  private val log                           = cswCtx.loggerFactory.getLogger
 
   // Set tis during init
   private var segments: Map[SegmentId, ActorRef[SegmentActor.Command]] = _

@@ -30,11 +30,11 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   private val logSystem = LoggingSystemFactory.forTestingOnly()
   private val log       = GenericLoggerFactory.getLogger
 
-  override def beforeAll: Unit = {
+  override def beforeAll(): Unit = {
     // Start an external socket server
-    println("Starting an external socket server")
-    new SocketServerStream()(testKit.internalSystem.classicSystem)
-    Thread.sleep(2000)
+    //println("Starting an external socket server")
+    //new SocketServerStream()(testKit.internalSystem.classicSystem)
+    //Thread.sleep(2000)
   }
 
   override def afterAll(): Unit = {
@@ -147,7 +147,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     mon2 ! SegComMonitor.Start
 
     // This verifies that both commands finished succcessfully
-    val messages = com1Response.receiveMessages(2, 5.seconds)
+    val messages = com1Response.receiveMessages(2, 15.seconds)
     messages.size shouldBe 2
     val resultRunIds = Set(messages(0).runId, messages(1).runId)
     resultRunIds.contains(runId1) shouldBe true
@@ -156,7 +156,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     segments.foreach(tup => testKit.stop(tup))
   }
 
-  // External tests
+  // External tests - Should have SocketServer running
   test("One Segment - send 1 command - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
@@ -190,7 +190,6 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    //    segments.foreach(tup => testKit.stop(tup._2))
     segments.foreach(tup => testKit.stop(tup))
   }
 
@@ -245,8 +244,8 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   test("492 segments - send 1 - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
-    val range    = 1 to SegmentId.MAX_SEGMENT_NUMBER
-    val segments = makeAllSegments(range, external = false)  // This can be set to true to make connections to socket server
+    val range    = 1 to 10
+    val segments = makeAllSegments(range, external = true) // This can be set to true to make connections to socket server
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)

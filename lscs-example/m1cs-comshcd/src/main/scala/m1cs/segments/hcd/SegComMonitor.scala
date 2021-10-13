@@ -17,7 +17,7 @@ object SegComMonitor {
       fullCommand: String,
       segments: List[ActorRef[SegmentActor.Command]],
       runId: Id,
-      replyTo: SubmitResponse => Unit,
+      replyTo: SubmitResponse => Unit, // This is here so that handler can provide the CRM but tests can do something else
       log: Logger,
       timeout: FiniteDuration = DEFAULT_TIMEOUT
   ): Behavior[Command] = {
