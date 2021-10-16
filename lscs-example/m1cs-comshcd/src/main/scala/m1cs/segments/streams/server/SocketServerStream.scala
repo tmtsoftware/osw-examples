@@ -1,15 +1,14 @@
 package m1cs.segments.streams.server
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.*
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.ByteString
-import akka.stream.scaladsl.Framing
+import akka.stream.scaladsl.{Flow, Framing, Sink, Tcp}
 import m1cs.segments.streams.shared.SocketMessage
 import m1cs.segments.streams.shared.SocketMessage.{MAX_FRAME_LEN, MsgHdr, NET_HDR_LEN, RSP_TYPE, SourceId}
 
 import java.nio.ByteOrder
 import scala.concurrent.duration.*
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Future, Promise}
 
 /**
  * A TCL socket server that listens on the given host:port for connections
@@ -19,10 +18,10 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
  * Currently any command can be sent and COMPLETED is always returned.
  * If the command is "DELAY ms" the reply is made after the given ms delay.
  */
-class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem) {
-  implicit val ec: ExecutionContext = system.dispatcher
+class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?]) {
+  import system.*
 
-  private val connections = Tcp().bind(host, port)
+  private val connections = Tcp()(system.classicSystem).bind(host, port)
 
   // Reply to an incoming socket message.
   // The DELAY command is supported here, with one arg: the number of ms. For example: "DELAY 1000",
@@ -40,7 +39,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
     }
     else {
       val p = Promise[ByteString]
-      system.scheduler.scheduleOnce(delayMs.millis)(p.success(resp.toByteString))
+      system.classicSystem.scheduler.scheduleOnce(delayMs.millis)(p.success(resp.toByteString))
       p.future
     }
   }
@@ -53,6 +52,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
           .takeWhile(_ != ByteString("BYE"))
           .mapAsyncUnordered(100)(handleMessage)
 
+        //noinspection DuplicatedCode
         // XXX Note: Looks like there might be a bug in Framing.lengthField, requiring the function arg!
         val serverLogic = Flow[ByteString]
           .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
@@ -66,10 +66,18 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
     println(s"server: local address: ${b.localAddress}")
 
   }
+
+  /**
+   * Shuts down the server
+   * @return
+   */
+  def terminate(): Future[Unit] = {
+    binding.flatMap(_.unbind())
+  }
 }
 
 object SocketServerStream extends App {
-  implicit val system: ActorSystem = ActorSystem("SocketServerStream")
+  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
   // TODO: Add host, port options
   new SocketServerStream()
 }

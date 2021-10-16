@@ -103,7 +103,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   }
 
   test("Try sending one command - external") {
-    new SocketServerStream()(testKit.internalSystem.classicSystem)
+    new SocketServerStream()(testKit.internalSystem)
 
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
@@ -128,7 +128,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   }
 
   test("Try sending command to All - external") {
-    new SocketServerStream()(testKit.internalSystem.classicSystem)
+    new SocketServerStream()(testKit.internalSystem)
 
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 

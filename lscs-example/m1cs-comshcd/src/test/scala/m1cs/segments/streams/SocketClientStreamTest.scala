@@ -54,8 +54,7 @@ class SocketClientStreamTest extends AnyFunSuite {
   implicit val timout: Timeout                            = Timeout(30.seconds)
 
   // Start the server
-  // XXX TODO FIXME: Use typed system
-  new SocketServerStream()(system.toClassic)
+  new SocketServerStream()(system)
 
   test("Basic test") {
     val client1 = SocketClientStream.withSystem("client1")
