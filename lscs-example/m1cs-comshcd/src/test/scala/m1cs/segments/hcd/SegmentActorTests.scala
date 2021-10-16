@@ -32,7 +32,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
-    Await.ready(logSystem.stop, 2.seconds)
+//    Await.ready(logSystem.stop, 2.seconds)
   }
 
   test("One Segment - send 1 command") {

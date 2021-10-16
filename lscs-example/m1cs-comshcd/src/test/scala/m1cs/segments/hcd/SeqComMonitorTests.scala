@@ -43,7 +43,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
-    Await.ready(logSystem.stop, 2.seconds)
+//    Await.ready(logSystem.stop, 2.seconds)
   }
 
   // External flag means use the stream actor

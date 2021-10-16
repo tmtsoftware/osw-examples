@@ -25,7 +25,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
-    Await.ready(logSystem.stop, 2.seconds)
+//    Await.ready(logSystem.stop, 2.seconds)
   }
 
   test("One Segment - one Sector") {

@@ -39,7 +39,7 @@ class SegmentActorStreamTests extends ScalaTestFrameworkTestKit() with AnyFunSui
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
-    Await.ready(logSystem.stop, 2.seconds)
+//    Await.ready(logSystem.stop, 2.seconds)
   }
 
   def waitForCompleted(
