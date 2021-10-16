@@ -110,7 +110,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     info.command shouldBe "TARG_GEN_ACT ACT_ID=ALL, OFFSET=12.4"
 
     // Some segments and all options
-    setup = toActTargetGen(prefix, Set(1, 2)).withMode(ON).withShape(TRI).withAmplitude(2.3).withPeriod(1.0).withOffset(12.4).asSetup
+    setup =
+      toActTargetGen(prefix, Set(1, 2)).withMode(ON).withShape(TRI).withAmplitude(2.3).withPeriod(1.0).withOffset(12.4).asSetup
     info = toActTargetGenCommand(setup)
     info.command shouldBe "TARG_GEN_ACT ACT_ID=(1,2), MODE=ON, TYPE=TRI, AMPL=2.3, PERIOD=1.0, OFFSET=12.4"
 

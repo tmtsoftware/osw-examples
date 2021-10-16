@@ -2,8 +2,9 @@ package m1cs.segments.hcd
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.AskPattern.*
+import akka.util.Timeout
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
-import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -19,7 +20,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
   private val testKit = ActorTestKit()
 
-  import frameworkTestKit._
+  import frameworkTestKit.*
 
   private val cn1     = "ACTUATOR"
   private val cn1full = "ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
@@ -29,6 +30,9 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
   private val logSystem = LoggingSystemFactory.forTestingOnly()
   private val log       = GenericLoggerFactory.getLogger
+
+  // Used for asks
+  implicit val timeout: Timeout = 10.seconds
 
   override def beforeAll(): Unit = {
     // Start an external socket server
@@ -43,7 +47,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   }
 
   // External flag means use the stream actor
-  def makeSegments(sector: Sector, range: Range, external: Boolean = false): List[ActorRef[SegmentActor.Command]] = {
+  def makeSegmentsOld(sector: Sector, range: Range, external: Boolean = false): List[ActorRef[SegmentActor.Command]] = {
     val segments: List[ActorRef[SegmentActor.Command]] = range.map { i =>
       log.debug(s"Creating segment: $i")
       val segmentId = SegmentId(sector, i)
@@ -80,8 +84,12 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   }
 
   test("One Segment - send 1 command") {
-    val range    = 1 to 1
-    val segments = makeSegments(A, range)
+    val range = 1 to 1
+
+    val sm = testKit.spawn(hcd.SegmentManager(log, external = false), "sm")
+    // Create one segment
+    sm ! SegmentManager.CreateSectorSegments(A, range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
@@ -92,12 +100,19 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
 
   test("Ten Segments - send 1 command -- successful") {
-    val range    = 1 to 10
-    val segments = makeSegments(A, range)
+    val range = 1 to 10
+
+    val sm = testKit.spawn(hcd.SegmentManager(log, external = false), "sm")
+    // Create segments
+    sm ! SegmentManager.CreateSectorSegments(A, range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
@@ -108,10 +123,12 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    //    segments.foreach(tup => testKit.stop(tup._2))
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
-
+  /*
   test("Ten Segments - send special error message with seg 6 makes error") {
     val range    = 1 to 10
     val segments = makeSegments(A, range)
@@ -130,10 +147,14 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     segments.foreach(tup => testKit.stop(tup))
   }
-
+   */
   test("82 segments - send 2 overlapping commands") {
-    val range    = 1 to SegmentId.MAX_SEGMENT_NUMBER
-    val segments = makeSegments(A, range)
+    val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
+
+    val sm = testKit.spawn(hcd.SegmentManager(log, external = false), "sm")
+    // Create segments
+    sm ! SegmentManager.CreateSectorSegments(A, range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
@@ -146,22 +167,28 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     val mon2   = testKit.spawn(hcd.SegComMonitor(cn2, cn2full, segments, runId2, tester, log))
     mon2 ! SegComMonitor.Start
 
-    // This verifies that both commands finished succcessfully
+    // This verifies that both commands finished successfully
     val messages = com1Response.receiveMessages(2, 15.seconds)
     messages.size shouldBe 2
-    val resultRunIds = Set(messages(0).runId, messages(1).runId)
+    val resultRunIds = Set(messages.head.runId, messages(1).runId)
     resultRunIds.contains(runId1) shouldBe true
     resultRunIds.contains(runId2) shouldBe true
 
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
 
   // External tests - Should have SocketServer running
   test("One Segment - send 1 command - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
-    val range    = 1 to 1
-    val segments = makeSegments(A, range, external = true)
+    val range = 1 to 1
+    val sm    = testKit.spawn(hcd.SegmentManager(log, external = true), "sm")
+    // Create segments
+    sm ! SegmentManager.CreateSectorSegments(A, range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
@@ -172,14 +199,20 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
 
   test("Ten Segments - send 1 command -- successful - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
-    val range    = 1 to 10
-    val segments = makeSegments(A, range, external = true)
+    val range = 1 to 10
+    val sm    = testKit.spawn(hcd.SegmentManager(log, external = true), "sm")
+    // Create segments
+    sm ! SegmentManager.CreateSectorSegments(A, range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
@@ -190,9 +223,12 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
-
+  /*
   test("Ten Segments - send special error message with seg 6 makes error external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
@@ -213,12 +249,15 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     segments.foreach(tup => testKit.stop(tup))
   }
-
+   */
   test("82 segments - send 2 overlapping commands - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
-    val range    = 1 to SegmentId.MAX_SEGMENT_NUMBER
-    val segments = makeSegments(A, range, external = true)
+    val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
+    val sm    = testKit.spawn(hcd.SegmentManager(log, external = true), "sm")
+    // Create segments
+    sm ! SegmentManager.CreateSectorSegments(A, range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
 
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
@@ -231,33 +270,41 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     val mon2   = testKit.spawn(hcd.SegComMonitor(cn2, cn2full, segments, runId2, tester, log))
     mon2 ! SegComMonitor.Start
 
-    // This verifies that both commands finished succcessfully
+    // This verifies that both commands finished successfully
     val messages = com1Response.receiveMessages(2, 10.seconds)
     messages.size shouldBe 2
-    val resultRunIds = Set(messages(0).runId, messages(1).runId)
+    val resultRunIds = Set(messages.head.runId, messages(1).runId)
     resultRunIds.contains(runId1) shouldBe true
     resultRunIds.contains(runId2) shouldBe true
 
-    // XXX TODO FIXME: Need to also call terminate() on each SocketClientStream to close the socket and kill the internal actor
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
 
   test("492 segments - send 1 - external") {
     //new SocketServerStream()(testKit.internalSystem.classicSystem)
 
-    val range    = 1 to 10
-    val segments = makeAllSegments(range, external = true) // This can be set to true to make connections to socket server
-
+    val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
+    val sm    = testKit.spawn(hcd.SegmentManager(log, external = true), "sm")
+    // Create segments
+    sm ! SegmentManager.CreateSegments(range)
+    val segments = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds).segments
+    segments.size shouldBe 492
     val com1Response = TestProbe[SubmitResponse]()
     val tester       = makeTester(com1Response)
 
     val runId1 = Id()
-    val mon1   = testKit.spawn(hcd.SegComMonitor(cn1, cn1full, segments.toList, runId1, tester, log))
+    val mon1   = testKit.spawn(hcd.SegComMonitor(cn1, cn1full, segments, runId1, tester, log))
     mon1 ! SegComMonitor.Start
 
-    // This verifies that both commands finished succcessfully
-    com1Response.expectMessage(60.seconds, Completed(runId1))
+    // This verifies that both commands finished successfully
+    com1Response.expectMessage(10.seconds, Completed(runId1))
 
-    segments.foreach(tup => testKit.stop(tup))
+    val boolResponse = TestProbe[Boolean]()
+    sm ! SegmentManager.ShutdownAll(boolResponse.ref)
+    boolResponse.expectMessage(true)
+    testKit.stop(sm, 5.seconds)
   }
 }

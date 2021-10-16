@@ -30,7 +30,7 @@ private[client] object SocketClientActor {
 }
 
 private[client] class SocketClientActor(ctx: ActorContext[SocketClientActorMessage])
-  extends AbstractBehavior[SocketClientActorMessage](ctx) {
+    extends AbstractBehavior[SocketClientActorMessage](ctx) {
   // Maps command id to server response
   private var responseMap = Map.empty[Int, String]
   // Maps command id to the actor waiting to get the response
@@ -42,7 +42,8 @@ private[client] class SocketClientActor(ctx: ActorContext[SocketClientActorMessa
         if (clientMap.contains(id)) {
           clientMap(id) ! resp
           clientMap = clientMap - id
-        } else {
+        }
+        else {
           responseMap = responseMap + (id -> resp)
         }
         Behaviors.same
@@ -51,7 +52,8 @@ private[client] class SocketClientActor(ctx: ActorContext[SocketClientActorMessa
         if (responseMap.contains(id)) {
           replyTo ! responseMap(id)
           responseMap = responseMap - id
-        } else {
+        }
+        else {
           clientMap = clientMap + (id -> replyTo)
         }
         Behaviors.same
@@ -63,6 +65,7 @@ private[client] class SocketClientActor(ctx: ActorContext[SocketClientActorMessa
 }
 
 object SocketClientStream {
+
   /**
    * Should be ActorSystem or ActorContext, needed to create a child actor
    */
@@ -70,7 +73,9 @@ object SocketClientStream {
     def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U]
   }
 
-  def withSystem(name: String, host: String = "127.0.0.1", port: Int = 8888)(implicit system: ActorSystem[SpawnProtocol.Command]): SocketClientStream = {
+  def withSystem(name: String, host: String = "127.0.0.1", port: Int = 8888)(implicit
+      system: ActorSystem[SpawnProtocol.Command]
+  ): SocketClientStream = {
     val spawnHelper = new SpawnHelper {
       def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U] = {
         import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
@@ -92,8 +97,8 @@ object SocketClientStream {
 }
 
 //noinspection DuplicatedCode
-class SocketClientStream private(spawnHelper: SpawnHelper, name: String, host: String = "127.0.0.1", port: Int = 8888)(
-  implicit system: ActorSystem[?]
+class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: String = "127.0.0.1", port: Int = 8888)(implicit
+    system: ActorSystem[?]
 ) {
   implicit val ec: ExecutionContext = system.executionContext
   private val connection            = Tcp()(system.toClassic).outgoingConnection(host, port)
@@ -130,7 +135,7 @@ class SocketClientStream private(spawnHelper: SpawnHelper, name: String, host: S
 
   private val connectedFlow = connection.join(flow).run()
   connectedFlow.foreach { c =>
-    println(s"XXX $name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
+    //println(s"XXX $name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
   }
 
   /**
@@ -141,7 +146,7 @@ class SocketClientStream private(spawnHelper: SpawnHelper, name: String, host: S
    */
   def send(id: Int, msg: String)(implicit timeout: Timeout): Future[String] = {
     val cmd = Command.make(id, msg)
-    queue.offer(cmd)
+    queue.offer(cmd) //.foreach(l => println(s"$id $l"))
     clientActor.ask(GetResponse(id, _))
   }
 

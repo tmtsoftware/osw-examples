@@ -14,12 +14,15 @@ object SegmentActor {
   private type WaiterList = SizedList[(SeqNo, ActorRef[SegmentActor.Response])]
 
   sealed trait Command //extends akka.actor.NoSerializationVerificationNeeded
-  case class Send(commandName: String, args: String, replyTo: ActorRef[SegmentActor.Response])                               extends Command
-  case class SendWithTime(commandName: String, args: String, time: FiniteDuration, replyTo: ActorRef[SegmentActor.Response]) extends Command
-  case class CommandFinished(commandName: String, commandId: Int)                                                            extends Command
-  case object Unknown                                                                                                        extends Command
+  case class Send(commandName: String, args: String, replyTo: ActorRef[SegmentActor.Response]) extends Command
+  case class SendWithTime(commandName: String, args: String, time: FiniteDuration, replyTo: ActorRef[SegmentActor.Response])
+      extends Command
+  case class CommandFinished(commandName: String, commandId: Int) extends Command
+  case object ShutdownSegment                                     extends Command
+  case object Unknown                                             extends Command
 
   sealed trait Response {
+    val commandName: String
     val seqNo: Int
     val segmentId: SegmentId
   }
@@ -71,6 +74,9 @@ object SegmentActor {
                 log.error(s"Did not find an entry for: $commandName and commandId: $commandId")
                 Behaviors.same
             }
+          case ShutdownSegment =>
+            // No other work for this SegmentActor when shutting down
+            Behaviors.stopped
           case SegmentActor.Unknown =>
             Behaviors.unhandled
         }

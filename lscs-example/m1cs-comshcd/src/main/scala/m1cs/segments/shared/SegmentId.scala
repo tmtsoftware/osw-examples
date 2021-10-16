@@ -70,7 +70,9 @@ object SegmentId {
     } yield segs
   }
 
-  def sectorMap[A](sector: Sector, range: Range, f: (SegmentId) => A)(implicit ec: ExecutionContext): Future[List[(SegmentId, A)]] = {
+  def sectorMap[A](sector: Sector, range: Range, f: (SegmentId) => A)(implicit
+      ec: ExecutionContext
+  ): Future[List[(SegmentId, A)]] = {
     Future {
       range.map { i =>
         val segmentId = SegmentId(sector, i)

@@ -25,7 +25,7 @@ object SegComMonitor {
       val segmentResponseMapper: ActorRef[SegmentActor.Response] = ctx.messageAdapter(rsp => WrappedSegmentResponse(rsp))
       log.info(s"Sending $commandName to ${segments.size} segments.")
 
-      def starting(): Behavior[Command] = {
+      def starting(): Behavior[Command] =
         Behaviors.receiveMessage {
           case Start =>
             segments.foreach(_ ! SegmentActor.Send(commandName, fullCommand, segmentResponseMapper.ref))
@@ -33,7 +33,6 @@ object SegComMonitor {
           case _ =>
             Behaviors.unhandled
         }
-      }
 
       def waiting(totalSegments: Int, responsesReceived: Int): Behavior[Command] = {
         // This if is only executed if all segments return Completed, if there is an error
@@ -50,15 +49,18 @@ object SegComMonitor {
                   case SegmentActor.Completed(commandName, commandId, segmentId) =>
                     val updatedResponsesReceived = responsesReceived + 1
                     if (totalSegments == updatedResponsesReceived) {
-                      log.info(s"$commandName completed successfully for $updatedResponsesReceived segments. Sending Completed($runId)")
+                      log.info(
+                        s"$commandName completed successfully for $updatedResponsesReceived segments. Sending Completed($runId)"
+                      )
                       //log.debug(s"Cancelling Timeout Timer")
                       //timers.cancel(TIMEOUT_KEY)
                       replyTo(Completed(runId))
                       Behaviors.stopped
                     }
                     else {
-                      if (Math.floorMod(responsesReceived, 20) == 0)
-                        log.debug(s"Completed: $segmentId:$commandName:$commandId  Total completed: $responsesReceived")
+                      //  log.debug(s"Recieved: $segmentId")
+                      //if (Math.floorMod(responsesReceived, 20) == 0)
+//                        log.debug(s"Completed: $segmentId:$commandName:$commandId  Total completed: $responsesReceived")
                       waiting(totalSegments, updatedResponsesReceived)
                     }
                   case SegmentActor.Processing(commandName, commandId, segmentId) =>
@@ -67,7 +69,9 @@ object SegComMonitor {
                   case SegmentActor.Error(commandName, commandId, segmentId, message) =>
                     log.error(s">>>>>>>>>>>>>>>>>>>>>>>>>>>>Error received: $commandName, $commandId, $segmentId, $message")
                     val updatedResponsesReceived = responsesReceived + 1
-                    log.info(s"Error: $segmentId:$commandName:$commandId--STOPPING, $updatedResponsesReceived responses received.")
+                    log.info(
+                      s"Error: $segmentId:$commandName:$commandId--STOPPING, $updatedResponsesReceived responses received."
+                    )
                     log.debug(s"Cancelling Timeout Timer")
                     //timers.cancel(TIMEOUT_KEY)
                     replyTo(Error(runId, message))
@@ -78,7 +82,10 @@ object SegComMonitor {
                 Behaviors.unhandled
               case CommandTimeout =>
                 replyTo(
-                  Error(runId, s"Segment command timed out after received: $responsesReceived responses of expected: $totalSegments.")
+                  Error(
+                    runId,
+                    s"Segment command timed out after received: $responsesReceived responses of expected: $totalSegments."
+                  )
                 )
                 Behaviors.stopped
               case a =>

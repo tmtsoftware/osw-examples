@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
  * If the command is "DELAY ms" the reply is made after the giiven ms delay.
  */
 //noinspection DuplicatedCode
-class SocketServerStream(host: String = "127.0.0.1", port: Int = 8888)(implicit system: ActorSystem) {
+class SocketServerStream(host: String = "127.0.0.1", port: Int = 8888, var cnt: Int = 0)(implicit system: ActorSystem) {
   implicit val ec: ExecutionContext = system.dispatcher
 
   private val connections = Tcp().bind(host, port)
@@ -29,9 +29,9 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8888)(implicit 
   // which just sleeps for that amount of time before replying with: "123 COMPLETED",
   // where 123 is the command id number.
   private def handleMessage(msg: String): Future[String] = {
-    println(s">>>>>>>>>>>>>XXX server received: $msg")
+    //println(s">>>>>>>>>>>>>XXX server received: $msg")
     val (id, command) = Command.parse(msg)
-    val resp = if (command.startsWith("ERROR")) "ERROR" else "COMPLETED"
+    val resp          = if (command.startsWith("ERROR")) "ERROR" else "COMPLETED"
     val delayMs       = if (command.startsWith("DELAY ")) command.split(" ")(1).toInt else 0
     if (delayMs == 0)
       Future.successful(s"$id $resp\n")
@@ -43,13 +43,13 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8888)(implicit 
   }
 
   private val binding =
-  //#welcome-banner-chat-server
+    //#welcome-banner-chat-server
     connections
       .to(Sink.foreach { connection =>
         // server logic, parses incoming commands
         val commandParser = Flow[String]
           .takeWhile(_ != "BYE")
-          .mapAsyncUnordered(100)(handleMessage)
+          .mapAsyncUnordered(50)(handleMessage)
 
         val serverLogic = Flow[ByteString]
           .via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 256, allowTruncation = true))

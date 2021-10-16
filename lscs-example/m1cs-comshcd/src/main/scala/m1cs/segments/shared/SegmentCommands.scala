@@ -72,7 +72,8 @@ object SegmentCommands {
       // Check that they are within range
       require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
 
-      private var s = Setup(prefix, CommandName("ACTUATOR"), None).madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
+      private var s =
+        Setup(prefix, CommandName("ACTUATOR"), None).madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
 
       def toSegment(segmentId: SegmentId): toActuator = {
         s = s.add(segmentIdKey.set(segmentId.toString))
@@ -451,7 +452,8 @@ object SegmentCommands {
       require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
 
       private var s =
-        Setup(prefix, CommandName("CFG_ACT_OFFLD"), None).madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
+        Setup(prefix, CommandName("CFG_ACT_OFFLD"), None)
+          .madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
 
       def toSegment(segmentId: SegmentId): toActOffldCtrl = {
         s = s.add(segmentIdKey.set(segmentId.toString))
