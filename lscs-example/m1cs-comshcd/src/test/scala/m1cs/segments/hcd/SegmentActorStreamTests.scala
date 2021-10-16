@@ -34,7 +34,7 @@ class SegmentActorStreamTests extends ScalaTestFrameworkTestKit() with AnyFunSui
   override def beforeAll(): Unit = {
     // Start the server
     // XXX TODO FIXME: Use typed system
-    // new SocketServerStream()(testKit.system.classicSystem)
+    new SocketServerStream()(testKit.system.classicSystem)
   }
 
   override def afterAll(): Unit = {

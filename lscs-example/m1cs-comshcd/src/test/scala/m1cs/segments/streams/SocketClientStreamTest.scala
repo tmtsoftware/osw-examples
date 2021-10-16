@@ -13,6 +13,7 @@ import scala.concurrent.duration.*
 import TestActor.*
 import m1cs.segments.streams.client.SocketClientStream
 import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.shared.SocketMessage
 
 private object TestActor {
   sealed trait TestMessages
@@ -25,7 +26,7 @@ private object TestActor {
 
 private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavior[TestMessages](ctx) {
   override def onMessage(msg: TestMessages): Behavior[TestMessages] = {
-    implicit val timeout: Timeout              = Timeout(50.seconds)
+    implicit val timeout: Timeout              = Timeout(30.seconds)
     implicit val system: ActorSystem[Nothing]  = ctx.system
     implicit val exc: ExecutionContextExecutor = system.executionContext
     implicit val sched: Scheduler              = ctx.system.scheduler
@@ -34,9 +35,11 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
       case Start(replyTo) =>
         val segments    = (1 to 492).toList
         val clientPairs = segments.map(i => (i, SocketClientStream(ctx, s"client_$i")))
-        val fList       = clientPairs.map(p => p._2.send(p._1, s"DELAY ${p._1 * 10}"))
-        assert(Await.result(Future.sequence(fList).map(_.forall(_ == "COMPLETED")), timeout.duration))
-        replyTo ! true
+        val fList       = clientPairs.map(p => p._2.send(s"DELAY ${p._1 * 10}"))
+        Future
+          .sequence(fList)
+          .map(_.forall(_.cmd.endsWith("COMPLETED")))
+          .foreach(replyTo ! _)
         Behaviors.same
 
       case Stop =>
@@ -48,31 +51,30 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
 class SocketClientStreamTest extends AnyFunSuite {
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
   implicit val ece: ExecutionContextExecutor              = system.executionContext
-  implicit val timout: Timeout                            = Timeout(10.seconds)
+  implicit val timout: Timeout                            = Timeout(30.seconds)
 
   // Start the server
   // XXX TODO FIXME: Use typed system
   new SocketServerStream()(system.toClassic)
 
   test("Basic test") {
-
     val client1 = SocketClientStream.withSystem("client1")
     val client2 = SocketClientStream.withSystem("client2")
     val client3 = SocketClientStream.withSystem("client3")
 
-    def showResult(id: Int, s: String): String = {
-      val result = s"$id: $s"
-      println(result)
-      result
+    def showResult(msg: SocketMessage): SocketMessage = {
+      println(s"XXX showResult: $msg")
+      msg
     }
-
-    val f1 = client1.send(1, "DELAY 2000").map(showResult(1, _))
-    val f2 = client2.send(2, "DELAY 1000").map(showResult(2, _))
-    val f3 = client3.send(3, "DELAY 500").map(showResult(3, _))
-    val f4 = client1.send(4, "DELAY 200").map(showResult(4, _))
-    val f5 = client2.send(5, "IMMEDIATE").map(showResult(5, _))
+    val f0 = client1.send("IMMEDIATE").map(showResult)
+    val f1 = client1.send("DELAY 2000").map(showResult)
+    val f2 = client2.send("DELAY 1000").map(showResult)
+    val f3 = client3.send("DELAY 500").map(showResult)
+    val f4 = client1.send("DELAY 200").map(showResult)
+    val f5 = client2.send("IMMEDIATE").map(showResult)
 
     val f = for {
+      resp0 <- f0
       resp1 <- f1
       resp2 <- f2
       resp3 <- f3
@@ -82,16 +84,16 @@ class SocketClientStreamTest extends AnyFunSuite {
       client1.terminate()
       client2.terminate()
       client3.terminate()
-      List(resp1, resp2, resp3, resp4, resp5)
+      List(resp0, resp1, resp2, resp3, resp4, resp5)
     }
-    val list = Await.result(f, 3.seconds)
-    assert(list == List("1: COMPLETED", "2: COMPLETED", "3: COMPLETED", "4: COMPLETED", "5: COMPLETED"))
+    val list = Await.result(f, 30.seconds)
+    println(s"XXX test1 result = $list")
+    assert(list.forall(_.cmd.endsWith(" COMPLETED")))
   }
 
   test("Test with actor") {
     val actorRef = system.spawn(TestActor.behavior(), "TestActor")
-    assert(Await.result(actorRef.ask(Start)(20.seconds, system.scheduler), 40.seconds))
+    assert(Await.result(actorRef.ask(Start), 30.seconds))
     actorRef ! Stop
   }
-
 }
