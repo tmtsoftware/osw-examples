@@ -37,8 +37,11 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   override def beforeAll(): Unit = {
     // Start an external socket server
     println("Starting an external socket server")
+
+    // Comment out this line to use an external server (scala or C version)
     new SocketServerStream()(testKit.internalSystem)
-//    Thread.sleep(2000)
+
+//    FThread.sleep(2000)
   }
 
   override def afterAll(): Unit = {

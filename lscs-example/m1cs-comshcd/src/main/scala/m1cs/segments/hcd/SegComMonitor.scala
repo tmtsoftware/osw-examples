@@ -28,13 +28,14 @@ object SegComMonitor {
       def starting(): Behavior[Command] =
         Behaviors.receiveMessage {
           case Start =>
-            segments.foreach(_ ! SegmentActor.Send(commandName, fullCommand, segmentResponseMapper.ref))
+            segments.foreach(_ ! SegmentActor.Send(commandName, fullCommand, segmentResponseMapper))
             waiting(segments.size, responsesReceived = 0)
           case _ =>
             Behaviors.unhandled
         }
 
       def waiting(totalSegments: Int, responsesReceived: Int): Behavior[Command] = {
+        log.debug(s"XXX waiting: totalSegments=$totalSegments, responsesReceived=$responsesReceived")
         // This if is only executed if all segments return Completed, if there is an error
         // it will terminate early and return the first error
         Behaviors.withTimers { xx =>

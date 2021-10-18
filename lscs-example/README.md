@@ -8,6 +8,7 @@ TMT Common Software ([CSW](https://github.com/tmtsoftware/csw)) APIs.
 * m1cs-comsassembly - an assembly that talks to the coms HCD
 * m1cs-comshcd - an HCD that talks to the coms hardware
 * m1cs-comsdeploy - for starting/deploying HCDs and assemblies
+* m1cs-lscs-sim - A C socket server that simulates an external socket API (see the README.md for how to build)
 
 ## Upgrading CSW Version
 
