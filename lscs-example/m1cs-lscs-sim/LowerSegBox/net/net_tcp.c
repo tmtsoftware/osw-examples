@@ -39,11 +39,11 @@
 #include <string.h>
 #include <errno.h>
 #else   /* !VXWORKS */
-#ifdef __linux__
+//#ifdef __linux__
 #include <sys/ioctl.h>	/* for FIONBIO symbol */
-#else
-#include <sys/filio.h>	/* for FIONBIO symbol */
-#endif
+//#else
+//#include <sys/filio.h>	/* for FIONBIO symbol */
+//#endif
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h> 
