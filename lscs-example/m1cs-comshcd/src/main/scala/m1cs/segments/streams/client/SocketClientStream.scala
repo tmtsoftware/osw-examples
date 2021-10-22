@@ -50,7 +50,6 @@ private[client] class SocketClientActor(name: String, ctx: ActorContext[SocketCl
   override def onMessage(msg: SocketClientActorMessage): Behavior[SocketClientActorMessage] = {
     msg match {
       case SetResponse(resp) =>
-        println(s"XXX SetResponse($resp)")
         if (clientMap.contains(resp.hdr.seqNo)) {
           clientMap(resp.hdr.seqNo) ! resp
           clientMap = clientMap - resp.hdr.seqNo
@@ -165,7 +164,7 @@ class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: 
 
   private val connectedFlow = connection.join(flow).run()
   connectedFlow.foreach { c =>
-    println(s"$name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
+    //println(s"$name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
   }
 
   /**
@@ -205,6 +204,5 @@ object SocketClientStreamApp extends App {
   implicit val timout: Timeout                            = Timeout(5.seconds)
   val client                                              = SocketClientStream.withSystem("socketClientStream")
   val resp                                                = Await.result(client.send(args.mkString(" ")), timout.duration)
-  println(s"${resp.cmd}")
   system.terminate()
 }

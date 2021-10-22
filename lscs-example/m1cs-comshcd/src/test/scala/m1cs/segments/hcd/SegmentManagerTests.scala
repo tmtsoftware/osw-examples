@@ -20,8 +20,8 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
 
   import frameworkTestKit.*
 
-  private val logSystem = LoggingSystemFactory.forTestingOnly()
-  private val log       = GenericLoggerFactory.getLogger
+  LoggingSystemFactory.forTestingOnly()
+  private val log = GenericLoggerFactory.getLogger
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
@@ -193,7 +193,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     seg shouldBe a[SegmentManager.Segments]
     seg.segments.size shouldBe 1
 
-    val segs = Await.result(sm.ask(SegmentManager.GetAllSegments(_)), 10.seconds)
+    val segs = Await.result(sm.ask(SegmentManager.GetAllSegments), 10.seconds)
     // segs shouldBe non
     segs shouldBe a[SegmentManager.Segments]
     segs.segments.size shouldBe expectedSize

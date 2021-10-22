@@ -59,8 +59,8 @@ object SegComMonitor {
                     }
                     else {
                       //  log.debug(s"Recieved: $segmentId")
-                      //if (Math.floorMod(responsesReceived, 20) == 0)
-//                        log.debug(s"Completed: $segmentId:$commandName:$commandId  Total completed: $responsesReceived")
+                      if (Math.floorMod(responsesReceived, 20) == 0)
+                        log.debug(s"Completed: $segmentId:$commandName:$commandId  Total completed: $responsesReceived")
                       waiting(totalSegments, updatedResponsesReceived)
                     }
                   case SegmentActor.Processing(commandName, commandId, segmentId) =>

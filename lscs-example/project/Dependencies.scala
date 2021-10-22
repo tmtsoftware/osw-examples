@@ -23,21 +23,4 @@ object Dependencies {
     CSW.`csw-testkit` % Test
   )
 
-  val SegSim = Seq(
-    CSW.`csw-framework`,
-    Akka.`akka-stream-typed`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Akka.`akka-stream-testkit` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
-  )
-
-  val SegSimClient = Seq(
-    CSW.`csw-framework`,
-    Akka.`akka-stream-typed`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Akka.`akka-stream-testkit` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
-  )
 }

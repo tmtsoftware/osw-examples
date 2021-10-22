@@ -37,7 +37,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
 
   // Set tis during init
   private var segments: Map[SegmentId, ActorRef[SegmentActor.Command]] = _
-
+  //#initialize
   override def initialize(): Unit = {
     val segmentNumber = 1 to 10 //SegmentId.MAX_SEGMENT_NUMBER
     log.info(
@@ -59,6 +59,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     println(s"XX: $segments")
     Thread.sleep(3000)
   }
+  //#initialize
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}
 

@@ -1,4 +1,5 @@
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
+import org.tmt.sbt.docs.DocKeys.{docsParentDir, docsRepo, gitCurrentRepo}
 import sbt.Keys._
 import sbt.plugins.JvmPlugin
 import sbt.{url, _}
@@ -7,7 +8,7 @@ object Common extends AutoPlugin {
 
   override def trigger: PluginTrigger = allRequirements
 
-  override def requires: Plugins = JvmPlugin
+  //override def requires: Plugins = JvmPlugin
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
     organization := "com.github.tmtsoftware.coms",
@@ -42,7 +43,10 @@ object Common extends AutoPlugin {
     fork := true,
     Test / parallelExecution := false,
     autoCompilerPlugins := true,
-    if (formatOnCompile) scalafmtOnCompile := true else scalafmtOnCompile := false
+    if (formatOnCompile) scalafmtOnCompile := true else scalafmtOnCompile := false,
+    Global / excludeLintKeys := Set(
+      docsParentDir, docsRepo, gitCurrentRepo
+    )
   )
 
   private def formatOnCompile = sys.props.get("format.on.compile") match {

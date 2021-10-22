@@ -3,7 +3,6 @@ package m1cs.segments.streams
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Scheduler, SpawnProtocol}
 import org.scalatest.funsuite.AnyFunSuite
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.util.Timeout
 import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
 import akka.actor.typed.scaladsl.AskPattern.*
