@@ -46,16 +46,18 @@ object SegmentStreamActor {
             if (delay.toMillis > 1000) {
               replyTo ! SegmentActor.Started(commandName, nextSegmentId, segmentId)
             }
-            io.send(simCommand).map { _ =>
-              println(s"Done $segmentId")
-              if (commandName == ERROR_COMMAND_NAME)
-                replyTo ! SegmentActor.Error(commandName, nextSegmentId, segmentId, "XXX test error")
-              else
-                replyTo ! SegmentActor.Completed(commandName, nextSegmentId, segmentId)
-            }.onComplete {
-              case Success(value) =>
-              case Failure(exception) => log.error(s"Socket send failed: $exception", ex = exception)
-            }
+            io.send(simCommand)
+              .map { _ =>
+                println(s"Done $segmentId")
+                if (commandName == ERROR_COMMAND_NAME)
+                  replyTo ! SegmentActor.Error(commandName, nextSegmentId, segmentId, "XXX test error")
+                else
+                  replyTo ! SegmentActor.Completed(commandName, nextSegmentId, segmentId)
+              }
+              .onComplete {
+                case Success(value)     =>
+                case Failure(exception) => log.error(s"Socket send failed: $exception", ex = exception)
+              }
             handle(io, nextSegmentId + 1, segmentId, log)
           case SegmentActor.ShutdownSegment =>
             // IO closed on poststop

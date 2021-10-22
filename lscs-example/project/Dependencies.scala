@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  val Comsassembly = Seq(
+  val LscsCompsDeps = Seq(
     CSW.`csw-framework`,
     CSW.`csw-testkit` % Test,
     Libs.`scalatest` % Test,
@@ -10,15 +10,7 @@ object Dependencies {
     Akka.`akka-actor-testkit-typed` % Test
   )
 
-  val Comshcd = Seq(
-    CSW.`csw-framework`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Libs.`junit-4-13` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
-  )
-
-  val ComsDeploy = Seq(
+  val LscsComsDeployDeps = Seq(
     CSW.`csw-framework`,
     CSW.`csw-testkit` % Test
   )

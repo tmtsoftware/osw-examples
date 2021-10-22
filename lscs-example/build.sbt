@@ -37,34 +37,27 @@ lazy val `docs` = (project in file("docs")).
 
 lazy val `lscs-example` = project
   .in(file("."))
-  .aggregate(`m1cs-comshcd`, `m1cs-comsdeploy`, `docs`).settings(
+  .aggregate(`lscs-comps`, `lscs-compsdeploy`, `docs`).settings(
     ghpagesBranch := "gh-pages", // DO NOT DELETE
     commands += openSite.value,
     Settings.makeSiteMappings(docs)
 )
 
 
-// assembly module
-lazy val `m1cs-comsassembly` = project
+// All LSCS JVM components
+lazy val `lscs-comps` = project
   .settings(
-    libraryDependencies ++= Dependencies.Comsassembly
+    libraryDependencies ++= Dependencies.LscsCompsDeps
   )
 
-// hcd module
-lazy val `m1cs-comshcd` = project
-  .settings(
-    libraryDependencies ++= Dependencies.Comshcd
-  )
-
-// deploy module
-lazy val `m1cs-comsdeploy` = project
+// LSCS deploy module
+lazy val `lscs-compsdeploy` = project
   .dependsOn(
-    `m1cs-comsassembly`,
-    `m1cs-comshcd`
+    `lscs-comps`
   )
   .enablePlugins(CswBuildInfo)
   .settings(
-    libraryDependencies ++= Dependencies.ComsDeploy
+    libraryDependencies ++= Dependencies.LscsComsDeployDeps
   )
 
 
