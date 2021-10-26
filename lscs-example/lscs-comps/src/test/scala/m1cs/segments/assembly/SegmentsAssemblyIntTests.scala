@@ -22,13 +22,13 @@ import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
-  import frameworkTestKit._
+  import frameworkTestKit.*
 
   private val testKit = ActorTestKit()
 
   // Load the config to fetch prefix
-  val assemConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
-  val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
+  private val assemblyConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
+  private val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
   private val clientPrefix              = Prefix("ESW.client")
@@ -41,12 +41,12 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   private val shutdownSetup             = Setup(clientPrefix, HcdShutdown.shutdownCommand)
 
   LoggingSystemFactory.forTestingOnly()
-  val log = GenericLoggerFactory.getLogger
+  private val log = GenericLoggerFactory.getLogger
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // Assembly used for all tests
-    spawnStandalone(assemConfig)
+    spawnStandalone(assemblyConfig)
     // Create the HCD here for all tests, may change
     spawnStandalone(hcdConfig)
 
@@ -59,9 +59,9 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   }
 
   override def afterAll(): Unit = {
-    val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
-    val cs     = CommandServiceFactory.make(assemLocation)
-    log.info("Sutting down segments")
+    val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val cs     = CommandServiceFactory.make(assemblyLocation)
+    log.info("Shutting down segments")
     Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
   }
 
@@ -82,31 +82,31 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   }
 
   test("Assembly receives a command all the way to HCD -- One Segment") {
-    val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
     val hcdLocation   = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
-    assemLocation.connection shouldBe assemblyConnection
+    assemblyLocation.connection shouldBe assemblyConnection
     hcdLocation.connection shouldBe hcdConnection
 
     // Form the external command going to the Assembly
     val to    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5"))
     val setup = to.asSetup
 
-    val cs     = CommandServiceFactory.make(assemLocation)
+    val cs     = CommandServiceFactory.make(assemblyLocation)
     val result = Await.result(cs.submitAndWait(setup), 10.seconds)
 
     result shouldBe a[Completed]
   }
 
   test("Assembly receives a command all the way to HCD -- All Segments") {
-    val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
     val hcdLocation   = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
-    assemLocation.connection shouldBe assemblyConnection
+    assemblyLocation.connection shouldBe assemblyConnection
     hcdLocation.connection shouldBe hcdConnection
 
     // Form the external command going to the Assembly
     val setup    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
 
-    val cs     = CommandServiceFactory.make(assemLocation)
+    val cs     = CommandServiceFactory.make(assemblyLocation)
     val result = Await.result(cs.submitAndWait(setup), 10.seconds)
 
     result shouldBe a[Completed]
