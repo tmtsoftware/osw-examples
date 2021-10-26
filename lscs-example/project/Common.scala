@@ -8,7 +8,7 @@ object Common extends AutoPlugin {
 
   override def trigger: PluginTrigger = allRequirements
 
-  //override def requires: Plugins = JvmPlugin
+  //override def requires: Plugins = JvmPluginSegmentsAssemblyTests
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
     organization := "com.github.tmtsoftware.coms",

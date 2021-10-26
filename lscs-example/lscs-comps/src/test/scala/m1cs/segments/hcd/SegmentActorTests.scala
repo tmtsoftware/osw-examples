@@ -27,6 +27,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
   private val log = GenericLoggerFactory.getLogger
 
   override def beforeAll(): Unit = {
+    super.beforeAll()
     // Start the server
     // XXX TODO FIXME: Use typed system
     new SocketServerStream()(testKit.system)
@@ -34,6 +35,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
+    super.afterAll()
   }
 
   def waitForCompleted(
@@ -65,7 +67,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     val r1 = com1Response.expectMessageType[SegmentActor.Completed]
     r1.commandName shouldBe cn1
 
-    val boolResponse = TestProbe[Boolean]
+    val boolResponse = TestProbe[Boolean]()
     s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
     testKit.stop(s1, 5.seconds)
   }
@@ -82,7 +84,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     val responses = waitForCompleted(com1Response)
     responses.head.commandName shouldBe cn1
 
-    val boolResponse = TestProbe[Boolean]
+    val boolResponse = TestProbe[Boolean]()
     s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
 
     // Sending a message after terminate should cause error
@@ -107,7 +109,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     val r2 = com1Response.expectMessageType[SegmentActor.Completed]
     r2.commandName shouldBe cn1
 
-    val boolResponse = TestProbe[Boolean]
+    val boolResponse = TestProbe[Boolean]()
     s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
     testKit.stop(s1, 5.seconds)
   }
@@ -132,7 +134,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     r2 = com1Response.expectMessageType[SegmentActor.Completed]
     r2.commandName shouldBe cn1
 
-    val boolResponse = TestProbe[Boolean]
+    val boolResponse = TestProbe[Boolean]()
     s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
     testKit.stop(s1, 5.seconds)
   }

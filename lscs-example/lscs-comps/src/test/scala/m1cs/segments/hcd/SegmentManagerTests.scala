@@ -19,7 +19,10 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
   LoggingSystemFactory.forTestingOnly()
   private val log = GenericLoggerFactory.getLogger
 
-  override def afterAll(): Unit = testKit.shutdownTestKit()
+  override def afterAll(): Unit = {
+    testKit.shutdownTestKit()
+    super.afterAll()
+  }
 
   private val testCreator: SegmentManager.SegmentCreator = (s, log) => testKit.spawn(hcd.SegmentActor(s, log), s.toString)
 
@@ -40,7 +43,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     var segments = SegmentManager.createSectorSegments(testCreator, A, 1 to 1, log)
     segments.howManySegments shouldBe 1
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     // Should now be zero
     segments.howManySegments shouldBe 0
 
@@ -52,7 +55,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     var segments = SegmentManager.createSegments(testCreator, 1 to 1, log)
     segments.howManySegments shouldBe SegmentId.ALL_SECTORS.size
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     segments.howManySegments shouldBe 0
 
     TestProbe[Int]().expectNoMessage(1000.milli)
@@ -67,7 +70,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     segments = segments.shutdownOne(SegmentId(A, 1))
     segments.howManySegments shouldBe range.max - 1
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     segments.howManySegments shouldBe 0
 
     TestProbe[Int]().expectNoMessage(1000.milli)
@@ -79,7 +82,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     var segments = SegmentManager.createSegments(testCreator, 1 to SegmentId.MAX_SEGMENT_NUMBER, log)
     segments.howManySegments shouldBe expectedSize
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     segments.howManySegments shouldBe 0
 
     TestProbe[Int]().expectNoMessage(1000.milli)
@@ -91,14 +94,14 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     var segments = SegmentManager.createSegments(testCreator, 1 to SegmentId.MAX_SEGMENT_NUMBER, log)
     segments.howManySegments shouldBe expectedSize
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     segments.howManySegments shouldBe 0
 
     // Should be able to create again with no issues
     segments = SegmentManager.createSegments(testCreator, 1 to SegmentId.MAX_SEGMENT_NUMBER, log)
     segments.howManySegments shouldBe expectedSize
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     segments.howManySegments shouldBe 0
 
     TestProbe[Int]().expectNoMessage(1000.milli)
@@ -119,7 +122,7 @@ class SegmentManagerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLi
     val all = segments.getAllSegments
     all.segments.size shouldBe expectedSize
 
-    segments = segments.shutdownAll
+    segments = segments.shutdownAll()
     segments.howManySegments shouldBe 0
 
     TestProbe[Int]().expectNoMessage(1000.milli)

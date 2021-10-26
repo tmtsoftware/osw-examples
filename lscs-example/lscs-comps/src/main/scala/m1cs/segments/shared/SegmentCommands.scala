@@ -67,7 +67,7 @@ object SegmentCommands {
 
   private[SegmentCommands] class BaseCommand[T](prefix: Prefix, commandName: CommandName) extends LscsCommand[T] {
 
-    protected var setup:Setup = Setup(prefix, commandName, None).add(segmentIdKey.set(ALL_SEGMENTS))
+    protected var setup: Setup = Setup(prefix, commandName, None).add(segmentIdKey.set(ALL_SEGMENTS))
 
     def toSegment(segmentId: SegmentId): T = {
       setup = setup.add(segmentIdKey.set(segmentId.toString))
@@ -284,7 +284,7 @@ object SegmentCommands {
     val ctrlParamsKey: Key[Float] = KeyType.FloatKey.make("CTRL_PARAMS")
 
     case class toCfgActCurLoop(prefix: Prefix, actId: Set[Int], motorChan: MotorChan)
-      extends BaseCommand[toCfgActCurLoop](prefix, COMMAND_NAME) {
+        extends BaseCommand[toCfgActCurLoop](prefix, COMMAND_NAME) {
 
       setup = addActuators(setup, actId)
 

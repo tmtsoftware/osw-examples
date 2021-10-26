@@ -12,7 +12,7 @@ import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
-import m1cs.segments.shared.SegmentCommands.ACTUATOR.{toActuator, toCommand}
+import m1cs.segments.shared.SegmentCommands.ACTUATOR.toActuator
 import m1cs.segments.shared.{A, HcdDirectCommand, HcdShutdown, SegmentId}
 import m1cs.segments.streams.server.SocketServerStream
 import org.scalatest.funsuite.AnyFunSuiteLike
@@ -21,21 +21,21 @@ import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
-  import frameworkTestKit._
+  import frameworkTestKit.*
 
   private val testKit = ActorTestKit()
 
   // Load the config to fetch prefix
-  val config = ConfigFactory.load("SegmentsHcdStandalone.conf")
+  private val config = ConfigFactory.load("SegmentsHcdStandalone.conf")
 
   private val prefix: Prefix = Prefix(config.getString("prefix")) // TEMP
   private val hcdConnection  = AkkaConnection(ComponentId(prefix, ComponentType.HCD))
 
   // Used for waiting for submits
-  private implicit val timeout: Timeout = 10.seconds
+  private implicit val timeout: Timeout = 15.seconds
 
   LoggingSystemFactory.forTestingOnly()
-  val log = GenericLoggerFactory.getLogger
+  private val log = GenericLoggerFactory.getLogger
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -52,8 +52,8 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   }
 
   override def afterAll(): Unit = {
-    frameworkTestKit.shutdown()
     testKit.shutdownTestKit()
+    super.afterAll()
   }
 
   test("HCD should be locatable using Location Service") {
@@ -68,19 +68,20 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
 
     // This simulates sending to Assembly
 
-    val assemblySetup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 1)).asSetup
+    val assemblySetup =
+      toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 1)).asSetup
     log.info(s"Setup: $assemblySetup")
 
     // This simulates what the Assembly does to send to HCD - has received above Setup
-    val hcdSetup:Setup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
+    val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
     // Assembly creates an HCD setup from
     log.info(s"HCD Setup: $hcdSetup")
     val commandService = CommandServiceFactory.make(hcdLocation)
-    var result         = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
+    val result         = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
     result shouldBe a[Completed]
 
-    result = Await.result(commandService.submitAndWait(HcdShutdown.toHcdShutdown(prefix)), 5.seconds)
-    result shouldBe a[Completed]
+//    result = Await.result(commandService.submitAndWait(HcdShutdown.toHcdShutdown(prefix)), 5.seconds)
+//    result shouldBe a[Completed]
   }
 
   test("Try sending command to All") {
@@ -91,14 +92,14 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
     log.info(s"Setup: $assemblySetup")
 
     // This simulates what the Assembly does to send to HCD
-    val hcdSetup:Setup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
+    val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
     log.info(s"HCD Setup: $hcdSetup")
 
     val commandService = CommandServiceFactory.make(hcdLocation)
-    var result = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
+    val result         = Await.result(commandService.submitAndWait(hcdSetup), 30.seconds)
     result shouldBe a[Completed]
 
-    result = Await.result(commandService.submitAndWait(HcdShutdown.toHcdShutdown(prefix)), 5.seconds)
-    result shouldBe a[Completed]
+    val result2 = Await.result(commandService.submitAndWait(HcdShutdown.toHcdShutdown(prefix)), 5.seconds)
+    result2 shouldBe a[Completed]
   }
 }

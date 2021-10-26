@@ -22,13 +22,13 @@ import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
-  import frameworkTestKit._
+  import frameworkTestKit.*
 
   private val testKit = ActorTestKit()
 
   // Load the config to fetch prefix
-  val assemConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
-  val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
+  private val assemConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
+  private val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
   private val clientPrefix              = Prefix("ESW.client")
@@ -38,10 +38,18 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   private val assemblyConnection        = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
   private implicit val timeout: Timeout = 5.seconds
 
-  private val shutdownSetup             = Setup(clientPrefix, HcdShutdown.shutdownCommand)
+  private val shutdownSetup = Setup(clientPrefix, HcdShutdown.shutdownCommand)
 
   LoggingSystemFactory.forTestingOnly()
-  val log = GenericLoggerFactory.getLogger
+  private val log = GenericLoggerFactory.getLogger
+
+  private val simulatorExternal = testKit.system.settings.config.getBoolean("m1cs.simulatorExternal")
+  private val maybeSocketServerStream = if (!simulatorExternal) {
+    log.info(">>>>>STARTING an external socket server<<<<")
+    // Comment out this line to use an external server (scala or C version)
+    Some(new SocketServerStream()(testKit.internalSystem))
+  }
+  else None
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -49,20 +57,16 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     spawnStandalone(assemConfig)
     // Create the HCD here for all tests, may change
     spawnStandalone(hcdConfig)
-
-    val simulatorExternal = testKit.system.settings.config.getBoolean("m1cs.simulatorExternal")
-    if (!simulatorExternal) {
-      log.info(">>>>>STARTING an external socket server<<<<")
-      // Comment out this line to use an external server (scala or C version)
-      new SocketServerStream()(testKit.internalSystem)
-    }
   }
 
   override def afterAll(): Unit = {
     val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
-    val cs     = CommandServiceFactory.make(assemLocation)
+    val cs            = CommandServiceFactory.make(assemLocation)
     log.info("Sutting down segments")
     Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
+
+    maybeSocketServerStream.foreach(_.terminate())
+    super.afterAll()
   }
 
   test("Assembly should be locatable using Location Service") {
@@ -104,7 +108,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     hcdLocation.connection shouldBe hcdConnection
 
     // Form the external command going to the Assembly
-    val setup    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
+    val setup = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
 
     val cs     = CommandServiceFactory.make(assemLocation)
     val result = Await.result(cs.submitAndWait(setup), 10.seconds)

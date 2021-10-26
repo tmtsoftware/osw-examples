@@ -35,6 +35,8 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   implicit val timeout: Timeout = 10.seconds
 
   override def beforeAll(): Unit = {
+    super.beforeAll()
+
     // Start an external socket server
     println("Starting an external socket server")
 
@@ -42,7 +44,10 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     new SocketServerStream()(testKit.internalSystem)
   }
 
-  override def afterAll(): Unit = testKit.shutdownTestKit()
+  override def afterAll(): Unit = {
+    testKit.shutdownTestKit()
+    super.afterAll()
+  }
 
   def makeTester(testProbe: TestProbe[SubmitResponse]): SubmitResponse => Unit = {
     def tester(response: SubmitResponse): Unit = {
@@ -69,7 +74,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    segments.shutdownAll
+    segments.shutdownAll()
 
     testKit.stop(mon, 5.seconds)
   }
@@ -90,7 +95,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     com1Response.expectMessage(5.seconds, Completed(runId))
 
-    segments.shutdownAll
+    segments.shutdownAll()
 
     testKit.stop(mon, 5.seconds)
   }
@@ -117,7 +122,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     // Wait for final logs
     com1Response.expectNoMessage(100.milli)
-    segments.shutdownAll
+    segments.shutdownAll()
 
     testKit.stop(mon, 5.seconds)
   }
@@ -149,7 +154,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     // Wait for final logs
     com1Response.expectNoMessage(100.milli)
-    segments.shutdownAll
+    segments.shutdownAll()
 
     testKit.stop(mon1, 5.seconds)
     testKit.stop(mon2, 5.seconds)
@@ -176,7 +181,7 @@ class SeqComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     // Wait for final logs
     com1Response.expectNoMessage(100.milli)
-    segments.shutdownAll
+    segments.shutdownAll()
 
     testKit.stop(mon, 5.seconds)
   }

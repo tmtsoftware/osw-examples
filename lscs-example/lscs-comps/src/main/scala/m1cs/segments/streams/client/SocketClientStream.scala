@@ -129,7 +129,7 @@ object SocketClientStream {
 }
 
 // Private constructor (use one of the above factory methods)
-class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: String = "127.0.0.1", port: Int = 8023)(implicit
+class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: String, port: Int)(implicit
     system: ActorSystem[?]
 ) {
   implicit val ec: ExecutionContext = system.executionContext

@@ -1,43 +1,38 @@
 package m1cs.segments.shared
 
-import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
-import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class SegmentsContainerTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
-  import frameworkTestKit._
+  import frameworkTestKit.*
 
   // Load the config to fetch prefix
-  val config = ConfigFactory.load("SegmentsContainer.conf")
+  private val config = ConfigFactory.load("SegmentsContainer.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
-  private val hcdPrefix          = Prefix("M1CS.segmentsHCD")
-  private val hcdConnection      = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
-  private val assemblyPrefix     = Prefix("M1CS.segmentsAssembly")
-  private val assemblyConnection = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
+  private val hcdPrefix     = Prefix("M1CS.segmentsHCD")
+  private val hcdConnection = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
+//  private val assemblyPrefix = Prefix("M1CS.segmentsAssembly")
+//  private val assemblyConnection = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
 
   // Used for waiting for submits
-  private implicit val timeout: Timeout = 10.seconds
+//  private implicit val timeout: Timeout = 10.seconds
 
   LoggingSystemFactory.forTestingOnly()
-  val log = GenericLoggerFactory.getLogger
+//  private val log = GenericLoggerFactory.getLogger
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // uncomment if you want one HCD run for all tests
     spawnContainer(config) // I guess this works, beforeAll runs after constructor, which is logical
-  }
-
-  override def afterAll(): Unit = {
-    frameworkTestKit.shutdown()
   }
 
   test("HCD should be locatable using Location Service") {

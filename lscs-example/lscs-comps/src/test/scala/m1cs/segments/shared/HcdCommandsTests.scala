@@ -18,25 +18,23 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
   val prefix: Prefix = Prefix("M1CS.hcdClient") // TEMP
 
   LoggingSystemFactory.forTestingOnly()
-  private val log       = GenericLoggerFactory.getLogger
-
-  override def afterAll(): Unit = frameworkTestKit.shutdown()
+  private val log = GenericLoggerFactory.getLogger
 
   test("test that command map is working okay") {
     // Create a setup for Assembly
     val setup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
 
-    val command:String = CommandMap(setup.commandName)(setup)
+    val command: String = CommandMap(setup.commandName)(setup)
     command shouldBe "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
   }
 
   test("prepare an HCD command for one segment") {
     // Create an assembly Setup to Segment
-    val testSegment = SegmentId("A23")
+    val testSegment   = SegmentId("A23")
     val assemblySetup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(testSegment).asSetup
 
-    val testCommand = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
-    val command:String = CommandMap(assemblySetup.commandName)(assemblySetup)
+    val testCommand     = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
+    val command: String = CommandMap(assemblySetup.commandName)(assemblySetup)
     command shouldBe testCommand
 
     val hcdSetup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
@@ -52,8 +50,8 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
 
     log.info(s"Assembly setup: $assemblySetup")
 
-    val testCommand = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
-    val command:String = CommandMap(assemblySetup.commandName)(assemblySetup)
+    val testCommand     = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
+    val command: String = CommandMap(assemblySetup.commandName)(assemblySetup)
     command shouldBe testCommand
 
     val hcdSetup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)

@@ -196,7 +196,9 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
       .withLoopMode(ON)
       .withSlewParams(Array(5.0, 6.0, 7.0, 8.0))
       .asSetup
-    toCommand(setup) shouldBe "CFG_ACT_VC ACT_ID=ALL, MODE=ON, SLEW_CTRL_PARAMS=(5.0,6.0,7.0,8.0), TRK_CTRL_PARAMS=(1.0,2.0,3.0,4.0)"
+    toCommand(
+      setup
+    ) shouldBe "CFG_ACT_VC ACT_ID=ALL, MODE=ON, SLEW_CTRL_PARAMS=(5.0,6.0,7.0,8.0), TRK_CTRL_PARAMS=(1.0,2.0,3.0,4.0)"
 
     // Check for too big set
     assertThrows[IllegalArgumentException] {
@@ -272,7 +274,9 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
       .withDiscreteStart(101.23)
       .withDiscreteStop(-101.23)
       .asSetup
-    toCommand(setup) shouldBe "CFG_ACT_OFFLD ACT_ID=(1), MODE=CONTINUOUS, CONT_GAIN=5.0, CONT_THRESH=22.3, DISCRETE_START=101.23, DISCRETE_STOP=-101.23"
+    toCommand(
+      setup
+    ) shouldBe "CFG_ACT_OFFLD ACT_ID=(1), MODE=CONTINUOUS, CONT_GAIN=5.0, CONT_THRESH=22.3, DISCRETE_START=101.23, DISCRETE_STOP=-101.23"
 
     // Check for too big set
     assertThrows[IllegalArgumentException] {

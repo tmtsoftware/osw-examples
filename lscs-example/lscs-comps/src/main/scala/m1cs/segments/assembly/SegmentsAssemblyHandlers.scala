@@ -1,5 +1,6 @@
 package m1cs.segments.assembly
 
+import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.ActorContext
 import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
@@ -32,15 +33,15 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx.*
 
-  implicit val system = ctx.system
+  implicit val system: ActorSystem[Nothing] = ctx.system
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
 
-  private val log                           = loggerFactory.getLogger
+  private val log = loggerFactory.getLogger
   // Hard-coding HCD prefix because it is not easily available
   private val hcdPrefix     = Prefix("M1CS.segmentsHCD")
   private val hcdConnection = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   // This assembly prefix
-  private val assemblyPrefix: Prefix                = cswCtx.componentInfo.prefix
+  private val assemblyPrefix: Prefix        = cswCtx.componentInfo.prefix
   private var hcdLocation: AkkaLocation     = _
   private var hcdCS: Option[CommandService] = None
   private implicit val timeout: Timeout     = 5.seconds
@@ -67,15 +68,19 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {
       case setup: Setup => handleValidation(runId, setup)
-      case observe => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
+      case observe      => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
     }
   }
 
   private def handleValidation(runId: Id, setup: Setup): ValidateCommandResponse = {
     if (SegmentCommands.ALL_COMMANDS.contains(setup.commandName) || setup.commandName.equals(HcdShutdown.shutdownCommand)) {
       Accepted(runId)
-    } else {
-      Invalid(runId, CommandIssue.UnsupportedCommandIssue(s"Segment Assembly does not support the `${setup.commandName}` command."))
+    }
+    else {
+      Invalid(
+        runId,
+        CommandIssue.UnsupportedCommandIssue(s"Segment Assembly does not support the `${setup.commandName}` command.")
+      )
     }
   }
 
@@ -112,9 +117,9 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
           commandResponseManager.updateCommand(sr.withRunId(runId))
         }
         Started(runId)
-      case _ =>
-        log.error("What")
-        Completed(runId)
+//      case _ =>
+//        log.error("What")
+//        Completed(runId)
     }
   }
 
@@ -125,7 +130,6 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
       case None =>
         Future(Error(runId, s"A needed HCD is not available: ${hcdConnection.componentId}"))
     }
-
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 

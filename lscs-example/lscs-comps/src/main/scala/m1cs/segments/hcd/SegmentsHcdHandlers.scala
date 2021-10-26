@@ -1,6 +1,5 @@
 package m1cs.segments.hcd
 
-import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
@@ -56,7 +55,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {
       case setup: Setup => handleValidation(runId, setup)
-      case observe => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
+      case observe      => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
     }
   }
 
@@ -72,8 +71,9 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         // Verify that if one segment, that the segment is online in the list
         val segmentIdValue = setup(segmentIdKey).head
         if (segmentIdValue != ALL_SEGMENTS && (createdSegments.segmentExists(SegmentId(segmentIdValue)) == false)) {
-           Invalid(runId, CommandIssue.ParameterValueOutOfRangeIssue(s"The segmentId: $segmentIdValue is not currently avaiable."))
-        } else {
+          Invalid(runId, CommandIssue.ParameterValueOutOfRangeIssue(s"The segmentId: $segmentIdValue is not currently avaiable."))
+        }
+        else {
           Accepted(runId)
         }
       case HcdShutdown.shutdownCommand =>
@@ -86,22 +86,22 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
   override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = {
     controlCommand match {
       case setup: Setup => handleSetup(runId, setup)
-      case observe => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
+      case observe      => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
     }
   }
-
 
   private def handleSetup(runId: Id, setup: Setup): SubmitResponse = {
     setup.commandName match {
       case HcdDirectCommand.lscsDirectCommand =>
         // We know all these params are present at this point
-        val command = setup(lscsCommandKey).head
-        val commandName = setup(lscsCommandNameKey).head
+        val command         = setup(lscsCommandKey).head
+        val commandName     = setup(lscsCommandNameKey).head
         val segmentKeyValue = setup(segmentIdKey).head
         println(s"Command: $command  $commandName  $segmentKeyValue")
         val sendList = if (segmentKeyValue == ALL_SEGMENTS) {
           createdSegments.getAllSegments
-        } else {
+        }
+        else {
           createdSegments.getSegment(segmentId = SegmentId(segmentKeyValue))
         }
 
@@ -121,7 +121,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         mon1 ! SegComMonitor.Start
         Started(runId)
       case HcdShutdown.shutdownCommand =>
-        createdSegments.shutdownAll
+        createdSegments.shutdownAll()
         Completed(runId)
       case _ =>
         Error(runId, "This HCD only accepts Setups")

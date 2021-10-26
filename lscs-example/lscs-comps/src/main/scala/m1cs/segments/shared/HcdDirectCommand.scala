@@ -10,8 +10,8 @@ case object HcdDirectCommand {
 
   val lscsDirectCommand = CommandName("lscsDirectCommand")
   // This key is used to store the command to be executed
-  val lscsCommandKey: Key[String] = KeyType.StringKey.make(name = "lscsCommand")
-  val lscsCommandNameKey:Key[String] = KeyType.StringKey.make(name = "lscsCommandName")
+  val lscsCommandKey: Key[String]     = KeyType.StringKey.make(name = "lscsCommand")
+  val lscsCommandNameKey: Key[String] = KeyType.StringKey.make(name = "lscsCommandName")
 
   def toHcdDirectCommand(assemblyPrefix: Prefix, assemblySetup: Setup, obsId: Option[ObsId] = None): Setup = {
     val segmentIdExists    = assemblySetup.exists(segmentIdKey)
@@ -25,13 +25,16 @@ case object HcdDirectCommand {
     // Grab the command name from the first part of
     require(commandAsString.nonEmpty, "The command to the HCD must not be empty, fool!")
 
-    Setup(assemblyPrefix, lscsDirectCommand, obsId).madd(lscsCommandKey.set(commandAsString),
-      lscsCommandNameKey.set(assemblySetup.commandName.name), assemblySetup(segmentIdKey))
+    Setup(assemblyPrefix, lscsDirectCommand, obsId).madd(
+      lscsCommandKey.set(commandAsString),
+      lscsCommandNameKey.set(assemblySetup.commandName.name),
+      assemblySetup(segmentIdKey)
+    )
   }
 }
 
 case object HcdShutdown {
-  val shutdownCommand = CommandName("ShutdownAll")
+  val shutdownCommand: CommandName = CommandName("ShutdownAll")
 
   def toHcdShutdown(assemblyPrefix: Prefix, obsId: Option[ObsId] = None): Setup = Setup(assemblyPrefix, shutdownCommand, obsId)
 }

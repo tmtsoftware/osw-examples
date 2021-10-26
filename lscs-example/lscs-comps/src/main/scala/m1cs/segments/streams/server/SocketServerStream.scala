@@ -38,7 +38,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
       Future.successful(resp.toByteString)
     }
     else {
-      val p = Promise[ByteString]
+      val p = Promise[ByteString]()
       system.classicSystem.scheduler.scheduleOnce(delayMs.millis)(p.success(resp.toByteString))
       p.future
     }

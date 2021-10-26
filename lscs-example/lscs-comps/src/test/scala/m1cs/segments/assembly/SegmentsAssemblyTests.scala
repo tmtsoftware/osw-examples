@@ -15,7 +15,7 @@ import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.toActuator
-import m1cs.segments.shared.{HcdDirectCommand, SegmentId}
+import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
@@ -24,12 +24,13 @@ import scala.concurrent.duration.*
 
 class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
 
-  import frameworkTestKit._
+  import frameworkTestKit.*
 
   // Load the config to fetch prefix
-  val config = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
+  private val config = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
+  private val clientPrefix              = Prefix("ESW.client")
   private val hcdPrefix                 = Prefix("M1CS.segmentsHCD")
   private val hcdConnection             = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private val assemblyPrefix            = Prefix("M1CS.segmentsAssembly")
@@ -39,7 +40,7 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
   private val lastHcdCommands = List.empty[(Id, Setup)]
 
   LoggingSystemFactory.forTestingOnly()
-  val log = GenericLoggerFactory.getLogger
+  private val log = GenericLoggerFactory.getLogger
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -48,6 +49,15 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
 
     // For testing here
 //    spawnHCD(hcdPrefix, (ctx, cswCtx) => MyHandlers(ctx, cswCtx))
+  }
+
+  override def afterAll(): Unit = {
+    val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val cs            = CommandServiceFactory.make(assemLocation)
+    log.info("Sutting down segments")
+    val shutdownSetup = Setup(clientPrefix, HcdShutdown.shutdownCommand)
+    Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
+    super.afterAll()
   }
 
   test("Assembly should be locatable using Location Service") {
@@ -72,8 +82,6 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
   }
 
   test("Assembly receives a command") {
-    val assLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
-
     // Start the test HCD here and wait
     spawnHCD(
       hcdPrefix,
@@ -88,6 +96,8 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
       LocationServiceUsage.RegisterAndTrackServices
     )
     Await.ready(locationService.resolve(hcdConnection, 10.seconds), 10.seconds)
+
+    val assLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
     // Form the external command going to the Assembly
     val to    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5"))

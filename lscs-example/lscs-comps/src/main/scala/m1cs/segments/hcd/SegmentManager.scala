@@ -47,7 +47,7 @@ object SegmentManager {
 
     def shutdownOne(segmentId: SegmentId): Segments = Segments(internalShutdownOne(segments, segmentId))
 
-    def shutdownAll: Segments = {
+    def shutdownAll(): Segments = {
       @tailrec
       def doOne(segmentsIn: SegmentMap): SegmentMap = {
         if (segmentsIn.isEmpty) segmentsIn
