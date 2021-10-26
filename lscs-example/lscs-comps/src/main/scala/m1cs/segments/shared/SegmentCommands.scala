@@ -14,22 +14,31 @@ object SegmentCommands {
 
   // Used to provide one or more ranges to receive a command
   val segmentRangeKey: Key[String] = KeyType.StringKey.make("SegmentRanges")
-
-  val AllCommands  = List("ACTUATOR", "TARG_GEN_ACT", "CFG_CURR_LOOP", "CFG_ACT_VC")
-  val AllActuators = Set(1, 2, 3)
-
+  // Shared keys
+  val actuatorIdKey: Key[Int] = KeyType.IntKey.make("ACT_ID")
   // Used by every command
   private def valuesToString[A](items: Array[A]): String = items.mkString("(", ",", ")")
 
-  // Shared keys
-  val actuatorIdKey: Key[Int] = KeyType.IntKey.make("ACT_ID")
+  val AllActuators = Set(1, 2, 3)
 
-  sealed trait CommandInfo {
-    def command: String
-  }
-  case class OneSegment(segmentId: SegmentId, command: String)                 extends CommandInfo
-  case class AllSegments(command: String)                                      extends CommandInfo
-  case class SegmentRanges(segmentRanges: List[SegmentRange], command: String) extends CommandInfo
+  // The following is awful, but I can't yet see a more elegant way
+  private val ACTUATOR_COMMAND_NAME      = CommandName("ACTUATOR")
+  private val TARG_GEN_ACT_COMMAND_NAME  = CommandName("TARG_GEN_ACT")
+  private val CFG_CURR_LOOP_COMMAND_NAME = CommandName("CFG_CUR_LOOP")
+  private val CFG_ACT_VC_COMMAND_NAME    = CommandName("CFG_ACT_VC")
+  private val CFG_ACT_OFFLD_COMMAND_NAME = CommandName("CFG_ACT_OFFLD")
+
+  val CommandMap: Map[CommandName, Setup => String] = Map(
+    ACTUATOR_COMMAND_NAME      -> ACTUATOR.toCommand,
+    TARG_GEN_ACT_COMMAND_NAME  -> TARG_GEN_ACT.toCommand,
+    CFG_CURR_LOOP_COMMAND_NAME -> CFG_CUR_LOOP.toCommand,
+    CFG_ACT_VC_COMMAND_NAME    -> CFG_ACT_VC.toCommand,
+    CFG_ACT_OFFLD_COMMAND_NAME -> CFG_ACT_OFFLD.toCommand
+  )
+
+  // This is used by validation to verify that the sent command is currently supported. Could
+  // be removed when all commands are supported
+  val ALL_COMMANDS: List[CommandName] = CommandMap.keys.toList
 
   object CfgLoopModes extends Enumeration {
     type CfgLoopMode = Value
@@ -50,8 +59,44 @@ object SegmentCommands {
     val DISCRETE: Value   = Value(3, "DISCRETE")
   }
 
+  private[SegmentCommands] trait LscsCommand[T] {
+    def toSegment(segmentId: SegmentId): T
+    def toAll: T
+    def asSetup: Setup
+  }
+
+  private[SegmentCommands] class BaseCommand[T](prefix: Prefix, commandName: CommandName) extends LscsCommand[T] {
+
+    protected var setup:Setup = Setup(prefix, commandName, None).add(segmentIdKey.set(ALL_SEGMENTS))
+
+    def toSegment(segmentId: SegmentId): T = {
+      setup = setup.add(segmentIdKey.set(segmentId.toString))
+      this.asInstanceOf[T]
+    }
+
+    def toAll: T = {
+      setup = setup.add(segmentIdKey.set(ALL_SEGMENTS))
+      this.asInstanceOf[T]
+    }
+
+    def asSetup: Setup = {
+      // Should require a segment set
+      Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)
+    }
+  }
+
+  def addActuators(setup: Setup, actId: Set[Int]): Setup = {
+    require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
+    // Check that they are within range
+    require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
+
+    setup.add(actuatorIdKey.setAll(actId.toArray))
+  }
+
   // ACTUATOR command
   object ACTUATOR {
+    private val COMMAND_NAME = ACTUATOR_COMMAND_NAME
+
     object ActuatorModes extends Enumeration {
       type ActuatorMode = Value
 
@@ -61,50 +106,36 @@ object SegmentCommands {
       val CALIBRATE: Value = Value(4, "CALIBRATE")
     }
 
-    import ActuatorModes._
+    import ActuatorModes.*
 
     val actuatorChoices: Choices    = Choices.from(OFF.toString, TRACK.toString, SLEW.toString, CALIBRATE.toString)
     val actuatorModeKey: GChoiceKey = ChoiceKey.make("MODE", actuatorChoices)
     val targetKey: Key[Float]       = KeyType.FloatKey.make("TARGET")
 
-    case class toActuator(prefix: Prefix, actId: Set[Int]) {
-      require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
-      // Check that they are within range
-      require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
+    case class toActuator(prefix: Prefix, actId: Set[Int]) extends BaseCommand[toActuator](prefix, COMMAND_NAME) {
 
-      private var s =
-        Setup(prefix, CommandName("ACTUATOR"), None).madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
-
-      def toSegment(segmentId: SegmentId): toActuator = {
-        s = s.add(segmentIdKey.set(segmentId.toString))
-        this
-      }
-
-      def toAll: toActuator = {
-        s = s.add(segmentIdKey.set(ALL_SEGMENTS))
-        this
-      }
+      setup = addActuators(setup, actId)
 
       def withMode(mode: ActuatorMode): toActuator = {
-        s = s.add(actuatorModeKey.set(Choice(mode.toString)))
+        setup = setup.add(actuatorModeKey.set(Choice(mode.toString)))
         this
       }
 
       def withTarget(target: Double): toActuator = {
-        s = s.add(targetKey.set(target.toFloat))
+        setup = setup.add(targetKey.set(target.toFloat))
         this
       }
 
       // Make a copy -- do any checks here
-      def asSetup: Setup = {
-        val mode   = s.get(actuatorModeKey)
-        val target = s.get(targetKey)
+      override def asSetup: Setup = {
+        val mode   = setup.get(actuatorModeKey)
+        val target = setup.get(targetKey)
 
         // Check that there is at least one
         require(mode.isDefined || target.isDefined, "Actuator must have either a mode or target or both.")
 
         // Should require a segment set
-        Setup(s.source, s.commandName, s.maybeObsId, s.paramSet)
+        Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)
       }
     }
 
@@ -114,7 +145,8 @@ object SegmentCommands {
      * @param setup Setup created with toActuator
      * @return String command ready to send
      */
-    def toActuatorCommand(setup: Setup): CommandInfo = {
+    def toCommand(setup: Setup): String = {
+      require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
       val actId        = setup(actuatorIdKey)
       val modeExists   = setup.exists(actuatorModeKey)
       val targetExists = setup.exists(targetKey)
@@ -122,29 +154,13 @@ object SegmentCommands {
       val sb           = new StringBuilder(s"${setup.commandName.name} ACT_ID=$actIdVal")
       if (modeExists) sb ++= s", MODE=${setup(actuatorModeKey).head.name}"
       if (targetExists) sb ++= s", TARGET=${setup(targetKey).head}"
-      toCommandInfo(setup, sb.result())
+      sb.result()
     }
   }
 
-  def toCommandInfo(setup: Setup, command: String): CommandInfo = {
-    val segmentIdExists    = setup.exists(segmentIdKey)
-    val segmentRangeExists = setup.exists(segmentRangeKey)
-    // Can't go on without one of these set
-    require(segmentIdExists || segmentRangeExists)
-
-    if (segmentIdExists) {
-      val segmentId = setup(segmentIdKey).head
-      if (segmentId == ALL_SEGMENTS)
-        AllSegments(command)
-      else
-        OneSegment(SegmentId(segmentId), command)
-    }
-    else {
-      throw new IllegalArgumentException(s"Bad Segment Info in Setup: ${setup.commandName}")
-    }
-  }
-
+  /* ---------------------------------------------- */
   object TARG_GEN_ACT {
+    private val COMMAND_NAME = TARG_GEN_ACT_COMMAND_NAME
 
     object TargetGenModes extends Enumeration {
       type TargetGenMode = Value
@@ -152,7 +168,7 @@ object SegmentCommands {
       val ON: Value  = Value(1, "ON")
       val OFF: Value = Value(2, "OFF")
     }
-    import TargetGenModes._
+    import TargetGenModes.*
     val targetGenModeChoices: Choices = Choices.from(ON.toString, OFF.toString)
     val targetGenModeKey: GChoiceKey  = ChoiceKey.make("MODE", targetGenModeChoices)
 
@@ -163,62 +179,46 @@ object SegmentCommands {
       val TRI: Value = Value(2, "TRI")
       val SIN: Value = Value(3, "SIN")
     }
-    import TargetShapes._
+    import TargetShapes.*
     val targetShapeChoices: Choices    = Choices.from(SQ.toString, TRI.toString, SIN.toString)
     val targetShapeKey: GChoiceKey     = ChoiceKey.make("SHAPE", targetShapeChoices)
     val targetAmplitudeKey: Key[Float] = KeyType.FloatKey.make("AMPL")   // no Units.nm yet
     val targetPeriodKey: Key[Float]    = KeyType.FloatKey.make("PERIOD") //
     val targetOffsetKey: Key[Float]    = KeyType.FloatKey.make("OFFSET") // no Units.nm yet
 
-    case class toActTargetGen(prefix: Prefix, actId: Set[Int]) {
-      require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
-      // Check that they are within range
-      require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
+    case class toActTargetGen(prefix: Prefix, actId: Set[Int]) extends BaseCommand[toActTargetGen](prefix, COMMAND_NAME) {
 
-      private var s = Setup(prefix, CommandName("TARG_GEN_ACT"), None).madd(
-        actuatorIdKey.setAll(actId.toArray),
-        segmentIdKey.set(ALL_SEGMENTS)
-      )
-
-      def toSegment(segmentId: SegmentId): toActTargetGen = {
-        s = s.add(segmentIdKey.set(segmentId.toString))
-        this
-      }
-
-      def toAll: toActTargetGen = {
-        s = s.add(segmentIdKey.set(ALL_SEGMENTS))
-        this
-      }
+      setup = addActuators(setup, actId)
 
       def withMode(mode: TargetGenMode): toActTargetGen = {
-        s = s.add(targetGenModeKey.set(Choice(mode.toString)))
+        setup = setup.add(targetGenModeKey.set(Choice(mode.toString)))
         this
       }
 
       def withShape(mode: TargetShape): toActTargetGen = {
-        s = s.add(targetShapeKey.set(Choice(mode.toString)))
+        setup = setup.add(targetShapeKey.set(Choice(mode.toString)))
         this
       }
 
       def withAmplitude(targetAmplitude: Double): toActTargetGen = {
-        s = s.add(targetAmplitudeKey.set(targetAmplitude.toFloat))
+        setup = setup.add(targetAmplitudeKey.set(targetAmplitude.toFloat))
         this
       }
 
       def withPeriod(targetPeriod: Double): toActTargetGen = {
         // Require target period to be greater tan 0
         require(targetPeriod >= 0.0, "The target period must be >= 0")
-        s = s.add(targetPeriodKey.set(targetPeriod.toFloat))
+        setup = setup.add(targetPeriodKey.set(targetPeriod.toFloat))
         this
       }
 
       def withOffset(targetOffset: Double): toActTargetGen = {
-        s = s.add(targetOffsetKey.set(targetOffset.toFloat))
+        setup = setup.add(targetOffsetKey.set(targetOffset.toFloat))
         this
       }
 
       // Make a copy -- do any checks here
-      def asSetup: Setup = {
+      override def asSetup: Setup = {
         //val mode       = s.get(targetGenModeKey)
         //val shape      = s.get(targetShapeKey)
         //val amplitude  = s.get(targetAmplitudeKey)
@@ -229,7 +229,7 @@ object SegmentCommands {
         //require(mode.isDefined || shape.isDefined, " must have one or more of: mode, or shape.")
 
         // Should require a segment set
-        Setup(s.source, s.commandName, s.maybeObsId, s.paramSet)
+        Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)
       }
     }
 
@@ -239,7 +239,9 @@ object SegmentCommands {
      * @param setup Setup created with toActTargetGen
      * @return String command ready to send
      */
-    def toActTargetGenCommand(setup: Setup): CommandInfo = {
+    def toCommand(setup: Setup): String = {
+      require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
+
       val actId           = setup(actuatorIdKey)
       val modeExists      = setup.exists(targetGenModeKey)
       val shapeExists     = setup.exists(targetShapeKey)
@@ -254,12 +256,15 @@ object SegmentCommands {
       if (amplitudeExists) sb ++= s", AMPL=${setup(targetAmplitudeKey).head}"
       if (periodExists) sb ++= s", PERIOD=${setup(targetPeriodKey).head}"
       if (offsetExists) sb ++= s", OFFSET=${setup(targetOffsetKey).head}"
-      toCommandInfo(setup, sb.result())
+      sb.result()
     }
   }
 
+  /* ---------------------------------------------- */
   // CFG_CUR_LOOP
   object CFG_CUR_LOOP {
+    private val COMMAND_NAME = CFG_CURR_LOOP_COMMAND_NAME
+
     val MIN_BUS_VOLTAGE = 0
     val MAX_BUS_VOLTAGE = 24
 
@@ -271,58 +276,48 @@ object SegmentCommands {
       val SNUB: Value  = Value(3, "SNUB")
       val ALL: Value   = Value(4, "ALL")
     }
-    import CfgCurLoopMotor._
+    import CfgCurLoopMotor.*
     val cfgCurLoopMotorChoices: Choices = Choices.from(VC.toString, OFFLD.toString, SNUB.toString, ALL.toString)
     val cfgCurLoopMotorKey: GChoiceKey  = ChoiceKey.make("MOTOR", cfgCurLoopMotorChoices)
 
     val busVoltageKey: Key[Float] = KeyType.FloatKey.make("BUS_VOLTAGE")
     val ctrlParamsKey: Key[Float] = KeyType.FloatKey.make("CTRL_PARAMS")
 
-    case class toCfgActCurLoop(prefix: Prefix, actId: Set[Int], motorChan: MotorChan) {
-      require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
-      // Check that they are within range
-      require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
+    case class toCfgActCurLoop(prefix: Prefix, actId: Set[Int], motorChan: MotorChan)
+      extends BaseCommand[toCfgActCurLoop](prefix, COMMAND_NAME) {
 
-      private var s = Setup(prefix, CommandName("CFG_CUR_LOOP"), None).madd(
+      setup = addActuators(setup, actId)
+
+      // Add the mandatory params
+      setup = setup.madd(
         actuatorIdKey.setAll(actId.toArray),
-        cfgCurLoopMotorKey.set(Choice(motorChan.toString)),
-        segmentIdKey.set(ALL_SEGMENTS)
+        cfgCurLoopMotorKey.set(Choice(motorChan.toString))
       )
 
-      def toSegment(segmentId: SegmentId): toCfgActCurLoop = {
-        s = s.add(segmentIdKey.set(segmentId.toString))
-        this
-      }
-
-      def toAll: toCfgActCurLoop = {
-        s = s.add(segmentIdKey.set(ALL_SEGMENTS))
-        this
-      }
-
       def withLoopMode(loopMode: CfgLoopModes.CfgLoopMode): toCfgActCurLoop = {
-        s = s.add(cfgLoopModeKey.set(Choice(loopMode.toString)))
+        setup = setup.add(cfgLoopModeKey.set(Choice(loopMode.toString)))
         this
       }
 
       def withBusVoltage(busVoltage: Double): toCfgActCurLoop = {
         // Require bus voltage to be less than 24 (TBD)
         require(busVoltage <= 24.0 && busVoltage >= 0.0, "Supply voltage to motor driver bridge chip range is: 0.0 <= V <= 24.0")
-        s = s.add(busVoltageKey.set(busVoltage.toFloat))
+        setup = setup.add(busVoltageKey.set(busVoltage.toFloat))
         this
       }
 
       def withCtrlParams(ctrlParams: Array[Double]): toCfgActCurLoop = {
         // Check that the size of the ctrlParams is 3
         require(ctrlParams.length == 3, "There must be 3 ctrlParam values for Kp, Ki, Kd")
-        s = s.add(ctrlParamsKey.setAll(ctrlParams.map(_.toFloat)))
+        setup = setup.add(ctrlParamsKey.setAll(ctrlParams.map(_.toFloat)))
         this
       }
 
       // Make a copy -- do any checks here
-      def asSetup: Setup = {
-        val mode       = s.get(cfgLoopModeKey)
-        val busVoltage = s.get(busVoltageKey)
-        val ctrlParams = s.get(ctrlParamsKey)
+      override def asSetup: Setup = {
+        val mode       = setup.get(cfgLoopModeKey)
+        val busVoltage = setup.get(busVoltageKey)
+        val ctrlParams = setup.get(ctrlParamsKey)
 
         // Check that there is at least one
         require(
@@ -331,7 +326,7 @@ object SegmentCommands {
         )
 
         // Should require a segment set
-        Setup(s.source, s.commandName, s.maybeObsId, s.paramSet)
+        Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)
       }
     }
 
@@ -341,7 +336,8 @@ object SegmentCommands {
      * @param setup Setup created with toActuator
      * @return String command ready to send
      */
-    def toCfgCurLoopCommand(setup: Setup): CommandInfo = {
+    def toCommand(setup: Setup): String = {
+      require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
       val actId    = setup(actuatorIdKey)
       val actIdVal = if (actId.size == 3) "ALL" else valuesToString(actId.values)
 
@@ -353,63 +349,51 @@ object SegmentCommands {
       if (modeExists) sb ++= s", MODE=${setup(cfgLoopModeKey).head.name}"
       if (busVoltageExists) sb ++= s", BUS_VOLTAGE=${setup(busVoltageKey).head}"
       if (ctrlParamsExists) sb ++= s", CTRL_PARAMS=${valuesToString(setup(ctrlParamsKey).values)}"
-      toCommandInfo(setup, sb.result())
+      sb.result()
     }
   }
 
+  /* ---------------------------------------------- */
   // CFG_ACT_VC
   object CFG_ACT_VC {
+    private val COMMAND_NAME = CFG_ACT_VC_COMMAND_NAME
 
     val slewCtrlParamsKey: Key[Float] = KeyType.FloatKey.make("SLEW_CTRL_PARAMS")
     val trkCtrlParamsKey: Key[Float]  = KeyType.FloatKey.make("TRK_CTRL_PARAMS")
 
-    case class toCfgActVc(prefix: Prefix, actId: Set[Int]) {
-      require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
-      // Check that they are within range
-      require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
+    case class toCfgActVc(prefix: Prefix, actId: Set[Int]) extends BaseCommand[toCfgActVc](prefix, COMMAND_NAME) {
 
-      private var s =
-        Setup(prefix, CommandName("CFG_ACT_VC"), None).madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
-
-      def toSegment(segmentId: SegmentId): toCfgActVc = {
-        s = s.add(segmentIdKey.set(segmentId.toString))
-        this
-      }
-
-      def toAll: toCfgActVc = {
-        s = s.add(segmentIdKey.set(ALL_SEGMENTS))
-        this
-      }
+      setup = addActuators(setup, actId)
 
       def withLoopMode(loopMode: CfgLoopModes.CfgLoopMode): toCfgActVc = {
-        s = s.add(cfgLoopModeKey.set(Choice(loopMode.toString)))
+        setup = setup.add(cfgLoopModeKey.set(Choice(loopMode.toString)))
         this
       }
 
       def withSlewParams(slewCtrlParams: Array[Double]): toCfgActVc = {
         // Check that the size of the slewCtrlParams is 4
         require(slewCtrlParams.length == 4, "There must be 4 slewCtrlParam values for Kp, Ki, Kd, FD.")
-        s = s.add(slewCtrlParamsKey.setAll(slewCtrlParams.map(_.toFloat)))
+        setup = setup.add(slewCtrlParamsKey.setAll(slewCtrlParams.map(_.toFloat)))
         this
       }
 
       def withTrkParams(trackParams: Array[Double]): toCfgActVc = {
         // Check that the size of the trackParams is 4
         require(trackParams.length == 4, "There must be 4 trackParam values for Kp, Ki, Kd, FD")
-        s = s.add(trkCtrlParamsKey.setAll(trackParams.map(_.toFloat)))
+        setup = setup.add(trkCtrlParamsKey.setAll(trackParams.map(_.toFloat)))
         this
       }
 
       // Make a copy -- do any checks here
-      def asSetup: Setup = {
-        val modeExists = s.exists(cfgLoopModeKey)
-        val slewExists = s.exists(slewCtrlParamsKey)
-        val trkExists  = s.exists(trkCtrlParamsKey)
+      override def asSetup: Setup = {
+        val modeExists = setup.exists(cfgLoopModeKey)
+        val slewExists = setup.exists(slewCtrlParamsKey)
+        val trkExists  = setup.exists(trkCtrlParamsKey)
         // Check that there is at least one
         require(modeExists || slewExists || trkExists, "CfgActVc must have one or more of: mode, slewParams, or trkParams.")
 
         // Should require a segment set
-        Setup(s.source, s.commandName, s.maybeObsId, s.paramSet)
+        Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)
       }
     }
 
@@ -419,7 +403,9 @@ object SegmentCommands {
      * @param setup Setup created with toActuator
      * @return String command ready to send
      */
-    def toCfgActVcCommand(setup: Setup): CommandInfo = {
+    def toCommand(setup: Setup): String = {
+      require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
+
       val actId    = setup(actuatorIdKey)
       val actIdVal = if (actId.size == 3) "ALL" else valuesToString(actId.values)
 
@@ -431,13 +417,15 @@ object SegmentCommands {
       if (modeExists) sb ++= s", MODE=${setup(cfgLoopModeKey).head.name}"
       if (slewExists) sb ++= s", SLEW_CTRL_PARAMS=${valuesToString(setup(slewCtrlParamsKey).values)}"
       if (trkExists) sb ++= s", TRK_CTRL_PARAMS=${valuesToString(setup(trkCtrlParamsKey).values)}"
-      toCommandInfo(setup, sb.result())
+      sb.result()
     }
   }
 
+  /* ---------------------------------------------- */
   object CFG_ACT_OFFLD {
+    private val COMMAND_NAME = CFG_ACT_OFFLD_COMMAND_NAME
 
-    import ControllerModes._
+    import ControllerModes.*
     val offloaderModeChoices: Choices = Choices.from(OFF.toString, CONTINUOUS.toString, DISCRETE.toString)
     val offloaderModeKey: GChoiceKey  = ChoiceKey.make("MODE", offloaderModeChoices)
 
@@ -446,57 +434,42 @@ object SegmentCommands {
     val discreteStartKey: Key[Float] = KeyType.FloatKey.make("DISCRETE_START")
     val discreteStopKey: Key[Float]  = KeyType.FloatKey.make("DISCRETE_STOP")
 
-    case class toActOffldCtrl(prefix: Prefix, actId: Set[Int]) {
-      require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
-      // Check that they are within range
-      require(actId.max <= 3 && actId.min >= 1, "Actuator ID values must be: 1, 2, or 3")
+    case class toActOffldCtrl(prefix: Prefix, actId: Set[Int]) extends BaseCommand[toActOffldCtrl](prefix, COMMAND_NAME) {
 
-      private var s =
-        Setup(prefix, CommandName("CFG_ACT_OFFLD"), None)
-          .madd(actuatorIdKey.setAll(actId.toArray), segmentIdKey.set(ALL_SEGMENTS))
-
-      def toSegment(segmentId: SegmentId): toActOffldCtrl = {
-        s = s.add(segmentIdKey.set(segmentId.toString))
-        this
-      }
-
-      def toAll: toActOffldCtrl = {
-        s = s.add(segmentIdKey.set(ALL_SEGMENTS))
-        this
-      }
+      setup = addActuators(setup, actId)
 
       def withOffloadMode(loopMode: ControllerModes.ControllerMode): toActOffldCtrl = {
-        s = s.add(offloaderModeKey.set(Choice(loopMode.toString)))
+        setup = setup.add(offloaderModeKey.set(Choice(loopMode.toString)))
         this
       }
 
       def withGain(contGain: Double): toActOffldCtrl = {
-        s = s.add(contGainKey.set(contGain.toFloat))
+        setup = setup.add(contGainKey.set(contGain.toFloat))
         this
       }
 
       def withThresh(contThresh: Double): toActOffldCtrl = {
-        s = s.add(contThreshKey.set(contThresh.toFloat))
+        setup = setup.add(contThreshKey.set(contThresh.toFloat))
         this
       }
 
       def withDiscreteStart(discreteStart: Double): toActOffldCtrl = {
-        s = s.add(discreteStartKey.set(discreteStart.toFloat))
+        setup = setup.add(discreteStartKey.set(discreteStart.toFloat))
         this
       }
 
       def withDiscreteStop(discreteStop: Double): toActOffldCtrl = {
-        s = s.add(discreteStopKey.set(discreteStop.toFloat))
+        setup = setup.add(discreteStopKey.set(discreteStop.toFloat))
         this
       }
 
       // Make a copy -- do any checks here
-      def asSetup: Setup = {
+      override def asSetup: Setup = {
         // Check that there is at least one
         //require( )
 
         // This causes a copy
-        Setup(s.source, s.commandName, s.maybeObsId, s.paramSet)
+        Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)
       }
     }
 
@@ -506,7 +479,8 @@ object SegmentCommands {
      * @param setup Setup created with toActuator
      * @return String command ready to send
      */
-    def toActOffldCtrlCommand(setup: Setup): CommandInfo = {
+    def toCommand(setup: Setup): String = {
+      require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
       val actId    = setup(actuatorIdKey)
       val actIdVal = if (actId.size == 3) "ALL" else valuesToString(actId.values)
 
@@ -522,7 +496,7 @@ object SegmentCommands {
       if (threshExists) sb ++= s", CONT_THRESH=${setup(contThreshKey).head}"
       if (startExists) sb ++= s", DISCRETE_START=${setup(discreteStartKey).head}"
       if (stopExists) sb ++= s", DISCRETE_STOP=${setup(discreteStopKey).head}"
-      toCommandInfo(setup, sb.result())
+      sb.result()
     }
   }
 

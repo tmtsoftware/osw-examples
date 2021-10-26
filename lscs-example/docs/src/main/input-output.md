@@ -3,4 +3,4 @@
 ## Sample snippet reference
 
 Scala
-: @@snip [HttpCodecs](../../../m1cs-comshcd/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #initialize }
+: @@snip [HttpCodecs](../../../lscs-comps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #initialize }

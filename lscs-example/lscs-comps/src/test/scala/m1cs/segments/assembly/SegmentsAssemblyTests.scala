@@ -15,12 +15,12 @@ import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.toActuator
-import m1cs.segments.shared.SegmentId
+import m1cs.segments.shared.{HcdDirectCommand, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
 
@@ -80,8 +80,8 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
       (ctx, cswCtx) =>
         new DefaultComponentHandlers(ctx, cswCtx) {
           override def onSubmit(id: Id, controlCommand: ControlCommand): SubmitResponse = {
-            log.info(">>>>>>>>>>>>>>>>>>>>>>>onSubmit actually called")
-            controlCommand.commandName.name shouldBe "ACTUATOR"
+            log.info(s">>>>>>>>>>>>>>>>>>>>>>>onSubmit actually called: $controlCommand")
+            controlCommand.commandName shouldBe HcdDirectCommand.lscsDirectCommand
             Completed(id)
           }
         },

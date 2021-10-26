@@ -1,15 +1,15 @@
 package m1cs.segments.hcd
 
+import akka.actor.testkit.typed.FishingOutcome
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.hcd
-import m1cs.segments.hcd.SegmentActor.{ERROR_COMMAND_NAME, ERROR_SEG_ID}
 import m1cs.segments.shared.{A, SegmentId}
+import m1cs.segments.streams.server.SocketServerStream
 import org.scalatest.funsuite.AnyFunSuiteLike
 
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
 
@@ -21,18 +21,36 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
   private val cn2     = "CFG_CUR_LOOP"
   private val cn2args = "ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=Kp"
 
-  // Causes error on segment 5
-  private val CN_ERROR     = SegmentActor.ERROR_COMMAND_NAME
-  private val CN_ERROR_SEG = SegmentActor.ERROR_SEG_ID
+  import frameworkTestKit.*
 
-  import frameworkTestKit._
+  LoggingSystemFactory.forTestingOnly()
+  private val log = GenericLoggerFactory.getLogger
 
-  private val logSystem = LoggingSystemFactory.forTestingOnly()
-  private val log       = GenericLoggerFactory.getLogger
+  override def beforeAll(): Unit = {
+    // Start the server
+    // XXX TODO FIXME: Use typed system
+    new SocketServerStream()(testKit.system)
+  }
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
-//    Await.ready(logSystem.stop, 2.seconds)
+  }
+
+  def waitForCompleted(
+      probe: TestProbe[SegmentActor.Response],
+      timeout: FiniteDuration = 5.seconds
+  ): List[SegmentActor.Response] = {
+    var responses = List.empty[SegmentActor.Response]
+
+    probe.fishForMessagePF(timeout) {
+      case r @ SegmentActor.Completed(_, _, _) =>
+        responses = r :: responses
+        FishingOutcome.Complete
+      case r =>
+        responses = r :: responses
+        FishingOutcome.Continue
+    }
+    responses
   }
 
   test("One Segment - send 1 command") {
@@ -46,6 +64,30 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     // Finished from short command
     val r1 = com1Response.expectMessageType[SegmentActor.Completed]
     r1.commandName shouldBe cn1
+
+    val boolResponse = TestProbe[Boolean]
+    s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
+    testKit.stop(s1, 5.seconds)
+  }
+
+  test("One Segment - terminate") {
+    val s1id = SegmentId(A, 1)
+    val s1   = testKit.spawn(hcd.SegmentActor(s1id, log), s1id.toString)
+
+    val com1Response = TestProbe[SegmentActor.Response]()
+
+    s1 ! SegmentActor.Send(cn1, cn1args, com1Response.ref)
+
+    // Finished from short command
+    val responses = waitForCompleted(com1Response)
+    responses.head.commandName shouldBe cn1
+
+    val boolResponse = TestProbe[Boolean]
+    s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
+
+    // Sending a message after terminate should cause error
+    s1 ! SegmentActor.Send(cn1, cn1args, com1Response.ref)
+    com1Response.expectNoMessage(200.milli)
 
     testKit.stop(s1, 5.seconds)
   }
@@ -65,6 +107,8 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     val r2 = com1Response.expectMessageType[SegmentActor.Completed]
     r2.commandName shouldBe cn1
 
+    val boolResponse = TestProbe[Boolean]
+    s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
     testKit.stop(s1, 5.seconds)
   }
 
@@ -88,20 +132,22 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     r2 = com1Response.expectMessageType[SegmentActor.Completed]
     r2.commandName shouldBe cn1
 
+    val boolResponse = TestProbe[Boolean]
+    s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
     testKit.stop(s1, 5.seconds)
   }
 
   test("One Segment - makes an error") {
-    val s1id = SegmentId(A, ERROR_SEG_ID)
+    val s1id = SegmentId(A, SegmentActor.ERROR_SEG_ID)
     val s1   = testKit.spawn(hcd.SegmentActor(s1id, log), s1id.toString)
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.SendWithTime(ERROR_COMMAND_NAME, cn1args, 500.milli, com1Response.ref)
+    s1 ! SegmentActor.SendWithTime(SegmentActor.ERROR_COMMAND_NAME, cn1args, 500.milli, com1Response.ref)
 
     // Finished for error command
     val r1 = com1Response.expectMessageType[SegmentActor.Error]
-    r1.commandName shouldBe ERROR_COMMAND_NAME
+    r1.commandName shouldBe SegmentActor.ERROR_COMMAND_NAME
 
     testKit.stop(s1, 5.seconds)
   }

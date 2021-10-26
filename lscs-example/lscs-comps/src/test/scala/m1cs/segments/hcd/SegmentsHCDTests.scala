@@ -1,7 +1,6 @@
 package m1cs.segments.hcd
 
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import akka.actor.typed.Settings
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.command.client.CommandServiceFactory
@@ -9,18 +8,17 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.params.commands.CommandResponse.Completed
+import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import m1cs.segments.shared.HcdCommands.{toAllSegments, toOneSegment}
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
-import m1cs.segments.shared.SegmentCommands.ACTUATOR.{toActuator, toActuatorCommand}
-import m1cs.segments.shared.SegmentCommands.{AllSegments, OneSegment}
-import m1cs.segments.shared.{A, SegmentId}
+import m1cs.segments.shared.SegmentCommands.ACTUATOR.{toActuator, toCommand}
+import m1cs.segments.shared.{A, HcdDirectCommand, HcdShutdown, SegmentId}
 import m1cs.segments.streams.server.SocketServerStream
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
   import frameworkTestKit._
@@ -41,12 +39,21 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+
+    val simulatorExternal = testKit.system.settings.config.getBoolean("m1cs.simulatorExternal")
+    if (!simulatorExternal) {
+      println("Starting an external socket server")
+      // Comment out this line to use an external server (scala or C version)
+      new SocketServerStream()(testKit.internalSystem)
+    }
+
     // uncomment if you want one HCD run for all tests
     spawnStandalone(config)
   }
 
   override def afterAll(): Unit = {
     frameworkTestKit.shutdown()
+    testKit.shutdownTestKit()
   }
 
   test("HCD should be locatable using Location Service") {
@@ -59,96 +66,39 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   test("Try sending one command") {
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
-    val commandService = CommandServiceFactory.make(hcdLocation)
     // This simulates sending to Assembly
-    val setup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 5)).asSetup
-    println(s"Setup: $setup")
-    // This simulates what the Assembly does to send to HCD
-    val command = toActuatorCommand(setup)
-    val hcdSetup = command match {
-      case AllSegments(command) =>
-        toAllSegments(prefix, command)
-      case OneSegment(segmentId, command) =>
-        toOneSegment(prefix, segmentId, command)
-    }
 
+    val assemblySetup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 1)).asSetup
+    log.info(s"Setup: $assemblySetup")
+
+    // This simulates what the Assembly does to send to HCD - has received above Setup
+    val hcdSetup:Setup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
     // Assembly creates an HCD setup from
-    println(s"HCD Setup: $hcdSetup")
+    log.info(s"HCD Setup: $hcdSetup")
+    val commandService = CommandServiceFactory.make(hcdLocation)
+    var result         = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
+    result shouldBe a[Completed]
 
-    val result = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
+    result = Await.result(commandService.submitAndWait(HcdShutdown.toHcdShutdown(prefix)), 5.seconds)
     result shouldBe a[Completed]
   }
 
   test("Try sending command to All") {
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
-    val commandService = CommandServiceFactory.make(hcdLocation)
     // This simulates sending to Assembly -- default is ALL
-    val setup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
-    println(s"Setup: $setup")
+    val assemblySetup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
+    log.info(s"Setup: $assemblySetup")
+
     // This simulates what the Assembly does to send to HCD
-    val command = toActuatorCommand(setup)
-    val hcdSetup = command match {
-      case AllSegments(command) =>
-        toAllSegments(prefix, command)
-      case OneSegment(segmentId, command) =>
-        toOneSegment(prefix, segmentId, command)
-    }
-
-    // Assembly creates an HCD setup from
-    println(s"HCD Setup: $hcdSetup")
-
-    val result = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
-    result shouldBe a[Completed]
-  }
-
-  test("Try sending one command - external") {
-    new SocketServerStream()(testKit.internalSystem)
-
-    val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    val hcdSetup:Setup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
+    log.info(s"HCD Setup: $hcdSetup")
 
     val commandService = CommandServiceFactory.make(hcdLocation)
-    // This simulates sending to Assembly
-    val setup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 5)).asSetup
-    println(s"Setup: $setup")
-    // This simulates what the Assembly does to send to HCD
-    val command = toActuatorCommand(setup)
-    val hcdSetup = command match {
-      case AllSegments(command) =>
-        toAllSegments(prefix, command)
-      case OneSegment(segmentId, command) =>
-        toOneSegment(prefix, segmentId, command)
-    }
-
-    // Assembly creates an HCD setup from
-    println(s"HCD Setup: $hcdSetup")
-
-    val result = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
+    var result = Await.result(commandService.submitAndWait(hcdSetup), 5.seconds)
     result shouldBe a[Completed]
-  }
 
-  test("Try sending command to All - external") {
-    new SocketServerStream()(testKit.internalSystem)
-
-    val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
-
-    val commandService = CommandServiceFactory.make(hcdLocation)
-    // This simulates sending to Assembly -- default is ALL
-    val setup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
-    println(s"Setup: $setup")
-    // This simulates what the Assembly does to send to HCD
-    val command = toActuatorCommand(setup)
-    val hcdSetup = command match {
-      case AllSegments(command) =>
-        toAllSegments(prefix, command)
-      case OneSegment(segmentId, command) =>
-        toOneSegment(prefix, segmentId, command)
-    }
-
-    // Assembly creates an HCD setup from
-    println(s"HCD Setup: $hcdSetup")
-
-    val result = Await.result(commandService.submitAndWait(hcdSetup)(25.seconds), 25.seconds)
+    result = Await.result(commandService.submitAndWait(HcdShutdown.toHcdShutdown(prefix)), 5.seconds)
     result shouldBe a[Completed]
   }
 }

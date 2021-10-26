@@ -1,36 +1,44 @@
 package m1cs.segments.assembly
 
+import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.command.client.CommandServiceFactory
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
+import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
 import m1cs.segments.shared.SegmentCommands.ACTUATOR.toActuator
+import m1cs.segments.shared.{HcdShutdown, SegmentId}
+import m1cs.segments.streams.server.SocketServerStream
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
-
   import frameworkTestKit._
+
+  private val testKit = ActorTestKit()
 
   // Load the config to fetch prefix
   val assemConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
   val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
+  private val clientPrefix              = Prefix("ESW.client")
   private val hcdPrefix                 = Prefix("M1CS.segmentsHCD")
   private val hcdConnection             = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private val assemblyPrefix            = Prefix("M1CS.segmentsAssembly")
   private val assemblyConnection        = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
   private implicit val timeout: Timeout = 5.seconds
+
+  private val shutdownSetup             = Setup(clientPrefix, HcdShutdown.shutdownCommand)
 
   LoggingSystemFactory.forTestingOnly()
   val log = GenericLoggerFactory.getLogger
@@ -42,8 +50,19 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     // Create the HCD here for all tests, may change
     spawnStandalone(hcdConfig)
 
-    // For testing here
-    //spawnHCD(hcdPrefix, (ctx, cswCtx) => MyHandlers(ctx, cswCtx))
+    val simulatorExternal = testKit.system.settings.config.getBoolean("m1cs.simulatorExternal")
+    if (!simulatorExternal) {
+      log.info(">>>>>STARTING an external socket server<<<<")
+      // Comment out this line to use an external server (scala or C version)
+      new SocketServerStream()(testKit.internalSystem)
+    }
+  }
+
+  override def afterAll(): Unit = {
+    val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val cs     = CommandServiceFactory.make(assemLocation)
+    log.info("Sutting down segments")
+    Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
   }
 
   test("Assembly should be locatable using Location Service") {
@@ -62,15 +81,30 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     Thread.sleep(2000)
   }
 
-  test("Assembly receives a command all the way to HCD") {
+  test("Assembly receives a command all the way to HCD -- One Segment") {
     val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
     val hcdLocation   = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
     assemLocation.connection shouldBe assemblyConnection
     hcdLocation.connection shouldBe hcdConnection
 
     // Form the external command going to the Assembly
-    val to    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34) //.toSegment(SegmentId("A5"))
+    val to    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5"))
     val setup = to.asSetup
+
+    val cs     = CommandServiceFactory.make(assemLocation)
+    val result = Await.result(cs.submitAndWait(setup), 10.seconds)
+
+    result shouldBe a[Completed]
+  }
+
+  test("Assembly receives a command all the way to HCD -- All Segments") {
+    val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val hcdLocation   = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    assemLocation.connection shouldBe assemblyConnection
+    hcdLocation.connection shouldBe hcdConnection
+
+    // Form the external command going to the Assembly
+    val setup    = toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
 
     val cs     = CommandServiceFactory.make(assemLocation)
     val result = Await.result(cs.submitAndWait(setup), 10.seconds)
