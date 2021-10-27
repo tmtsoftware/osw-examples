@@ -2,6 +2,7 @@ package m1cs.segments.assembly
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.ActorContext
+import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.TopLevelActorMessage
@@ -24,6 +25,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
  * SegmentsAssemblyHandlers is the TLA for the Segments Assembly
  * It receives Setups the are formatted according to the commands in [[SegmentCommands]]
  */
+//noinspection DuplicatedCode
 class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx.*
@@ -32,14 +34,17 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
   private implicit val system: ActorSystem[Nothing] = ctx.system
   private implicit val ec: ExecutionContextExecutor = ctx.executionContext
 
-  private val log                           = loggerFactory.getLogger
+  private val log = loggerFactory.getLogger
   // Hard-coding HCD prefix because it is not easily available from code. Would be documented in model files.
   private val hcdPrefix     = Prefix("M1CS.segmentsHCD")
   private val hcdConnection = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
 
   // This assembly prefix
-  private val assemblyPrefix: Prefix                = cswCtx.componentInfo.prefix
+  private val assemblyPrefix: Prefix        = cswCtx.componentInfo.prefix
+  private var hcdLocation: AkkaLocation     = _
+  private var hcdCS: Option[CommandService] = None
+  private implicit val timeout: Timeout     = 5.seconds
 
   override def initialize(): Unit = {
     log.info("Initializing SegmentsAssembly...")
@@ -79,7 +84,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {
       case setup: Setup => handleValidation(runId, setup)
-      case observe => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
+      case observe      => Invalid(runId, UnsupportedCommandIssue(s"$observe command not supported."))
     }
   }
 
@@ -87,8 +92,12 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
   private def handleValidation(runId: Id, setup: Setup): ValidateCommandResponse = {
     if (SegmentCommands.ALL_COMMANDS.contains(setup.commandName) || setup.commandName.equals(HcdShutdown.shutdownCommand)) {
       Accepted(runId)
-    } else {
-      Invalid(runId, CommandIssue.UnsupportedCommandIssue(s"Segment Assembly does not support the `${setup.commandName}` command."))
+    }
+    else {
+      Invalid(
+        runId,
+        CommandIssue.UnsupportedCommandIssue(s"Segment Assembly does not support the `${setup.commandName}` command.")
+      )
     }
   }
 
@@ -120,13 +129,14 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
           commandResponseManager.updateCommand(sr.withRunId(runId))
         }
         Started(runId)
-      case _ =>
-        log.debug(s"Segments Assembly received a command: $runId and $assemblySetup")
+      case cmd =>
+        log.info(s"Segments Assembly received a command: '$cmd',  runId: $runId, setup: $assemblySetup")
 
         // This simulates what the Assembly does to send to HCD - has received above Setup
         val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
         // Assembly sends the Setup and updates
         submitAndWaitHCD(runId, hcdSetup) map { sr =>
+          log.info(s"COMMAND COMPLETED from HCD: $sr")
           commandResponseManager.updateCommand(sr.withRunId(runId))
         }
         Started(runId)

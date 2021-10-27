@@ -1,7 +1,7 @@
 package m1cs.segments.streams
 
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Scheduler, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
 import org.scalatest.funsuite.AnyFunSuite
 import akka.util.Timeout
 import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
@@ -28,7 +28,6 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
     implicit val timeout: Timeout              = Timeout(30.seconds)
     implicit val system: ActorSystem[Nothing]  = ctx.system
     implicit val exc: ExecutionContextExecutor = system.executionContext
-    implicit val sched: Scheduler              = ctx.system.scheduler
 
     msg match {
       case Start(replyTo) =>

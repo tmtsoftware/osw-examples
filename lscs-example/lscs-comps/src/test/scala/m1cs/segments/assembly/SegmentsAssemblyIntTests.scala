@@ -29,6 +29,8 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   // Load the config to fetch prefix
   private val assemblyConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
   private val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
+  private val assemConfig = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
+  private val hcdConfig   = ConfigFactory.load("SegmentsHcdStandalone.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
   private val clientPrefix              = Prefix("ESW.client")
@@ -43,19 +45,20 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   LoggingSystemFactory.forTestingOnly()
   private val log = GenericLoggerFactory.getLogger
 
+  private val simulatorExternal = testKit.system.settings.config.getBoolean("m1cs.simulatorExternal")
+  private val maybeSocketServerStream = if (!simulatorExternal) {
+    log.info(">>>>>STARTING an external socket server<<<<")
+    // Comment out this line to use an external server (scala or C version)
+    Some(new SocketServerStream()(testKit.internalSystem))
+  }
+  else None
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     // Assembly used for all tests
     spawnStandalone(assemblyConfig)
     // Create the HCD here for all tests, may change
     spawnStandalone(hcdConfig)
-
-    val simulatorExternal = testKit.system.settings.config.getBoolean("m1cs.simulatorExternal")
-    if (!simulatorExternal) {
-      log.info(">>>>>STARTING an external socket server<<<<")
-      // Comment out this line to use an external server (scala or C version)
-      new SocketServerStream()(testKit.internalSystem)
-    }
   }
 
   override def afterAll(): Unit = {
@@ -63,6 +66,9 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     val cs     = CommandServiceFactory.make(assemblyLocation)
     log.info("Shutting down segments")
     Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
+
+    maybeSocketServerStream.foreach(_.terminate())
+    super.afterAll()
   }
 
   test("Assembly should be locatable using Location Service") {

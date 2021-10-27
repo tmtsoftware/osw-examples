@@ -12,7 +12,7 @@
 
 This is documentation for the Lower Segment Control System (LSCS) demonstration project that is present in 
 the [TMT GitHub site](https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example). This project
-was created to research and demonstrate potental issues around the M1CS subsystem.
+was created to research and demonstrate potential issues around the M1CS subsystem.
 
 In the M1CS design, there is an CSW Assembly/HCD that accepts commands that are then passed to one or more
 mirror segments. Each of the 492 segments includes a Lower Segment Control System, which is running on a

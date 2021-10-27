@@ -13,10 +13,10 @@ import SegmentCommands.{CommandMap, segmentIdKey, segmentRangeKey}
  */
 case object HcdDirectCommand {
 
-  val lscsDirectCommand = CommandName("lscsDirectCommand")
+  val lscsDirectCommand: CommandName = CommandName("lscsDirectCommand")
   // This key is used to store the command to be executed
-  val lscsCommandKey: Key[String] = KeyType.StringKey.make(name = "lscsCommand")
-  val lscsCommandNameKey:Key[String] = KeyType.StringKey.make(name = "lscsCommandName")
+  val lscsCommandKey: Key[String]     = KeyType.StringKey.make(name = "lscsCommand")
+  val lscsCommandNameKey: Key[String] = KeyType.StringKey.make(name = "lscsCommandName")
 
   /**
    * This helper function returns a direct command Setup for the
@@ -37,8 +37,11 @@ case object HcdDirectCommand {
     // Grab the command name from the first part of
     require(commandAsString.nonEmpty, "The command to the HCD must not be empty, fool!")
 
-    Setup(assemblyPrefix, lscsDirectCommand, obsId).madd(lscsCommandKey.set(commandAsString),
-      lscsCommandNameKey.set(assemblySetup.commandName.name), assemblySetup(segmentIdKey))
+    Setup(assemblyPrefix, lscsDirectCommand, obsId).madd(
+      lscsCommandKey.set(commandAsString),
+      lscsCommandNameKey.set(assemblySetup.commandName.name),
+      assemblySetup(segmentIdKey)
+    )
   }
 }
 
@@ -46,7 +49,7 @@ case object HcdDirectCommand {
  * This command when sent to the HCD causes shutdown of all the connections to Segments
  */
 case object HcdShutdown {
-  val shutdownCommand = CommandName("ShutdownAll")
+  val shutdownCommand: CommandName = CommandName("ShutdownAll")
 
   def toHcdShutdown(assemblyPrefix: Prefix, obsId: Option[ObsId] = None): Setup = Setup(assemblyPrefix, shutdownCommand, obsId)
 }

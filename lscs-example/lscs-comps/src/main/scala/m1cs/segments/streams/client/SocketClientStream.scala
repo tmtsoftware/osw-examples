@@ -128,8 +128,9 @@ object SocketClientStream {
 
 }
 
+//noinspection DuplicatedCode
 // Private constructor (use one of the above factory methods)
-class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: String = "127.0.0.1", port: Int = 8023)(implicit
+class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: String, port: Int)(implicit
     system: ActorSystem[?]
 ) {
   implicit val ec: ExecutionContext = system.executionContext
@@ -162,10 +163,11 @@ class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: 
     .via(clientFlow)
     .via(parser)
 
-  private val connectedFlow = connection.join(flow).run()
-  connectedFlow.foreach { c =>
-    //println(s"$name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
-  }
+//  private val connectedFlow = connection.join(flow).run()
+//  connectedFlow.foreach { c =>
+//    println(s"$name: local addr: ${c.localAddress}, remote addr: ${c.remoteAddress}")
+//  }
+  connection.join(flow).run()
 
   /**
    * Sends a command to the server and returns the response

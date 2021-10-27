@@ -67,7 +67,7 @@ object SegmentCommands {
 
   private[SegmentCommands] class BaseCommand[T](prefix: Prefix, commandName: CommandName) extends LscsCommand[T] {
 
-    protected var setup:Setup = Setup(prefix, commandName, None).add(segmentIdKey.set(ALL_SEGMENTS))
+    protected var setup: Setup = Setup(prefix, commandName, None).add(segmentIdKey.set(ALL_SEGMENTS))
 
     def toSegment(segmentId: SegmentId): T = {
       setup = setup.add(segmentIdKey.set(segmentId.toString))
@@ -93,6 +93,7 @@ object SegmentCommands {
     setup.add(actuatorIdKey.setAll(actId.toArray))
   }
 
+  //noinspection DuplicatedCode
   // ACTUATOR command
   object ACTUATOR {
     private val COMMAND_NAME = ACTUATOR_COMMAND_NAME
@@ -158,6 +159,7 @@ object SegmentCommands {
     }
   }
 
+  //noinspection DuplicatedCode
   /* ---------------------------------------------- */
   object TARG_GEN_ACT {
     private val COMMAND_NAME = TARG_GEN_ACT_COMMAND_NAME
@@ -260,6 +262,7 @@ object SegmentCommands {
     }
   }
 
+  //noinspection DuplicatedCode
   /* ---------------------------------------------- */
   // CFG_CUR_LOOP
   object CFG_CUR_LOOP {
@@ -284,7 +287,7 @@ object SegmentCommands {
     val ctrlParamsKey: Key[Float] = KeyType.FloatKey.make("CTRL_PARAMS")
 
     case class toCfgActCurLoop(prefix: Prefix, actId: Set[Int], motorChan: MotorChan)
-      extends BaseCommand[toCfgActCurLoop](prefix, COMMAND_NAME) {
+        extends BaseCommand[toCfgActCurLoop](prefix, COMMAND_NAME) {
 
       setup = addActuators(setup, actId)
 
@@ -353,6 +356,7 @@ object SegmentCommands {
     }
   }
 
+  //noinspection DuplicatedCode
   /* ---------------------------------------------- */
   // CFG_ACT_VC
   object CFG_ACT_VC {
@@ -421,6 +425,7 @@ object SegmentCommands {
     }
   }
 
+  //noinspection DuplicatedCode
   /* ---------------------------------------------- */
   object CFG_ACT_OFFLD {
     private val COMMAND_NAME = CFG_ACT_OFFLD_COMMAND_NAME
