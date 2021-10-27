@@ -3,12 +3,14 @@
 This project implements an HCD (Hardware Control Daemon) and an Assembly using
 TMT Common Software ([CSW](https://github.com/tmtsoftware/csw)) APIs.
 
-## Subprojects
+## Subprojectsm1
 
-* m1cs-comsassembly - an assembly that talks to the coms HCD
-* m1cs-comshcd - an HCD that talks to the coms hardware
-* m1cs-comsdeploy - for starting/deploying HCDs and assemblies
+* docs - contains the sources for the paradox documentation
+* lscs-comps - contains the sources for the HCD and assembly
+* lscs-compsdeploy - for starting/deploying HCDs and assemblies
 * m1cs-lscs-sim - A C socket server that simulates an external socket API (see the README.md for how to build)
+  (The Scala SocketServerStream class used in the tests here uses the same protocol as the C server)
+
 
 ## Upgrading CSW Version
 
@@ -42,11 +44,11 @@ Run the container cmd script with arguments. For example:
 * Run the HCD in a standalone mode with a local config file (The standalone config format is different than the container format):
 
 ```
-sbt "m1cs-comsdeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --standalone --local ./src/main/resources/ComshcdStandalone.conf"
+sbt "lscs-compsdeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --standalone --local ./src/main/resources/SegmentsHcdStandalone.conf"
 ```
 
-* Start the HCD and assembly in a container using the Java implementations:
+* Start the HCD and assembly in a container:
 
 ```
-sbt "m1cs-comsdeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --local ./src/main/resources/JComsContainer.conf"
+sbt "lscs-compsdeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --local ./src/main/resources/SegmentsContainer.conf"
 ```
