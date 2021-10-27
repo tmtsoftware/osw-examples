@@ -62,7 +62,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   override def afterAll(): Unit = {
     val assemLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
     val cs            = CommandServiceFactory.make(assemLocation)
-    log.info("Sutting down segments")
+    log.info("Shutting down segments")
     Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
 
     maybeSocketServerStream.foreach(_.terminate())

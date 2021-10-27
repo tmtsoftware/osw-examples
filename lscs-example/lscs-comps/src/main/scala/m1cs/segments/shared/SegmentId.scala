@@ -24,7 +24,7 @@ object Sector {
 }
 
 case class SegmentId(sector: Sector, number: Int) {
-  import SegmentId._
+  import SegmentId.*
 
   checkSegmentNumbers(number)
 
@@ -70,7 +70,7 @@ object SegmentId {
     } yield segs
   }
 
-  def sectorMap[A](sector: Sector, range: Range, f: (SegmentId) => A)(implicit
+  def sectorMap[A](sector: Sector, range: Range, f: SegmentId => A)(implicit
       ec: ExecutionContext
   ): Future[List[(SegmentId, A)]] = {
     Future {
@@ -90,7 +90,7 @@ object SegmentId {
 }
 
 case class SegmentRange(sector: Sector, numbers: Range) {
-  import SegmentId._
+  import SegmentId.*
 
   require(numbers.start >= MIN_SEGMENT_NUMBER, s"Minimum Segment Number of ${numbers.start} must be >= $MIN_SEGMENT_NUMBER.")
   require(numbers.end <= MAX_SEGMENT_NUMBER, s"Maximum Segment Number must be <= $MAX_SEGMENT_NUMBER")
@@ -121,7 +121,7 @@ object SegmentRange {
     // Sector must be char 0
     val sector: Sector = Sector(in(0))
 
-    val pattern = "\\[([1-9]+)-([1-9]+)\\]".r
+    val pattern = "\\[([1-9]+)-([1-9]+)]".r
 //    val pattern(minString, maxString) = in.substring(1)
     in.substring(1) match {
       case pattern(minString, maxString) =>

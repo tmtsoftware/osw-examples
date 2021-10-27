@@ -8,7 +8,7 @@ import SegmentCommands.{CommandMap, segmentIdKey, segmentRangeKey}
 
 case object HcdDirectCommand {
 
-  val lscsDirectCommand = CommandName("lscsDirectCommand")
+  val lscsDirectCommand: CommandName = CommandName("lscsDirectCommand")
   // This key is used to store the command to be executed
   val lscsCommandKey: Key[String]     = KeyType.StringKey.make(name = "lscsCommand")
   val lscsCommandNameKey: Key[String] = KeyType.StringKey.make(name = "lscsCommandName")

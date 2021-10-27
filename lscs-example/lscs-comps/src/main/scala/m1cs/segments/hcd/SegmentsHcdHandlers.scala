@@ -1,5 +1,6 @@
 package m1cs.segments.hcd
 
+import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
@@ -28,9 +29,10 @@ import scala.concurrent.duration.DurationInt
  * and if validation is successful, then onSubmit hook gets invoked.
  * You can find more information on this here : https://tmtsoftware.github.io/csw/commons/framework.html
  */
+//noinspection DuplicatedCode
 class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 //  import cswCtx._
-  implicit val system = ctx.system
+  implicit val system: ActorSystem[Nothing] = ctx.system
 
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private val log                           = cswCtx.loggerFactory.getLogger
@@ -70,8 +72,11 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
 
         // Verify that if one segment, that the segment is online in the list
         val segmentIdValue = setup(segmentIdKey).head
-        if (segmentIdValue != ALL_SEGMENTS && (createdSegments.segmentExists(SegmentId(segmentIdValue)) == false)) {
-          Invalid(runId, CommandIssue.ParameterValueOutOfRangeIssue(s"The segmentId: $segmentIdValue is not currently avaiable."))
+        if (segmentIdValue != ALL_SEGMENTS && !createdSegments.segmentExists(SegmentId(segmentIdValue))) {
+          Invalid(
+            runId,
+            CommandIssue.ParameterValueOutOfRangeIssue(s"The segmentId: $segmentIdValue is not currently available.")
+          )
         }
         else {
           Accepted(runId)

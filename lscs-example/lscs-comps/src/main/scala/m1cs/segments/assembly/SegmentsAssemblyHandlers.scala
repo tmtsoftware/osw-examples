@@ -29,6 +29,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
  * and if validation is successful, then onSubmit hook gets invoked.
  * You can find more information on this here : https://tmtsoftware.github.io/csw/commons/framework.html
  */
+//noinspection DuplicatedCode
 class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx.*
@@ -105,21 +106,18 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
           commandResponseManager.updateCommand(sr.withRunId(runId))
         }
         Started(runId)
-      case _ =>
-        log.info(s"Segments Assembly received a command:  $runId and $assemblySetup")
+      case cmd =>
+        log.info(s"Segments Assembly received a command: '$cmd',  runId: $runId, setup: $assemblySetup")
 
         // This simulates what the Assembly does to send to HCD - has received above Setup
         val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
         // Assembly creates an HCD setup from
         log.info(s"HCD Setup: $hcdSetup")
         submitAndWaitHCD(runId, hcdSetup) map { sr =>
-          log.info(s"SCOMMAND COMPLETED from HCD: $sr")
+          log.info(s"COMMAND COMPLETED from HCD: $sr")
           commandResponseManager.updateCommand(sr.withRunId(runId))
         }
         Started(runId)
-//      case _ =>
-//        log.error("What")
-//        Completed(runId)
     }
   }
 
