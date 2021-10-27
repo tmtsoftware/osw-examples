@@ -1,6 +1,6 @@
 package m1cs.segments.hcd
 
-import akka.actor.typed.ActorRef
+import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
@@ -22,25 +22,27 @@ import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationInt
 
 /**
- * Domain specific logic should be written in below handlers.
- * This handlers gets invoked when component receives messages/commands from other component/entity.
- * For example, if one component sends Submit(Setup(args)) command to Comshcd,
- * This will be first validated in the supervisor and then forwarded to Component TLA which first invokes validateCommand hook
- * and if validation is successful, then onSubmit hook gets invoked.
- * You can find more information on this here : https://tmtsoftware.github.io/csw/commons/framework.html
+ * This is the top level actor for the Segments HCD.
  */
 class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
-//  import cswCtx._
-  implicit val system = ctx.system
+  private implicit val system:ActorSystem[Nothing] = ctx.system
 
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private val log                           = cswCtx.loggerFactory.getLogger
 
+  // This is a creator for segments. It is done this way to make testing easier since in testing environment
+  // there is a different ActorContext
   private val creator: SegmentManager.SegmentCreator = (s, log) => ctx.spawn(hcd.SegmentActor(s, log), s.toString)
 
-  // Set tis during init
+  // Set this during initialization to be a Segments instance
   private var createdSegments: Segments = _
+
   //#initialize
+  /**
+   * The TLA initialize reads the number of segments from the reference.conf file.  This is convenient for
+   * testing. It creates that number of segments in each sector.  At some point this could be removed and
+   * replaced with MAX_SEGMENT_NUMBER.
+   */
   override def initialize(): Unit = {
     val maxSegments  = ctx.system.settings.config.getInt("m1cs.segments")
     val segmentRange = 1 to maxSegments //SegmentId.MAX_SEGMENT_NUMBER
@@ -51,7 +53,6 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
   }
   //#initialize
 
-  override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}
 
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {
@@ -71,8 +72,8 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
 
         // Verify that if one segment, that the segment is online in the list
         val segmentIdValue = setup(segmentIdKey).head
-        if (segmentIdValue != ALL_SEGMENTS && (createdSegments.segmentExists(SegmentId(segmentIdValue)) == false)) {
-           Invalid(runId, CommandIssue.ParameterValueOutOfRangeIssue(s"The segmentId: $segmentIdValue is not currently avaiable."))
+        if (segmentIdValue != ALL_SEGMENTS && !createdSegments.segmentExists(SegmentId(segmentIdValue))) {
+           Invalid(runId, CommandIssue.ParameterValueOutOfRangeIssue(s"The segmentId: $segmentIdValue is not currently available."))
         } else {
           Accepted(runId)
         }
@@ -98,14 +99,15 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         val command = setup(lscsCommandKey).head
         val commandName = setup(lscsCommandNameKey).head
         val segmentKeyValue = setup(segmentIdKey).head
-        println(s"Command: $command  $commandName  $segmentKeyValue")
+        // The sendList, at this point, is either one segment or all segments.  The same execution approach
+        // is used regardless of one or all
         val sendList = if (segmentKeyValue == ALL_SEGMENTS) {
           createdSegments.getAllSegments
         } else {
           createdSegments.getSegment(segmentId = SegmentId(segmentKeyValue))
         }
-
         //log.info(s"SendList: $sendList")
+
         val mon1 = ctx.spawnAnonymous(
           hcd.SegComMonitor(
             commandName,
@@ -113,8 +115,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
             sendList.segments,
             runId,
             (sr: SubmitResponse) => cswCtx.commandResponseManager.updateCommand(sr),
-            log,
-            10.seconds
+            log
           )
         )
         // Start the command and return Started
@@ -127,6 +128,9 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         Error(runId, "This HCD only accepts Setups")
     }
   }
+
+  // The following were ignored for this demonstration
+  override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 

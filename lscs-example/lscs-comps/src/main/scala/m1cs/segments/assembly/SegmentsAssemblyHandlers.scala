@@ -36,7 +36,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
   // Hard-coding HCD prefix because it is not easily available from code. Would be documented in model files.
   private val hcdPrefix     = Prefix("M1CS.segmentsHCD")
   private val hcdConnection = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
-  private var hcdCS: Option[CommandService] = None
+  private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
 
   // This assembly prefix
   private val assemblyPrefix: Prefix                = cswCtx.componentInfo.prefix
@@ -45,6 +45,14 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     log.info("Initializing SegmentsAssembly...")
   }
 
+  /**
+   * this is overriding tracking events for the SegmentHCD. The Assembly should be started
+   * with a Component Configuration file that includes tracking and the info for the Segments HCD.
+   * This is done in the test files for reference.
+   * When the LocationUpdated event is received, a CommandService is created. When the
+   * connection goes down, the CommandService is None
+   * @param trackingEvent CSW TrackingEvent.
+   */
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {
     log.debug(s"onLocationTrackingEvent called: $trackingEvent")
     trackingEvent match {
@@ -60,6 +68,14 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     }
   }
 
+  /**
+   * This is the validate handler. This should perform all validation needed so that
+   * the command can execute, or it should return a validation error.
+   * Here we return an error for an Observe or pass to the Setup validation.
+   * @param runId command runId
+   * @param controlCommand either a Setup or Observe
+   * @return
+   */
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {
       case setup: Setup => handleValidation(runId, setup)
@@ -67,6 +83,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     }
   }
 
+  // All Setup validation is performed here
   private def handleValidation(runId: Id, setup: Setup): ValidateCommandResponse = {
     if (SegmentCommands.ALL_COMMANDS.contains(setup.commandName) || setup.commandName.equals(HcdShutdown.shutdownCommand)) {
       Accepted(runId)
@@ -87,6 +104,12 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     }
   }
 
+  /**
+   * Processes commands as Setups
+   * @param runId command runId
+   * @param assemblySetup the [[Setup]] to execute
+   * @return [[SubmitResponse]] response from the command. All commands are started currently.
+   */
   private def handleSetup(runId: Id, assemblySetup: Setup): SubmitResponse = {
     assemblySetup.commandName match {
       case HcdShutdown.shutdownCommand =>

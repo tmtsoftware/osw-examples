@@ -6,6 +6,11 @@ import csw.params.core.models.ObsId
 import csw.prefix.models.Prefix
 import SegmentCommands.{CommandMap, segmentIdKey, segmentRangeKey}
 
+/**
+ * This object contains the parameter keys for the command sent to the HCD to process a single
+ * segment command. This is used by the segment Assembly and test code to produce an HCD Setup from
+ * an Assembly Setup.
+ */
 case object HcdDirectCommand {
 
   val lscsDirectCommand = CommandName("lscsDirectCommand")
@@ -13,6 +18,13 @@ case object HcdDirectCommand {
   val lscsCommandKey: Key[String] = KeyType.StringKey.make(name = "lscsCommand")
   val lscsCommandNameKey:Key[String] = KeyType.StringKey.make(name = "lscsCommandName")
 
+  /**
+   * This helper function returns a direct command Setup for the
+   * @param assemblyPrefix prefix of the Assembly as source
+   * @param assemblySetup the Setup received by the Assembly -contains segmentIdKey and command name
+   * @param obsId optional ObsId, defaults to None
+   * @return Setup ready for sending to HCD
+   */
   def toHcdDirectCommand(assemblyPrefix: Prefix, assemblySetup: Setup, obsId: Option[ObsId] = None): Setup = {
     val segmentIdExists    = assemblySetup.exists(segmentIdKey)
     val segmentRangeExists = assemblySetup.exists(segmentRangeKey)
@@ -30,6 +42,9 @@ case object HcdDirectCommand {
   }
 }
 
+/**
+ * This command when sent to the HCD causes shutdown of all the connections to Segments
+ */
 case object HcdShutdown {
   val shutdownCommand = CommandName("ShutdownAll")
 
