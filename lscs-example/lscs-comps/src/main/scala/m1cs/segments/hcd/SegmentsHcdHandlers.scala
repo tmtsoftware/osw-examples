@@ -1,6 +1,5 @@
 package m1cs.segments.hcd
 
-import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
@@ -12,21 +11,20 @@ import csw.params.commands.{CommandIssue, ControlCommand, Setup}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import m1cs.segments.shared.HcdDirectCommand.*
-import m1cs.segments.shared.SegmentCommands.{ALL_SEGMENTS, segmentIdKey}
-import m1cs.segments.shared.SegmentId.ALL_SECTORS
+import m1cs.segments.support.SegmentId.ALL_SECTORS
 import m1cs.segments.hcd
 import m1cs.segments.hcd.SegmentManager.Segments
-import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown, SegmentId}
+import m1cs.segments.support.segcommands.Common.{ALL_SEGMENTS, segmentIdKey}
+import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
+import m1cs.segments.support.SegmentId
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.duration.DurationInt
 
 /**
  * This is the top level actor for the Segments HCD.
  */
 //noinspection DuplicatedCode
 class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
-  private implicit val system:ActorSystem[Nothing] = ctx.system
 
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private val log                           = cswCtx.loggerFactory.getLogger
@@ -54,7 +52,14 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
   }
   //#initialize
 
-
+  /**
+   * This is the validate handler of the HCD TLA. This should perform all validation needed so that
+   * the command can execute without checks, or it should return a validation error.
+   * Here we return an error for an Observe or pass to the Setup validation.
+   * @param runId command runId
+   * @param controlCommand either a Setup or Observe
+   * @return a [[ValidateCommandResponse]]
+   */
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {
       case setup: Setup => handleValidation(runId, setup)
@@ -62,6 +67,13 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
+  /*
+   * All Setup validation is performed here. Three checks are done for a lscsDirectCommand:
+   * 1. is there an LSCS command
+   * 2. is there a segmentId key (one or all)
+   * 3. If one segment, is the segment available?
+   * The HCD shutdown command is also accepted.  All others are rejected.
+   */
   private def handleValidation(runId: Id, setup: Setup): ValidateCommandResponse = {
     setup.commandName match {
       case HcdDirectCommand.lscsDirectCommand =>
@@ -89,6 +101,10 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
+  /**
+   * The HCD receives a Setup command with the String LSCS command and a destination.
+   * If All, the command is sent to all the segments that are created during Initialization
+   */
   override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = {
     controlCommand match {
       case setup: Setup => handleSetup(runId, setup)
@@ -96,6 +112,12 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
+  /**
+   * Processes commands as Setups for the HCD.
+   * @param runId command runId
+   * @param setup the [[Setup]] to execute
+   * @return [[SubmitResponse]] response from the command. All commands are started currently.
+   */
   private def handleSetup(runId: Id, setup: Setup): SubmitResponse = {
     setup.commandName match {
       case HcdDirectCommand.lscsDirectCommand =>
@@ -111,8 +133,10 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         else {
           createdSegments.getSegment(segmentId = SegmentId(segmentKeyValue))
         }
-        //log.info(s"SendList: $sendList")
 
+        // Here a SegComMonitor is created to send and watch for completion of the command. The sendList is the
+        // list of SegmentActors that will receive the command.  The function passed as the 5th argument will
+        // be executed when all the segment commands complete either successfully or with an error.
         val mon1 = ctx.spawnAnonymous(
           hcd.SegComMonitor(
             commandName,
@@ -123,14 +147,15 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
             log
           )
         )
-        // Start the command and return Started
+        // Start the command and return Started to the Assembly
         mon1 ! SegComMonitor.Start
         Started(runId)
       case HcdShutdown.shutdownCommand =>
+        //This just sends shutdown to all the online segments
         createdSegments.shutdownAll()
         Completed(runId)
-      case _ =>
-        Error(runId, "This HCD only accepts Setups")
+      case other =>
+        Error(runId, "This HCD does not handle this command: $other")
     }
   }
 

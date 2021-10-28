@@ -4,8 +4,8 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.Timeout
 import csw.logging.api.scaladsl.Logger
-import m1cs.segments.shared.SegmentId
 import m1cs.segments.streams.client.SocketClientStream
+import m1cs.segments.support.SegmentId
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration, MILLISECONDS}
 import scala.util.{Failure, Random, Success}
@@ -43,7 +43,8 @@ object SegmentActor {
           // Right now simulator just does random delays
           val simCommand = s"DELAY ${delay.toMillis.toString}"
           io.send(simCommand).onComplete {
-            case Success(value) =>
+            case Success(_) =>
+              // The value returned from the simulator is not used at this point.  That could change.
               // Message from simulator not used at this point
               if (commandName == ERROR_COMMAND_NAME)
                 replyTo ! Error(commandName, nextSegmentId, segmentId, FAKE_ERROR_MESSAGE)

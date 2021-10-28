@@ -46,8 +46,17 @@ lazy val `lscs-example` = project
 
 // All LSCS JVM components
 lazy val `lscs-comps` = project
+  .dependsOn(
+    `lscs-support`
+  )
   .settings(
     libraryDependencies ++= Dependencies.LscsCompsDeps
+  )
+
+// Command Support
+lazy val `lscs-support` = project
+  .settings(
+    libraryDependencies ++= Dependencies.LscsSupportDeps
   )
 
 // LSCS deploy module

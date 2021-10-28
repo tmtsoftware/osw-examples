@@ -8,8 +8,8 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.hcd
-import m1cs.segments.shared.{A, SegmentId}
 import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.support.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.duration.DurationInt

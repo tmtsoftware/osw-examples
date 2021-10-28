@@ -76,7 +76,7 @@ figure is referenced.
 
 The Segment Assembly is a CSW Assembly that receives commands in the form of CSW Setups. In this demonstration
 implementation a Setup is constructed for each command in the SegmentHcdCmdDict_20210902.pdf document (for more
-information on the construction of Setup commands, see @ref:[Setup Input/Output](./input-output.md))). As shown in the
+information on the construction of Setup commands, see @ref:[Setup Input/Output](./input-output.md)). As shown in the
 previous figure, these Setups can be constructed in many clients including: a future M1CS Engineering UI, a Sequencer
 Script, esw-shell, or test code.
 
@@ -108,13 +108,13 @@ m1cs {
 ```
 
 @@@ warning
-This configuration value is present because on the MacOS it is not possible to create 492 segment connections with the
+This configuration value is present because on the macOS it is not possible to create 492 segment connections with the
 simulator.  If you are working on Linux, this value can be set to the proper number.
 @@@
 
 @@@ note { title=Note }
 There is the start of code to allow creation of ranges of sectors.  After hearing this was not needed, that feature
-was stopped, but some of the code still exists for future use.
+was stopped, but this code still exists for future use.
 @@@
 
 ### Segment Actor

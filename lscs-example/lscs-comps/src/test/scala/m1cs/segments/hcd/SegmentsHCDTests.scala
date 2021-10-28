@@ -11,10 +11,9 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.TRACK
-import m1cs.segments.shared.SegmentCommands.ACTUATOR.toActuator
-import m1cs.segments.shared.{A, HcdDirectCommand, HcdShutdown, SegmentId}
+import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
 import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.support.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.Await
@@ -22,6 +21,9 @@ import scala.concurrent.duration.*
 
 class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
   import frameworkTestKit.*
+  // For test commands
+  import m1cs.segments.support.segcommands.ACTUATOR
+  import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
 
   private val testKit = ActorTestKit()
 
@@ -69,7 +71,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
     // This simulates sending to Assembly
 
     val assemblySetup =
-      toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 1)).asSetup
+      ACTUATOR.toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId(A, 1)).asSetup
     log.info(s"Setup: $assemblySetup")
 
     // This simulates what the Assembly does to send to HCD - has received above Setup
@@ -88,7 +90,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
     // This simulates sending to Assembly -- default is ALL
-    val assemblySetup = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
+    val assemblySetup = ACTUATOR.toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
     log.info(s"Setup: $assemblySetup")
 
     // This simulates what the Assembly does to send to HCD

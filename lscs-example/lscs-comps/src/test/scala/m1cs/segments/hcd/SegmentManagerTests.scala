@@ -4,8 +4,7 @@ import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.hcd
-//import m1cs.segments.hcd.SegmentActor.{ERROR_COMMAND_NAME, ERROR_SEG_ID}
-import m1cs.segments.shared.{A, SegmentId}
+import m1cs.segments.support.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.duration.*

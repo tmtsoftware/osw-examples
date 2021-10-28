@@ -1,7 +1,8 @@
-package m1cs.segments.shared
+package m1cs.segments.support.segcommands
 
 import csw.prefix.models.Prefix
-import m1cs.segments.shared.SegmentCommands.*
+import m1cs.segments.support.SegmentId
+import m1cs.segments.support.segcommands.Common.{ALL_SEGMENTS, AllActuators, segmentIdKey, segmentRangeKey}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
@@ -10,8 +11,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   val prefix: Prefix = Prefix("M1CS.client") // TEMP
 
   test("Handling of SegmentIds") {
-    import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.*
-    import m1cs.segments.shared.SegmentCommands.ACTUATOR.*
+    import m1cs.segments.support.segcommands.ACTUATOR.*
+    import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
 
     var to = toActuator(prefix, Set(1, 3)).withMode(TRACK)
     // Verify segmentId is all by default
@@ -26,8 +27,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   }
 
   test("To From ACTUATOR") {
-    import m1cs.segments.shared.SegmentCommands.ACTUATOR.ActuatorModes.*
-    import m1cs.segments.shared.SegmentCommands.ACTUATOR.*
+    import m1cs.segments.support.segcommands.ACTUATOR.*
+    import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
 
     var to = toActuator(prefix, Set(1, 3)).withMode(TRACK)
     // Verify segmentId is all by default
@@ -39,17 +40,17 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
 
     // Only 2 actuators
     to = toActuator(prefix, Set(1, 3)).withMode(TRACK)
-    toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=(1,3), MODE=TRACK"
+    ACTUATOR.toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=(1,3), MODE=TRACK"
 
     to = toActuator(prefix, Set(1, 3)).withTarget(22.34)
-    toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=(1,3), TARGET=22.34"
+    ACTUATOR.toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=(1,3), TARGET=22.34"
 
     to = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34)
-    toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
+    ACTUATOR.toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
 
     // Verify All
     to = toActuator(prefix, AllActuators).withMode(TRACK).withTarget(22.34)
-    toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=ALL, MODE=TRACK, TARGET=22.34"
+    ACTUATOR.toCommand(to.asSetup) shouldBe "ACTUATOR ACT_ID=ALL, MODE=TRACK, TARGET=22.34"
 
     // Check for too big set
     assertThrows[IllegalArgumentException] {
@@ -68,9 +69,9 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   }
 
   test("To From TARG_GEN_ACT") {
-    import m1cs.segments.shared.SegmentCommands.TARG_GEN_ACT.*
-    import m1cs.segments.shared.SegmentCommands.TARG_GEN_ACT.TargetGenModes.*
-    import m1cs.segments.shared.SegmentCommands.TARG_GEN_ACT.TargetShapes.*
+    import m1cs.segments.support.segcommands.TARG_GEN_ACT.*
+    import m1cs.segments.support.segcommands.TARG_GEN_ACT.TargetShapes.*
+    import m1cs.segments.support.segcommands.TARG_GEN_ACT.TargetGenModes.*
 
     // Only 2 actuators with LoopMode
     var setup = toActTargetGen(prefix, Set(1, 3)).withMode(ON).asSetup
@@ -121,9 +122,9 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   }
 
   test("To From CFG_CUR_LOOP") {
-    import m1cs.segments.shared.SegmentCommands.CFG_CUR_LOOP.CfgCurLoopMotor.*
-    import m1cs.segments.shared.SegmentCommands.CFG_CUR_LOOP.*
-    import m1cs.segments.shared.SegmentCommands.CfgLoopModes.*
+    import m1cs.segments.support.segcommands.CFG_CUR_LOOP.*
+    import m1cs.segments.support.segcommands.CFG_CUR_LOOP.CfgCurLoopMotor.*
+    import m1cs.segments.support.segcommands.Common.CfgLoopModes.*
 
     // Only 2 actuators with LoopMode
     var setup = toCfgActCurLoop(prefix, Set(1, 3), SNUB).withLoopMode(ON).asSetup
@@ -172,8 +173,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   }
 
   test("To From CFG_ACT_VC") {
-    import m1cs.segments.shared.SegmentCommands.CFG_ACT_VC.*
-    import m1cs.segments.shared.SegmentCommands.CfgLoopModes.*
+    import m1cs.segments.support.segcommands.CFG_ACT_VC.*
+    import m1cs.segments.support.segcommands.Common.CfgLoopModes.*
 
     // All 3 actuators
     var setup = toCfgActVc(prefix, AllActuators).withLoopMode(OPEN).asSetup
@@ -236,8 +237,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   }
 
   test("To From CFG_ACT_OFFLD") {
-    import m1cs.segments.shared.SegmentCommands.CFG_ACT_OFFLD.*
-    import m1cs.segments.shared.SegmentCommands.ControllerModes.*
+    import m1cs.segments.support.segcommands.CFG_ACT_OFFLD.*
+    import m1cs.segments.support.segcommands.Common.ControllerModes.*
 
     // All 3 actuators
     var setup = toActOffldCtrl(prefix, AllActuators).asSetup

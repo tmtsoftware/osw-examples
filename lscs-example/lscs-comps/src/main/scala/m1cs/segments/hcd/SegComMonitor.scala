@@ -47,7 +47,7 @@ object SegComMonitor {
   sealed trait Command
   final private case class WrappedSegmentResponse(response: SegmentActor.Response) extends Command
   case object Start                                                                extends Command
-  final private case object CommandTimeout extends Command
+  final private case object CommandTimeout                                         extends Command
 
   /**
    * This private class implements the Segment Command Monitor.

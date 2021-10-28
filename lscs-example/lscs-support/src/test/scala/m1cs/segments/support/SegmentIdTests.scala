@@ -1,4 +1,4 @@
-package m1cs.segments.shared
+package m1cs.segments.support
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

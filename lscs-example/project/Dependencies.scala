@@ -10,6 +10,12 @@ object Dependencies {
     Akka.`akka-actor-testkit-typed` % Test
   )
 
+  val LscsSupportDeps = Seq(
+    CSW.`csw-framework`,
+    CSW.`csw-testkit` % Test,
+    Libs.`scalatest` % Test
+  )
+
   val LscsComsDeployDeps = Seq(
     CSW.`csw-framework`,
     CSW.`csw-testkit` % Test
