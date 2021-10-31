@@ -1,4 +1,4 @@
-package m1cs.segments.support.segcommands
+package m1cs.segments.segcommands
 
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.generics.KeyType.ChoiceKey
@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 
 //noinspection DuplicatedCode
 object TARG_GEN_ACT {
-  import m1cs.segments.support.segcommands.Common.*
+  import Common.*
 
   val COMMAND_NAME = CommandName("TARG_GEN_ACT")
 

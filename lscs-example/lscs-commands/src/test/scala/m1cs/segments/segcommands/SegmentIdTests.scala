@@ -1,4 +1,4 @@
-package m1cs.segments.support
+package m1cs.segments.segcommands
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

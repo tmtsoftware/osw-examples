@@ -1,14 +1,13 @@
-package m1cs.segments.support.segcommands
+package m1cs.segments.segcommands
 
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.generics.KeyType.ChoiceKey
 import csw.params.core.generics.{GChoiceKey, Key, KeyType}
 import csw.params.core.models.Choices
 import csw.prefix.models.Prefix
-import m1cs.segments.support.SegmentId
 
 object Common {
-  // Used when identifying a single segment for a command - may be 1 - a22 or ALL
+  // Used when identifying a single segment for a command - may be [A-F][1-82] or ALL
   val segmentIdKey: Key[String] = KeyType.StringKey.make("SegmentId")
   val ALL_SEGMENTS              = "ALL"
 
@@ -16,8 +15,6 @@ object Common {
   val segmentRangeKey: Key[String] = KeyType.StringKey.make("SegmentRanges")
   // Shared keys
   val actuatorIdKey: Key[Int] = KeyType.IntKey.make("ACT_ID")
-  // Used by every command
-  def valuesToString[A](items: Array[A]): String = items.mkString("(", ",", ")")
 
   val AllActuators = Set(1, 2, 3)
 
@@ -29,17 +26,34 @@ object Common {
     setup.add(actuatorIdKey.setAll(actId.toArray))
   }
 
+  val HARNESS_RANGE = 1 to 21
+  val ALL_HARNESS: String = "ALL"
+  val MIN_HARNESS:Int = HARNESS_RANGE.min
+  val MAX_HARNESS:Int = HARNESS_RANGE.max
+  val warpingHarnessIdKey: Key[String] = KeyType.StringKey.make("warpingHarnessId")
+
+  def checkWarpingHarnessId(warpingHarnessId: Int): String = {
+    require(HARNESS_RANGE.contains(warpingHarnessId), "Warping harness ID must be between 1 and 21 inclusive.")
+    warpingHarnessId.toString
+  }
+
   val CommandMap: Map[CommandName, Setup => String] = Map(
     ACTUATOR.COMMAND_NAME      -> ACTUATOR.toCommand,
     TARG_GEN_ACT.COMMAND_NAME  -> TARG_GEN_ACT.toCommand,
     CFG_CUR_LOOP.COMMAND_NAME  -> CFG_CUR_LOOP.toCommand,
     CFG_ACT_VC.COMMAND_NAME    -> CFG_ACT_VC.toCommand,
-    CFG_ACT_OFFLD.COMMAND_NAME -> CFG_ACT_OFFLD.toCommand
+    CFG_ACT_OFFLD.COMMAND_NAME -> CFG_ACT_OFFLD.toCommand,
+    CFG_ACT_SNUB.COMMAND_NAME  -> CFG_ACT_SNUB.toCommand,
+    SET_LIMIT_ACT.COMMAND_NAME -> SET_LIMIT_ACT.toCommand,
+    SET_PARAM_ACT.COMMAND_NAME -> SET_PARAM_ACT.toCommand
   )
 
   // This is used by validation to verify that the sent command is currently supported. Could
   // be removed when all commands are supported
   val ALL_COMMANDS: List[CommandName] = CommandMap.keys.toList
+
+  // Used by every command
+  def valuesToString[A](items: Array[A]): String = items.mkString("(", ",", ")")
 
   object CfgLoopModes extends Enumeration {
     type CfgLoopMode = Value

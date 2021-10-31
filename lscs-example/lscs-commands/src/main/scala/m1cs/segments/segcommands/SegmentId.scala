@@ -1,4 +1,4 @@
-package m1cs.segments.support
+package m1cs.segments.segcommands
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -65,13 +65,13 @@ object SegmentId {
 
   def makeSegments(range: Range): Set[SegmentId] = {
     for {
-      s    <- SegmentId.ALL_SECTORS
+      s        <- SegmentId.ALL_SECTORS
       segments <- makeSectorSegmentIds(s, range)
     } yield segments
   }
 
   def sectorMap[A](sector: Sector, range: Range, f: SegmentId => A)(implicit
-                                                                    ec: ExecutionContext
+      ec: ExecutionContext
   ): Future[List[(SegmentId, A)]] = {
     Future {
       range.map { i =>

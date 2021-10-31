@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.Timeout
 import csw.logging.api.scaladsl.Logger
 import m1cs.segments.streams.client.SocketClientStream
-import m1cs.segments.support.SegmentId
+import m1cs.segments.segcommands.SegmentId
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration, MILLISECONDS}
 import scala.util.{Failure, Random, Success}

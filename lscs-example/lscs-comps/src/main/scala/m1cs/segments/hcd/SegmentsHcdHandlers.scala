@@ -10,13 +10,12 @@ import csw.params.commands.CommandResponse.*
 import csw.params.commands.{CommandIssue, ControlCommand, Setup}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import m1cs.segments.shared.HcdDirectCommand.*
-import m1cs.segments.support.SegmentId.ALL_SECTORS
 import m1cs.segments.hcd
 import m1cs.segments.hcd.SegmentManager.Segments
-import m1cs.segments.support.segcommands.Common.{ALL_SEGMENTS, segmentIdKey}
+import m1cs.segments.segcommands.Common.{ALL_SEGMENTS, segmentIdKey}
+import m1cs.segments.segcommands.SegmentId
+import m1cs.segments.shared.HcdDirectCommand.*
 import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
-import m1cs.segments.support.SegmentId
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -46,7 +45,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     val maxSegments  = ctx.system.settings.config.getInt("m1cs.segments")
     val segmentRange = 1 to maxSegments //SegmentId.MAX_SEGMENT_NUMBER
     log.info(
-      s"Initializing Segments HCD with ${segmentRange.max} segments in each sector for a total of ${segmentRange.max * ALL_SECTORS.size} segments."
+      s"Initializing Segments HCD with ${segmentRange.max} segments in each sector for a total of ${segmentRange.max * SegmentId.ALL_SECTORS.size} segments."
     )
     createdSegments = SegmentManager.createSegments(creator, segmentRange, log)
   }
@@ -155,7 +154,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         createdSegments.shutdownAll()
         Completed(runId)
       case other =>
-        Error(runId, "This HCD does not handle this command: $other")
+        Error(runId, s"This HCD does not handle this command: $other")
     }
   }
 

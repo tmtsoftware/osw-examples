@@ -4,7 +4,7 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.generics.{Key, KeyType}
 import csw.params.core.models.ObsId
 import csw.prefix.models.Prefix
-import m1cs.segments.support.segcommands.Common.{CommandMap, segmentIdKey, segmentRangeKey}
+import m1cs.segments.segcommands.Common.{CommandMap, segmentIdKey, segmentRangeKey}
 
 /**
  * This object contains the parameter keys for the command sent to the HCD to process a single

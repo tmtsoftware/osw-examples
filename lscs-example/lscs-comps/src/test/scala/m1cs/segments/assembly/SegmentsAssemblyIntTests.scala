@@ -11,9 +11,9 @@ import csw.params.commands.CommandResponse.*
 import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import m1cs.segments.segcommands.SegmentId
 import m1cs.segments.shared.HcdShutdown
 import m1cs.segments.streams.server.SocketServerStream
-import m1cs.segments.support.SegmentId
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
@@ -23,8 +23,8 @@ import scala.concurrent.duration.*
 class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
   import frameworkTestKit.*
   // For test commands
-  import m1cs.segments.support.segcommands.ACTUATOR
-  import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
+  import m1cs.segments.segcommands.ACTUATOR
+  import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
 
   private val testKit = ActorTestKit()
 
@@ -84,7 +84,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
     hcdLocation.connection shouldBe hcdConnection
 
-    Thread.sleep(2000)
+    Thread.sleep(1000)
   }
 
   test("Assembly receives a command all the way to HCD -- One Segment") {

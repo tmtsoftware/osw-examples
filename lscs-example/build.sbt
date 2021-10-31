@@ -27,11 +27,12 @@ lazy val openSite =
   }
 
 lazy val `docs` = (project in file("docs")).
-  enablePlugins(ParadoxMaterialSitePlugin).settings(
-  paradoxRoots := List(
-    "index.html"
+  enablePlugins(ParadoxMaterialSitePlugin).
+  settings(
+    paradoxRoots := List(
+      "index.html"
+    )
   )
-)
 
 /* =============================== */
 
@@ -41,22 +42,21 @@ lazy val `lscs-example` = project
     ghpagesBranch := "gh-pages", // DO NOT DELETE
     commands += openSite.value,
     Settings.makeSiteMappings(docs)
-)
-
+  )
 
 // All LSCS JVM components
 lazy val `lscs-comps` = project
   .dependsOn(
-    `lscs-support`
+    `lscs-commands`
   )
   .settings(
     libraryDependencies ++= Dependencies.LscsCompsDeps
   )
 
 // Command Support
-lazy val `lscs-support` = project
+lazy val `lscs-commands` = project
   .settings(
-    libraryDependencies ++= Dependencies.LscsSupportDeps
+    libraryDependencies ++= Dependencies.LscsCommandsDeps
   )
 
 // LSCS deploy module

@@ -6,7 +6,7 @@ import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.hcd
 import m1cs.segments.streams.server.SocketServerStream
-import m1cs.segments.support.{A, SegmentId}
+import m1cs.segments.segcommands.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}

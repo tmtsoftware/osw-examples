@@ -13,7 +13,7 @@ import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
 import m1cs.segments.streams.server.SocketServerStream
-import m1cs.segments.support.{A, SegmentId}
+import m1cs.segments.segcommands.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.Await
@@ -22,8 +22,8 @@ import scala.concurrent.duration.*
 class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
   import frameworkTestKit.*
   // For test commands
-  import m1cs.segments.support.segcommands.ACTUATOR
-  import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
+  import m1cs.segments.segcommands.ACTUATOR
+  import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
 
   private val testKit = ActorTestKit()
 

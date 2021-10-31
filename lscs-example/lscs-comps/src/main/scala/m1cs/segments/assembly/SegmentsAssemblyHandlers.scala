@@ -15,7 +15,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
-import m1cs.segments.support.segcommands.Common
+import m1cs.segments.segcommands.Common
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContextExecutor, Future}

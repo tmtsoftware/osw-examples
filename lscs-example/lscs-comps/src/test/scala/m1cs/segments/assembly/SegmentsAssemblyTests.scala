@@ -14,7 +14,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
-import m1cs.segments.support.SegmentId
+import m1cs.segments.segcommands.SegmentId
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
@@ -23,8 +23,8 @@ import scala.concurrent.duration.*
 
 class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike with Matchers {
   import frameworkTestKit.*
-  import m1cs.segments.support.segcommands.ACTUATOR
-  import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
+  import m1cs.segments.segcommands.ACTUATOR
+  import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
 
   // Load the config to fetch prefix
   private val config = ConfigFactory.load("SegmentsAssemblyStandalone.conf")
@@ -100,7 +100,8 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
     val assLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
     // Form the external command going to the Assembly
-    val setup    = ACTUATOR.toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5")).asSetup
+    val setup =
+      ACTUATOR.toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5")).asSetup
 
     val cs     = CommandServiceFactory.make(assLocation)
     val result = Await.result(cs.submitAndWait(setup), 10.seconds)

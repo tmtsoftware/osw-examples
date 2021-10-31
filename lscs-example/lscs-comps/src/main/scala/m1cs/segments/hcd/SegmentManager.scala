@@ -2,7 +2,7 @@ package m1cs.segments.hcd
 
 import akka.actor.typed.ActorRef
 import csw.logging.api.scaladsl.Logger
-import m1cs.segments.support.{Sector, SegmentId}
+import m1cs.segments.segcommands.{Sector, SegmentId}
 
 import scala.annotation.tailrec
 

@@ -4,15 +4,15 @@ import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.prefix.models.Prefix
 import csw.testkit.FrameworkTestKit
 import m1cs.segments.shared.HcdDirectCommand.{lscsCommandKey, lscsCommandNameKey, lscsDirectCommand}
-import m1cs.segments.support.segcommands.Common.{ALL_SEGMENTS, CommandMap, segmentIdKey}
-import m1cs.segments.support.SegmentId
+import m1cs.segments.segcommands.Common.{ALL_SEGMENTS, CommandMap, segmentIdKey}
+import m1cs.segments.segcommands.SegmentId
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
 class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll {
-  import m1cs.segments.support.segcommands.ACTUATOR
-  import m1cs.segments.support.segcommands.ACTUATOR.ActuatorModes.*
+  import m1cs.segments.segcommands.ACTUATOR
+  import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
 
   private val frameworkTestKit = FrameworkTestKit()
   import frameworkTestKit.*
@@ -32,13 +32,15 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
 
   test("prepare an HCD command for one segment") {
     // Create an assembly Setup to Segment
-    val testSegment   = SegmentId("A23")
-    val assemblySetup = ACTUATOR.toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(testSegment).asSetup
+    val testSegment = SegmentId("A23")
+    val assemblySetup =
+      ACTUATOR.toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(testSegment).asSetup
 
     val testCommand     = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
     val command: String = CommandMap(assemblySetup.commandName)(assemblySetup)
     command shouldBe testCommand
 
+    // Prepare command for HCD
     val hcdSetup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
     hcdSetup.commandName shouldBe lscsDirectCommand
     hcdSetup(lscsCommandKey).head shouldBe testCommand
@@ -56,6 +58,7 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
     val command: String = CommandMap(assemblySetup.commandName)(assemblySetup)
     command shouldBe testCommand
 
+    // Prepare command for HCD
     val hcdSetup = HcdDirectCommand.toHcdDirectCommand(prefix, assemblySetup)
     hcdSetup.commandName shouldBe lscsDirectCommand
     hcdSetup(lscsCommandKey).head shouldBe testCommand
