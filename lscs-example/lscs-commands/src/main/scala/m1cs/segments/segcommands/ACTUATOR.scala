@@ -68,8 +68,8 @@ object ACTUATOR {
     val modeExists   = setup.exists(actuatorModeKey)
     val targetExists = setup.exists(targetKey)
     require(targetExists || modeExists, "ACTUATOR requires either a mode or a target or both.")
-    val actIdVal     = if (actId.size == 3) "ALL" else valuesToString(actId.values)
-    val sb           = new StringBuilder(s"${setup.commandName.name} ACT_ID=$actIdVal")
+    val actIdVal = if (actId.size == 3) "ALL" else valuesToString(actId.values)
+    val sb       = new StringBuilder(s"${setup.commandName.name} ACT_ID=$actIdVal")
     if (modeExists) sb ++= s", MODE=${setup(actuatorModeKey).head.name}"
     if (targetExists) sb ++= s", TARGET=${setup(targetKey).head}"
     sb.result()

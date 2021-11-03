@@ -63,7 +63,8 @@ lazy val `lscs-commands` = project
 // LSCS deploy module
 lazy val `lscs-compsdeploy` = project
   .dependsOn(
-    `lscs-comps`
+    `lscs-comps`,
+    `lscs-commands`
   )
   .enablePlugins(CswBuildInfo)
   .settings(

@@ -17,8 +17,7 @@ object Dependencies {
   )
 
   val LscsComsDeployDeps = Seq(
-    CSW.`csw-framework`,
-    CSW.`csw-testkit` % Test
+    CSW.`csw-framework`
   )
 
 }

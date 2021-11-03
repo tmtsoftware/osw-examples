@@ -122,4 +122,32 @@ and which implements the JPL-library protocol.  The code below is the interestin
 Scala
 : @@snip [Monitor](../../../lscs-comps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala) { #segment-actor }
 
-First, when the SegmentActor is created in the `apply` def function. The 
+First, when the SegmentActor is created in the `apply` def function. This is where the lower level `SocketClientStream`
+class is added. This is where the socket connection occurs.
+
+The rest of the actor is a mix of trying to make the system behave like the documentation and interfacing to the
+current simulator.
+
+For instance, the feature of sending a `Started` to the caller when the command takes greater than 1 second was added
+to ensure the system can handle that eventually.  This is also true with the Processing message. 
+
+@@@ note
+But as it turns out, the higher level software and CSW can not do anything with these Started and Processing messages, so they should just
+be dropped.
+@@@
+
+SegmentActor has two messages related to sending a message to the segment. The first is Send, which is the operational
+case. It sends a command to the segment.  The second is SendWithTime, which allows sending a time for the simulator delay
+to allow easier testing of things like multiple commands and overlapping commands.
+
+At this level, all segment commands are implemented as a variable delay on the segment side of the socket. We send the
+command: DELAY MILLIS such as DELAY 1234 to the socket client. The delay is random returned by the `getRandomDelay` function.
+The delay is currently set to be between 10 and 1250 millis.  
+
+The important message of SegmentActor is the processing under `SendWithTime`. The code checks to see if the delay is greater
+than 1 second, if so it sends a `Started` message back to the caller. Then it uses the `send` method of the socket
+client to send the command to the segment socket. This is an asynchronous call using a Future. When the call completes,
+the SegmentActor sends a response to the caller, which is a `SegComMon` instance to be counted.
+
+The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket
+connection to the segment. These shutdown commands are present so that tests always work correctly.  

@@ -34,10 +34,11 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
   // Required to get logging going
   private val log = cswCtx.loggerFactory.getLogger
 
-
   // Require that we have a connection to track and a Prefix
-  require(cswCtx.componentInfo.getConnections.size() > 0,
-    "The Assembly Component Configuration File must have a tracking connection to the Segments HCD.")
+  require(
+    cswCtx.componentInfo.getConnections.size() > 0,
+    "The Assembly Component Configuration File must have a tracking connection to the Segments HCD."
+  )
   private val hcdPrefix                     = Prefix(cswCtx.componentInfo.getConnections.get(0).prefix.toString())
   private val hcdConnection                 = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
@@ -145,7 +146,8 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
             cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
           }
           Started(runId)
-        } catch {
+        }
+        catch {
           case _: Exception =>
             CommandResponse.Error(runId, s"An exception was thrown while processing setup: ${assemblySetup.commandName}")
         }

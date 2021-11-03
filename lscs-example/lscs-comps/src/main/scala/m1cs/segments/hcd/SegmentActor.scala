@@ -21,12 +21,14 @@ object SegmentActor {
 
   def apply(segmentId: SegmentId, log: Logger): Behavior[Command] = {
     Behaviors.setup[Command] { ctx =>
-      val io: SocketClientStream = SocketClientStream(ctx, segmentId.toString)
+      val hostName  = ctx.system.settings.config.getString("m1cs.simulatorHost")
+println(s"HostName: $hostName")
+      val io: SocketClientStream = SocketClientStream(ctx, segmentId.toString, host = hostName)
       handle(io, seqNo = 1, segmentId, log)
     }
   }
 
-  private def getRandomDelay: FiniteDuration = FiniteDuration(Random.between(10, 500), MILLISECONDS)
+  private def getRandomDelay: FiniteDuration = FiniteDuration(Random.between(10, 1250), MILLISECONDS)
 
   private def handle(io: SocketClientStream, seqNo: Int, segmentId: SegmentId, log: Logger): Behavior[Command] =
     Behaviors.receive[Command] { (ctx, m) =>
@@ -76,7 +78,6 @@ object SegmentActor {
       }
     }
 
-
   sealed trait Command //extends akka.actor.NoSerializationVerificationNeeded
 
   sealed trait Response {
@@ -97,7 +98,4 @@ object SegmentActor {
   // Currently not in use
   case class ShutdownSegment2(replyTo: ActorRef[Boolean]) extends Command
   case object ShutdownSegment                             extends Command
-
-  case object Unknown extends Command
-
 }
