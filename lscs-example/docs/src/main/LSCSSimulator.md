@@ -73,4 +73,4 @@ This is not supported in the C version.
 
 ## Wire Format
 
-The wire format for a socket message is based on the C library version and uses the header and byte order.
+The wire format for a socket message is based on the C library version and uses the same header and byte order.
