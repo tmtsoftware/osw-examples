@@ -32,10 +32,10 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
   // there is a different ActorContext
   private val creator: SegmentManager.SegmentCreator = (s, log) => ctx.spawn(hcd.SegmentActor(s, log), s.toString)
 
+  //#initialize
   // Set this during initialization to be a Segments instance
   private var createdSegments: Segments = _
 
-  //#initialize
   /**
    * The TLA initialize reads the number of segments from the reference.conf file.  This is convenient for
    * testing. It creates that number of segments in each sector.  At some point this could be removed and
@@ -66,9 +66,10 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
+  //#handle-validation
   /*
    * All Setup validation is performed here. Three checks are done for a lscsDirectCommand:
-   * 1. is there an LSCS command
+   * 1. is there a valid LSCS command
    * 2. is there a segmentId key (one or all)
    * 3. If one segment, is the segment available?
    * The HCD shutdown command is also accepted.  All others are rejected.
@@ -95,10 +96,11 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         }
       case HcdShutdown.shutdownCommand =>
         Accepted(runId)
-      case _ =>
-        Invalid(runId, CommandIssue.UnsupportedCommandIssue(s"HCD does not accept Observe"))
+      case other =>
+        Invalid(runId, CommandIssue.UnsupportedCommandIssue(s"HCD does not accept the command: $other"))
     }
   }
+  //#handle-validation
 
   /**
    * The HCD receives a Setup command with the String LSCS command and a destination.
@@ -111,6 +113,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
+  //#handle-submit
   /**
    * Processes commands as Setups for the HCD.
    * @param runId command runId
@@ -157,6 +160,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         Error(runId, s"This HCD does not handle this command: $other")
     }
   }
+  //#handle-submit
 
   // The following were ignored for this demonstration
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}

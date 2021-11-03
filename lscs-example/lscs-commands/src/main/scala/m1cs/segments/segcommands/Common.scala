@@ -15,9 +15,10 @@ object Common {
   val segmentRangeKey: Key[String] = KeyType.StringKey.make("SegmentRanges")
   // Shared keys
   val actuatorIdKey: Key[Int] = KeyType.IntKey.make("ACT_ID")
-
+  // Shortcut for full Set
   val AllActuators = Set(1, 2, 3)
 
+  // Use by commands that have actuators to check for basic consistency
   def addActuators(setup: Setup, actId: Set[Int]): Setup = {
     require(actId.size <= 3 && actId.nonEmpty, "Actuator ID Set must have three members or less but must not be empty.")
     // Check that they are within range
@@ -26,35 +27,46 @@ object Common {
     setup.add(actuatorIdKey.setAll(actId.toArray))
   }
 
-  val HARNESS_RANGE = 1 to 21
-  val ALL_HARNESS: String = "ALL"
-  val MIN_HARNESS:Int = HARNESS_RANGE.min
-  val MAX_HARNESS:Int = HARNESS_RANGE.max
+  // Constants for warping harness commands
+  val HARNESS_RANGE                    = 1 to 21
+  val ALL_HARNESS: String              = "ALL"
+  val MIN_HARNESS: Int                 = HARNESS_RANGE.min
+  val MAX_HARNESS: Int                 = HARNESS_RANGE.max
   val warpingHarnessIdKey: Key[String] = KeyType.StringKey.make("warpingHarnessId")
 
+  // These verifies that a warping harness is within range
   def checkWarpingHarnessId(warpingHarnessId: Int): String = {
     require(HARNESS_RANGE.contains(warpingHarnessId), "Warping harness ID must be between 1 and 21 inclusive.")
     warpingHarnessId.toString
   }
 
+  //#command-support
+  /**
+   * This map is used by the Assembly to access the correct toCommand for an incoming command Setup
+   * It maps command name to a function that returns the formatted command
+   */
   val CommandMap: Map[CommandName, Setup => String] = Map(
-    ACTUATOR.COMMAND_NAME      -> ACTUATOR.toCommand,
-    TARG_GEN_ACT.COMMAND_NAME  -> TARG_GEN_ACT.toCommand,
-    CFG_CUR_LOOP.COMMAND_NAME  -> CFG_CUR_LOOP.toCommand,
-    CFG_ACT_VC.COMMAND_NAME    -> CFG_ACT_VC.toCommand,
-    CFG_ACT_OFFLD.COMMAND_NAME -> CFG_ACT_OFFLD.toCommand,
-    CFG_ACT_SNUB.COMMAND_NAME  -> CFG_ACT_SNUB.toCommand,
-    SET_LIMIT_ACT.COMMAND_NAME -> SET_LIMIT_ACT.toCommand,
-    SET_PARAM_ACT.COMMAND_NAME -> SET_PARAM_ACT.toCommand
+    ACTUATOR.COMMAND_NAME          -> ACTUATOR.toCommand,
+    TARG_GEN_ACT.COMMAND_NAME      -> TARG_GEN_ACT.toCommand,
+    CFG_CUR_LOOP.COMMAND_NAME      -> CFG_CUR_LOOP.toCommand,
+    CFG_ACT_VC.COMMAND_NAME        -> CFG_ACT_VC.toCommand,
+    CFG_ACT_OFFLD.COMMAND_NAME     -> CFG_ACT_OFFLD.toCommand,
+    CFG_ACT_SNUB.COMMAND_NAME      -> CFG_ACT_SNUB.toCommand,
+    SET_LIMIT_ACT.COMMAND_NAME     -> SET_LIMIT_ACT.toCommand,
+    SET_PARAM_ACT.COMMAND_NAME     -> SET_PARAM_ACT.toCommand,
+    CAL_WH_DEADBANDWH.COMMAND_NAME -> CAL_WH_DEADBANDWH.toCommand,
+    MOVE_WH.COMMAND_NAME           -> MOVE_WH.toCommand
   )
 
-  // This is used by validation to verify that the sent command is currently supported. Could
+  // This is used by validation of Assembly and HCD to verify that the received command is currently supported. Could
   // be removed when all commands are supported
   val ALL_COMMANDS: List[CommandName] = CommandMap.keys.toList
+  //#command-support
 
-  // Used by every command
+  // Used by every command that has an array of values to print in the correct format x=(1,2,3)
   def valuesToString[A](items: Array[A]): String = items.mkString("(", ",", ")")
 
+  // Used by multiple commands
   object CfgLoopModes extends Enumeration {
     type CfgLoopMode = Value
 
@@ -66,6 +78,7 @@ object Common {
     Choices.from(CfgLoopModes.OFF.toString, CfgLoopModes.ON.toString, CfgLoopModes.OPEN.toString)
   val cfgLoopModeKey: GChoiceKey = ChoiceKey.make("MODE", cfgLoopModeChoices)
 
+  // Used by multiple commands
   object ControllerModes extends Enumeration {
     type ControllerMode = Value
 
@@ -74,6 +87,7 @@ object Common {
     val DISCRETE: Value   = Value(3, "DISCRETE")
   }
 
+  // Trait describes base class of all commands
   private[segcommands] trait LscsCommand[T] {
     def toSegment(segmentId: SegmentId): T
     def toAll: T

@@ -39,6 +39,7 @@ object SegComMonitor {
     }
   }
 
+  //#seg-mon
   /**
    * These are the commands for the Command Sequence Monitor. The WrappedSegmentResponse is needed to receive
    * the SegmentActor.Response and transform it into a SegComMonitor.Command.
@@ -152,5 +153,5 @@ object SegComMonitor {
           }
       }
   }
-
+  //#seg-mon
 }

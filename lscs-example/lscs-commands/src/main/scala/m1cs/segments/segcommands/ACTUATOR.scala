@@ -7,6 +7,7 @@ import csw.params.core.models.{Choice, Choices}
 import csw.prefix.models.Prefix
 
 //noinspection DuplicatedCode
+//#example-command
 object ACTUATOR {
   import Common.*
 
@@ -66,6 +67,7 @@ object ACTUATOR {
     val actId        = setup(actuatorIdKey)
     val modeExists   = setup.exists(actuatorModeKey)
     val targetExists = setup.exists(targetKey)
+    require(targetExists || modeExists, "ACTUATOR requires either a mode or a target or both.")
     val actIdVal     = if (actId.size == 3) "ALL" else valuesToString(actId.values)
     val sb           = new StringBuilder(s"${setup.commandName.name} ACT_ID=$actIdVal")
     if (modeExists) sb ++= s", MODE=${setup(actuatorModeKey).head.name}"
@@ -73,3 +75,4 @@ object ACTUATOR {
     sb.result()
   }
 }
+//#example-command

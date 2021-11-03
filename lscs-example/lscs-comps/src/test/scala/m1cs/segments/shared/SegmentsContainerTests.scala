@@ -28,11 +28,11 @@ class SegmentsContainerTests extends ScalaTestFrameworkTestKit() with AnyFunSuit
   private val config = ConfigFactory.load("SegmentsContainer.conf")
 
   // Hard-coding HCD and Assembly prefixes because they are not easily available
-  private val clientPrefix       = Prefix("ESW.client")
-  private val hcdPrefix          = Prefix("M1CS.segmentsHCD")
-  private val hcdConnection      = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
-  private val assemblyPrefix     = Prefix("M1CS.segmentsAssembly")
-  private val assemblyConnection = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
+  private val clientPrefix              = Prefix("ESW.client")
+  private val hcdPrefix                 = Prefix("M1CS.segmentsHCD")
+  private val hcdConnection             = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
+  private val assemblyPrefix            = Prefix("M1CS.segmentsAssembly")
+  private val assemblyConnection        = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
   private implicit val timeout: Timeout = 5.seconds
 
   private val shutdownSetup = Setup(clientPrefix, HcdShutdown.shutdownCommand)
@@ -79,7 +79,8 @@ class SegmentsContainerTests extends ScalaTestFrameworkTestKit() with AnyFunSuit
     val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
     // Form the external command going to the Assembly
-    val setup  = ACTUATOR.toActuator(clientPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5")).asSetup
+    val setup =
+      ACTUATOR.toActuator(clientPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5")).asSetup
     val cs     = CommandServiceFactory.make(assemblyLocation)
     val result = Await.result(cs.submitAndWait(setup), 10.seconds)
 

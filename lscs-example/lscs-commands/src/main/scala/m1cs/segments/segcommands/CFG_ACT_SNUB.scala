@@ -48,7 +48,6 @@ object CFG_ACT_SNUB {
       this
     }
 
-
     // Make a copy -- do any checks here
     override def asSetup: Setup = {
       // Check that there is at least one
@@ -67,14 +66,14 @@ object CFG_ACT_SNUB {
    */
   def toCommand(setup: Setup): String = {
     require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
-    val actId = setup(actuatorIdKey)
+    val actId    = setup(actuatorIdKey)
     val actIdVal = if (actId.size == 3) "ALL" else valuesToString(actId.values)
 
-    val modeExists = setup.exists(snubberModeKey)
+    val modeExists     = setup.exists(snubberModeKey)
     val contGainExists = setup.exists(contGainKey)
-    val threshExists = setup.exists(contThreshKey)
-    val startExists = setup.exists(discreteStartKey)
-    val stopExists = setup.exists(discreteStopKey)
+    val threshExists   = setup.exists(contThreshKey)
+    val startExists    = setup.exists(discreteStartKey)
+    val stopExists     = setup.exists(discreteStopKey)
 
     val sb = new StringBuilder(s"${setup.commandName.name} ACT_ID=$actIdVal")
     if (modeExists) sb ++= s", MODE=${setup(snubberModeKey).head.name}"

@@ -25,6 +25,7 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     // Currently not handling ranges
   }
 
+  //#example-tests
   test("To From ACTUATOR") {
     import m1cs.segments.segcommands.ACTUATOR.*
     import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
@@ -51,6 +52,11 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     to = toActuator(prefix, AllActuators).withMode(TRACK).withTarget(22.34)
     ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=ALL, MODE=TRACK, TARGET=22.34"
 
+    // Check for no optional
+    assertThrows[IllegalArgumentException] {
+      toActuator(prefix, Set(1, 2, 3)).asSetup
+    }
+
     // Check for too big set
     assertThrows[IllegalArgumentException] {
       toActuator(prefix, Set(1, 2, 3, 4))
@@ -66,6 +72,7 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
       toActuator(prefix, Set(1, 2, 4))
     }
   }
+  //#example-tests
 
   test("To From TARG_GEN_ACT") {
     import m1cs.segments.segcommands.TARG_GEN_ACT.*
@@ -474,7 +481,7 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     }
   }
 
-  /** -- Missing  commands */
+  /** -- Missing  commands -- no documentation on command */
 
   test("To From CAL_WH_DEADBANDWH") {
     import CAL_WH_DEADBANDWH.*
@@ -489,6 +496,11 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     // Some actuators + all options
     setup = toCalibrateWarpingHarnessDeadband(prefix).asSetup
     toCommand(setup) shouldBe s"${COMMAND_NAME.name} CAL_WH_DEADBANDWH_ID=ALL"
+
+    // Check that out of range warping harness throws
+    assertThrows[IllegalArgumentException] {
+      toCalibrateWarpingHarnessDeadband(prefix, 22)
+    }
   }
 
   test("To From MOVE_WH") {
@@ -497,8 +509,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     import MOVE_WH.Torques.*
     import MOVE_WH.Boosts.*
 
-    val testStrains:Array[Double] = Array(1,2,3,4,5,6,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21)
-    val strainString = valuesToString(testStrains)
+    val testStrains: Array[Double] = Array(1, 2, 3, 4, 5, 6, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)
+    val strainString               = valuesToString(testStrains)
 
     // Test with specific harness
     var setup = toMoveWarpingHarness(prefix, 2, ABSOLUTE, testStrains).asSetup
@@ -523,7 +535,12 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     // Test that poorly sized Strain array throws
     // Check for out of range ID
     assertThrows[IllegalArgumentException] {
-      toMoveWarpingHarness(prefix, 2, ABSOLUTE, Array[Double](1,2,3))
+      toMoveWarpingHarness(prefix, 2, ABSOLUTE, Array[Double](1, 2, 3))
+    }
+
+    // Check that out of range warping harness throws
+    assertThrows[IllegalArgumentException] {
+      toMoveWarpingHarness(prefix, 22, ABSOLUTE, testStrains)
     }
   }
 }

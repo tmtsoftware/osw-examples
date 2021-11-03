@@ -15,8 +15,8 @@ object SET_LIMIT_ACT {
     type PositionSensor = Value
 
     val ENCODER: Value = Value(1, "ENCODER")
-    val OFFLD: Value = Value(2, "OFFLD")
-    val SNUB: Value = Value(3, "SNUB")
+    val OFFLD: Value   = Value(2, "OFFLD")
+    val SNUB: Value    = Value(3, "SNUB")
   }
 
   import PositionSensors.*
@@ -26,7 +26,8 @@ object SET_LIMIT_ACT {
   val upperLimitKey: Key[Float]      = KeyType.FloatKey.make("POS_LIM")
   val lowerLimitKey: Key[Float]      = KeyType.FloatKey.make("NEG_LIM")
 
-  case class toActPosLimit(prefix: Prefix, actId: Set[Int], positionSensor: PositionSensor) extends BaseCommand[toActPosLimit](prefix, COMMAND_NAME) {
+  case class toActPosLimit(prefix: Prefix, actId: Set[Int], positionSensor: PositionSensor)
+      extends BaseCommand[toActPosLimit](prefix, COMMAND_NAME) {
 
     setup = addActuators(setup, actId)
     setup = setup.add(positionSensorKey.set(Choice(positionSensor.toString)))
@@ -50,7 +51,7 @@ object SET_LIMIT_ACT {
    */
   def toCommand(setup: Setup): String = {
     require(setup.commandName == COMMAND_NAME, s"The provided Setup is not a: $COMMAND_NAME")
-    val actId = setup(actuatorIdKey)
+    val actId    = setup(actuatorIdKey)
     val actIdVal = if (actId.size == 3) "ALL" else valuesToString(actId.values)
 
     val upperExists = setup.exists(upperLimitKey)

@@ -65,4 +65,13 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
     hcdSetup(lscsCommandNameKey).head shouldBe assemblySetup.commandName.name
     hcdSetup(segmentIdKey).head shouldBe ALL_SEGMENTS
   }
+
+  test("should get an error for a badly formatted Setup") {
+    // Create an assembly Setup to Segment -- default is ALL
+
+    assertThrows[IllegalArgumentException] {
+      ACTUATOR.toActuator(prefix, Set(1, 3)).asSetup
+    }
+
+  }
 }

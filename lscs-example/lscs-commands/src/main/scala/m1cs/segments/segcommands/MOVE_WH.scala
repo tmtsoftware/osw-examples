@@ -18,32 +18,37 @@ object MOVE_WH {
     val RELATIVE: Value = Value(2, "REL")
   }
   import MoveTypes.*
-  val moveTypeChoices: Choices = Choices.from(ABSOLUTE.toString, RELATIVE.toString)
-  val moveTypeKey: GChoiceKey = ChoiceKey.make("TYPE", moveTypeChoices)
+  val moveTypeChoices: Choices     = Choices.from(ABSOLUTE.toString, RELATIVE.toString)
+  val moveTypeKey: GChoiceKey      = ChoiceKey.make("TYPE", moveTypeChoices)
   val desiredStrainKey: Key[Float] = KeyType.FloatKey.make("STRAIN")
 
   object Torques extends Enumeration {
     type Torque = Value
 
-    val T50: Value = Value(1, "50")
-    val T75: Value = Value(2, "75")
+    val T50: Value  = Value(1, "50")
+    val T75: Value  = Value(2, "75")
     val T100: Value = Value(3, "100")
   }
   import Torques.*
   val torqueChoices: Choices = Choices.from(T50.toString, T75.toString, T100.toString)
-  val torqueKey: GChoiceKey = ChoiceKey.make("TORQUE", torqueChoices)
+  val torqueKey: GChoiceKey  = ChoiceKey.make("TORQUE", torqueChoices)
 
   object Boosts extends Enumeration {
     type Boost = Value
 
-    val ON: Value = Value(1, "ON")
+    val ON: Value  = Value(1, "ON")
     val OFF: Value = Value(2, "OFF")
   }
   import Boosts.*
   val boostChoices: Choices = Choices.from(Boosts.ON.toString, Boosts.OFF.toString)
-  val boostKey: GChoiceKey = ChoiceKey.make("BOOST", boostChoices)
+  val boostKey: GChoiceKey  = ChoiceKey.make("BOOST", boostChoices)
 
-  private [MOVE_WH] case class toMoveWarpingHarness(prefix: Prefix, warpingHarness: String, moveType: MoveType, desiredStrain: Array[Double]) extends BaseCommand[toMoveWarpingHarness](prefix, COMMAND_NAME) {
+  private[MOVE_WH] case class toMoveWarpingHarness(
+      prefix: Prefix,
+      warpingHarness: String,
+      moveType: MoveType,
+      desiredStrain: Array[Double]
+  ) extends BaseCommand[toMoveWarpingHarness](prefix, COMMAND_NAME) {
     setup = setup.add(warpingHarnessIdKey.set(warpingHarness))
     setup = setup.add(moveTypeKey.set(Choice(moveType.toString)))
 
@@ -68,6 +73,7 @@ object MOVE_WH {
     }
   }
 
+  // These are the constructors for the commands that have a warping harness ID or ALL
   object toMoveWarpingHarness {
     // This constructor takes an int as a harnessID
     def apply(prefix: Prefix, warpingHarnessId: Int, moveType: MoveType, desiredStrain: Array[Double]): toMoveWarpingHarness = {
@@ -75,7 +81,7 @@ object MOVE_WH {
       toMoveWarpingHarness(prefix, s, moveType, desiredStrain)
     }
 
-    // Without it means ALL
+    // Without the ID means ALL
     def apply(prefix: Prefix, moveType: MoveType, desiredStrain: Array[Double]): toMoveWarpingHarness = {
       toMoveWarpingHarness(prefix, ALL_HARNESS, moveType, desiredStrain)
     }
@@ -96,7 +102,9 @@ object MOVE_WH {
     val torqueExists = setup.exists(torqueKey)
     val boostExists  = setup.exists(boostKey)
 
-    val sb = new StringBuilder(s"${setup.commandName.name} WH_ID=${setup(warpingHarnessIdKey).head}, TYPE=${setup(moveTypeKey).head.name}")
+    val sb = new StringBuilder(
+      s"${setup.commandName.name} WH_ID=${setup(warpingHarnessIdKey).head}, TYPE=${setup(moveTypeKey).head.name}"
+    )
     sb ++= s", STRAIN=${valuesToString(setup(desiredStrainKey).values)}"
 
     if (torqueExists) sb ++= s", TORQUE=${setup(torqueKey).head.name}"

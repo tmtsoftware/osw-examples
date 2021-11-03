@@ -6,6 +6,7 @@ import csw.params.core.models.ObsId
 import csw.prefix.models.Prefix
 import m1cs.segments.segcommands.Common.{CommandMap, segmentIdKey, segmentRangeKey}
 
+//#hcd-direct
 /**
  * This object contains the parameter keys for the command sent to the HCD to process a single
  * segment command. This is used by the segment Assembly and test code to produce an HCD Setup from
@@ -44,6 +45,7 @@ case object HcdDirectCommand {
     )
   }
 }
+//#hcd-direct
 
 /**
  * This command when sent to the HCD causes shutdown of all the connections to Segments

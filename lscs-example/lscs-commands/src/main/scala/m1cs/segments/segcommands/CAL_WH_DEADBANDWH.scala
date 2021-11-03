@@ -11,8 +11,8 @@ object CAL_WH_DEADBANDWH {
 
   val COMMAND_NAME: CommandName = CommandName("CAL_WH_DEADBANDWH")
 
-  private[CAL_WH_DEADBANDWH] case class toCalibrateWarpingHarnessDeadband(prefix: Prefix,
-                                               warpingHarness: String) extends BaseCommand[toCalibrateWarpingHarnessDeadband](prefix, COMMAND_NAME) {
+  private[CAL_WH_DEADBANDWH] case class toCalibrateWarpingHarnessDeadband(prefix: Prefix, warpingHarness: String)
+      extends BaseCommand[toCalibrateWarpingHarnessDeadband](prefix, COMMAND_NAME) {
     setup = setup.add(warpingHarnessIdKey.set(warpingHarness))
 
     // Make a copy -- do any checks here

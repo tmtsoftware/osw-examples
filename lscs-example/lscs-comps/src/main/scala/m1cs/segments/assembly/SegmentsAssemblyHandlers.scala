@@ -7,36 +7,38 @@ import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.*
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
-import csw.params.commands.CommandResponse.*
+import csw.params.commands.CommandResponse
+import csw.params.commands.CommandResponse.{Accepted, Invalid, Started, SubmitResponse, ValidateCommandResponse}
 import csw.params.commands.{CommandIssue, ControlCommand, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
-import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
 import m1cs.segments.segcommands.Common
+import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
  * SegmentsAssemblyHandlers is the TLA for the Segments Assembly
- * It receives Setups the are formatted according to the commands in [[SegmentCommands]]
+ * It receives Setups the are formatted according to the commands in [[m1cs.segments.segcommands.*]]
  */
 //noinspection DuplicatedCode
 class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
-  // The following is needed for CSW, including logger
-  import cswCtx.*
 
   // These are used by the future calls
-  //private implicit val system: ActorSystem[Nothing] = ctx.system
   private implicit val ec: ExecutionContextExecutor = ctx.executionContext
+  // Required to get logging going
+  private val log = cswCtx.loggerFactory.getLogger
 
-  private val log = loggerFactory.getLogger
-  // Hard-coding HCD prefix because it is not easily available from code. Would be documented in model files.
-  private val hcdPrefix                     = Prefix("M1CS.segmentsHCD")
+
+  // Require that we have a connection to track and a Prefix
+  require(cswCtx.componentInfo.getConnections.size() > 0,
+    "The Assembly Component Configuration File must have a tracking connection to the Segments HCD.")
+  private val hcdPrefix                     = Prefix(cswCtx.componentInfo.getConnections.get(0).prefix.toString())
   private val hcdConnection                 = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
 
@@ -47,12 +49,13 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     log.info("Initializing SegmentsAssembly...")
   }
 
+  //#tracking-events
   /**
-   * this is overriding tracking events for the SegmentHCD. The Assembly should be started
+   * This is overriding tracking events to gain events for Segments HCD. The Assembly should be started
    * with a Component Configuration file that includes tracking and the info for the Segments HCD.
    * This is done in the test files for reference.
    * When the LocationUpdated event is received, a CommandService is created. When the
-   * connection goes down, the CommandService is None
+   * connection goes down, the CommandService is set to None. When None an error is issued in onSubmit.
    * @param trackingEvent CSW TrackingEvent.
    */
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {
@@ -69,7 +72,9 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
         }
     }
   }
+  //#tracking-events
 
+  //#handle-validation
   /**
    * This is the validate handler. This should perform all validation needed so that
    * the command can execute, or it should return a validation error.
@@ -97,7 +102,9 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
       )
     }
   }
+  //#handle-validation
 
+  //#important-code
   /**
    * The Assembly receives a Setup command with the name of the low-level command.
    * It transforms it into an HCD command, which is just the String command to all or one segment.
@@ -123,20 +130,25 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
         val hcdSetup = Setup(assemblyPrefix, HcdShutdown.shutdownCommand)
 
         submitAndWaitHCD(runId, hcdSetup) map { sr =>
-          commandResponseManager.updateCommand(sr.withRunId(runId))
+          cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
         }
         Started(runId)
       case cmd =>
         log.info(s"Segments Assembly received a command: '$cmd',  runId: $runId, setup: $assemblySetup")
 
         // This simulates what the Assembly does to send to HCD - has received above Setup
-        val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
-        // Assembly sends the Setup and updates
-        submitAndWaitHCD(runId, hcdSetup) map { sr =>
-          log.info(s"Assembly command completed from HCD: $sr")
-          commandResponseManager.updateCommand(sr.withRunId(runId))
+        try {
+          val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
+          // Assembly sends the Setup and updates
+          submitAndWaitHCD(runId, hcdSetup) map { sr =>
+            log.info(s"Assembly command completed from HCD: $sr")
+            cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
+          }
+          Started(runId)
+        } catch {
+          case _: Exception =>
+            CommandResponse.Error(runId, s"An exception was thrown while processing setup: ${assemblySetup.commandName}")
         }
-        Started(runId)
     }
   }
 
@@ -153,9 +165,9 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
         // Can be made an implicit for all calls in file for a more complex situation with different timeouts.
         cs.submitAndWait(setup)(timeout = 15.seconds)
       case None =>
-        Future(Error(runId, s"The Segment HCD is not currently available: ${hcdConnection.componentId}"))
+        Future(CommandResponse.Error(runId, s"The Segment HCD is not currently available: ${hcdConnection.componentId}"))
     }
-
+  //#important-code
   // The following were ignored for this demonstration
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 

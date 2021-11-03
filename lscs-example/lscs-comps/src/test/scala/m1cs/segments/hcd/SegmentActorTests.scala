@@ -16,10 +16,10 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
   private val testKit = ActorTestKit()
 
   private val cn1     = "ACTUATOR"
-  private val cn1args = "ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
+  private val cn1full = "ACTUATOR ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
 
   private val cn2     = "CFG_CUR_LOOP"
-  private val cn2args = "ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=Kp"
+  private val cn2full = "CFG_CUR_LOOP ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=Kp"
 
   import frameworkTestKit.*
 
@@ -61,7 +61,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.SendWithTime(cn1, cn1args, 500.milli, com1Response.ref)
+    s1 ! SegmentActor.SendWithTime(cn1, cn1full, 500.milli, com1Response.ref)
 
     // Finished from short command
     val r1 = com1Response.expectMessageType[SegmentActor.Completed]
@@ -78,7 +78,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.Send(cn1, cn1args, com1Response.ref)
+    s1 ! SegmentActor.Send(cn1, cn1full, com1Response.ref)
 
     // Finished from short command
     val responses = waitForCompleted(com1Response)
@@ -88,7 +88,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
 
     // Sending a message after terminate should cause error
-    s1 ! SegmentActor.Send(cn1, cn1args, com1Response.ref)
+    s1 ! SegmentActor.Send(cn1, cn1full, com1Response.ref)
     com1Response.expectNoMessage(200.milli)
 
     testKit.stop(s1, 5.seconds)
@@ -100,7 +100,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.SendWithTime(cn1, cn1args, 1200.milli, com1Response.ref)
+    s1 ! SegmentActor.SendWithTime(cn1, cn1full, 1200.milli, com1Response.ref)
 
     // Started from long command
     val r1 = com1Response.expectMessageType[SegmentActor.Started]
@@ -120,8 +120,8 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.SendWithTime(cn1, cn1args, 1200.milli, com1Response.ref)
-    s1 ! SegmentActor.SendWithTime(cn2, cn2args, 250.milli, com1Response.ref)
+    s1 ! SegmentActor.SendWithTime(cn1, cn1full, 1200.milli, com1Response.ref)
+    s1 ! SegmentActor.SendWithTime(cn2, cn2full, 250.milli, com1Response.ref)
 
     // Started from long command
     val r1 = com1Response.expectMessageType[SegmentActor.Started]
@@ -145,7 +145,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.SendWithTime(SegmentActor.ERROR_COMMAND_NAME, cn1args, 500.milli, com1Response.ref)
+    s1 ! SegmentActor.SendWithTime(SegmentActor.ERROR_COMMAND_NAME, cn1full, 500.milli, com1Response.ref)
 
     // Finished for error command
     val r1 = com1Response.expectMessageType[SegmentActor.Error]

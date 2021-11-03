@@ -31,7 +31,8 @@ lazy val `docs` = (project in file("docs")).
   settings(
     paradoxRoots := List(
       "index.html"
-    )
+    ),
+    paradoxProperties ++= Map()
   )
 
 /* =============================== */

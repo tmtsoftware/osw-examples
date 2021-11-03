@@ -9,7 +9,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.commands.{ControlCommand, Setup}
+import csw.params.commands.{CommandResponse, ControlCommand, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -46,9 +46,6 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
     super.beforeAll()
     // uncomment if you want one Assembly run for all tests
     spawnStandalone(config)
-
-    // For testing here
-//    spawnHCD(hcdPrefix, (ctx, cswCtx) => MyHandlers(ctx, cswCtx))
   }
 
   override def afterAll(): Unit = {
@@ -66,37 +63,34 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
     akkaLocation.connection shouldBe assemblyConnection
   }
 
-  // XXX HCD was not started!
-//  test("Assembly should see HCD") {
-//    val akkaLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
-//    akkaLocation.connection shouldBe assemblyConnection
-//
-//    val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
-//    hcdLocation.connection shouldBe hcdConnection
-//
-//    Thread.sleep(2000)
-//  }
-
   trait onSumbiter {
     def onSubmit(runId: Id, command: ControlCommand): SubmitResponse
   }
 
-  test("Assembly receives a command") {
-    // Start the test HCD here and wait
+  test("Assembly receives a command and sends proper command to HCD") {
+    // Start the test HCD here and wait, all commands are accepted and completed
     spawnHCD(
       hcdPrefix,
       (ctx, cswCtx) =>
         new DefaultComponentHandlers(ctx, cswCtx) {
-          override def onSubmit(id: Id, controlCommand: ControlCommand): SubmitResponse = {
+          override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = {
             log.info(s">>>>>>>>>>>>>>>>>>>>>>>onSubmit actually called: $controlCommand")
-            controlCommand.commandName shouldBe HcdDirectCommand.lscsDirectCommand
-            Completed(id)
+            controlCommand.commandName match {
+              case HcdShutdown.shutdownCommand =>
+                Completed(runId)
+              case HcdDirectCommand.lscsDirectCommand =>
+                Completed(runId)
+              case other =>
+                CommandResponse.Error(runId, s"Command: $other received by test HCD. Not acceptable!")
+            }
           }
         },
       LocationServiceUsage.RegisterAndTrackServices
     )
+    // Wait here until the HCD is registered
     Await.ready(locationService.resolve(hcdConnection, 10.seconds), 10.seconds)
 
+    // Now ensure the Assembly is registered before sending commands
     val assLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
     // Form the external command going to the Assembly
