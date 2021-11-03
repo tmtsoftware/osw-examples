@@ -32,6 +32,7 @@ object SocketMessage {
     val encodedSize: Int = 4 * 2
   }
 
+  //#MsgHdr
   /**
    * @param msgId message type
    * @param srcId sender application id
@@ -39,6 +40,7 @@ object SocketMessage {
    * @param seqNo sequence number
    */
   case class MsgHdr(msgId: MessageId, srcId: SourceId, msgLen: Int, seqNo: Int)
+  //#MsgHdr
 
   /**
    * Parses the command from the given ByteString
@@ -74,7 +76,15 @@ object SocketMessage {
   }
 }
 
+//#SocketMessage
+/**
+ * The type of a message sent to the server (also used for the reply).
+ *
+ * @param hdr message header
+ * @param cmd the actual text of the command
+ */
 case class SocketMessage(hdr: MsgHdr, cmd: String) {
+//#SocketMessage
 
   /**
    * Encodes the command for sending (see parse)
