@@ -17,7 +17,7 @@ commands include a selection of actuators. Each command also has a common parame
 should go to one specified segment or to all segments.
 
 The creation of Setups is implemented in a separate project with only the code needed for the job so that a JAR
-file can be created that can be loaded into esw-shell.  The `lscs-commands` JAR only depends on CSW libraries, which
+file can be created that can be loaded into esw-shell.  The `lscsCommands` JAR only depends on CSW libraries, which
 are included in esw-shell; therefore, scripts can be written using the library functions. 
 
 ## Implementing Commands
@@ -25,7 +25,7 @@ are included in esw-shell; therefore, scripts can be written using the library f
 A representative subset of the commands have been implemented.  The plan was to do them all, but the documentation
 gets less reliable towards the end and is missing command examples for a few important commands.
 
-There is a subproject called `lscs-commands`. This project contains all the code to create Assembly Setups and
+There is a subproject called `lscsCommands`. This project contains all the code to create Assembly Setups and
 to extract and convert an Assembly Setup to a segment command string.
 
 Under the package `m1cs.segments.segcommands` there is a file for each implemented command that is the name of the
@@ -36,7 +36,7 @@ shown below, which includes all the features of the command implementation. With
 create a Setup and to extract a segment command. All commands are constructed the same way.
 
 Scala
-: @@snip [ACTUATOR](../../../lscs-commands/src/main/scala/m1cs/segments/segcommands/ACTUATOR.scala) { #example-command }
+: @@snip [ACTUATOR](../../../lscsCommands/src/main/scala/m1cs/segments/segcommands/ACTUATOR.scala) { #example-command }
 
 At the top of the object common code is imported. Following this is the name of the command, which is again, the
 name of the file. 
@@ -68,7 +68,7 @@ optional parameters (see below).
 
 ## Optional Parameters
 The value returned by toActuator is a `toActuator` instance. Optional values are added using "with" methods using a
-`fluid` API so options can be added as needed.  For example to add the optional actuator mode and target, the following
+`fluid-style` API so options can be added as needed.  For example to add the optional actuator mode and target, the following
 are all possible:
 
 ```scala
@@ -190,7 +190,7 @@ To recap, a command includes required parameters and optional parameters.  The a
 the values for actuator, which is required. It creates a Boolean to check to see if actuator mode and/or
 target exists by checking for `actuatorModeKey` and `targetKey`. 
 
-Then a StringBuilder is created that creates a String for the command.  First, the command is extracted using
+Then a StringBuilder is created that creates a String for the command. First, the command is extracted using
 the Scala String interpolator syntax (${parameter}). The like starting with actIdVal checks to see whether
 there is a subset or all of the actuators. The valuesToString method formats a proper value for the command (as
 in (1,2)). Finally, if the mode and target exist, parameters are added to the String for each.
@@ -232,12 +232,12 @@ sector is A-F and segment number is 1-82.  An exception is thrown if not true.
 
 ## Testing Commands
 Tests exist for each command to verify that it is working properly.  There is one file called SegmentCommandsTests
-in the lscs-commands test area.  Each command has similar tests. The following shows the tests for Actuator.
+in the lscsCommands test area.  Each command has similar tests. The following shows the tests for Actuator.
 
 Scala
-: @@snip [ACTUATOR_TESTS](../../../lscs-commands/src/test/scala/m1cs/segments/segcommands/SegmentCommandsTests.scala){ #example-tests }
+: @@snip [ACTUATOR_TESTS](../../../lscsCommands/src/test/scala/m1cs/segments/segcommands/SegmentCommandsTests.scala){ #example-tests }
 
-The tests create Setups with varied parameters and test that the output command is correct.  Following are tests
+The tests create Setups with varied parameters and test that the output command is correct. Following are tests
 to verify that exceptions are thrown for bad conditions. For instance, note the test for the lack of an
 optional parameter.
 

@@ -8,7 +8,7 @@ There are no events of any kind produced by the HCD.
 
 ## Top Level Actor
 
-The Top Level Actor for Segments HCD can be found in the `lscs-comps` project in the file named `SegmentsHcdHandlers.scala`,
+The Top Level Actor for Segments HCD can be found in the `lscsComps` project in the file named `SegmentsHcdHandlers.scala`,
 which contains the majority of the HCD code. As with all CSW components, the TLA for Segments HCD implements handlers as needed. 
 In this HCD, only `initialize`, `validateCommand`, and `onSubmit` handlers are implemented.  Unlike the Assembly,
 the HCD does not use the `onLocationTrackingevent` handler.
@@ -18,7 +18,7 @@ Initialization in the Segments HCD does the important job of creating the Segmen
 only the job of initializing the segments is done.
 
 Scala
-: @@snip [Validation](../../../lscs-comps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #initialize }
+: @@snip [Validation](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #initialize }
 
 Any state that is initialized in the `initialize` handler must be global to the TLA. In this case, there is a 
 variable called `createdSegments` of type `Segments` that is set during initialize. The segments value is managed 
@@ -36,7 +36,7 @@ As in the Assembly, an `Observe` is rejected and the Setup is passed to another 
 The `validateCommand` handler is shown below.
 
 Scala
-: @@snip [Validation](../../../lscs-comps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-validation }
+: @@snip [Validation](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-validation }
 
 The HCD can process two commands: lscsDirectCommand and shutdownCommand. For lscsDirectCommand `handleValidation` does three things:
 
@@ -60,11 +60,11 @@ execution to `handleSetup`. Checking for Observe again isn't needed since it is 
 HandleSetup is reproduced below.  This is the crux of the HCD.
 
 Scala
-: @@snip [Submit](../../../lscs-comps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-submit }
+: @@snip [Submit](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-submit }
 
 There are two commands, `lscsDirectCommand`, and `shutdownCommand`.
 
-### lscsDirectCommand Implementation
+## lscsDirectCommand Implementation
 The first thing that occurs is the command name, the segment destination, and the command String are extracted from the
 Setup. Then the segmentKeyValue, which is either ALL_SEGMENTS or a specific segment ID is tested for and used
 to access a list of segments for the command. It calls SegmentManager to return on or all.
@@ -78,15 +78,18 @@ from the code, once a monitor is started, the submit-handler returns `Started` i
 running command is started. The HCD is then available to accept and process another HCD/segment command, which starts
 its own SegComMonitor. The tests demonstrate that this works.
 
-### Segment Monitor
+## Segment Monitor
 Segment Monitor is the longest piece of code in the project. Segment Monitor is an actor implementing a two state
-finite state machine.
+finite state machine that has the job of executing a segment command and waiting for responses.  The code is long but is included here.
 
-It is created in the `starting` state, waiting for the `start` message. When received, it sends the full segment
-command to each of the SegmentActors on the list passed into the monitor from the TLA. Once the commands are
-sent, it moves to the `waiting` state.
+Scala
+: @@snip [Submit](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegComMonitor.scala) { #seg-mon }
 
-It is called `waiting` because it is waiting for the responses from the SegmentActors. First note that waiting starts
+`SegComMonior` is created in the `starting` state, awaiting the `start` message from the HCD TLA. When received, it sends the full segment
+command to each of the SegmentActors on the list passed into the monitor from the TLA (it will be 1 segment or a list of all segments). 
+Once the commands are sent, it moves to the `waiting` state.
+
+The state is called `waiting` because it is waiting for the responses from the SegmentActors. First note that waiting starts
 a timer so that if something goes wrong in a SegmentActor, after a timeout period, the CommandTimeout message will be sent
 to itself, which will cause an Error SubmitResponse to be returned to the runId through the `replyTo` function.
 
@@ -98,7 +101,10 @@ function.
 If a single Error is returned, the monitor stops immediately--if a single segment produces an error out of all segments,
 it means the command fails immediately, and an Error is returned to the client through the runId and replyTo function.
 
-Once all the responses are received, the Behavior becomes `Behaviors.stopped`, which causes the monitor actor to stop.
+The important part for completion is the code around the SegmentActor.Completed message. Whenever a segment returns a positive response, the
+count is incremented and waiting is called again (which appears recursive, but actually isn't). Once all the responses are received, 
+the Completed SubmitResponse is sent to the caller through the replyTo function. The Behavior of the monitor 
+becomes `Behaviors.stopped`, which causes the monitor actor to stop.
 
 @@@ note { title=Note }
 The SegComMonitor is written in the functional typed actor style. See [akka.io](https://doc.akka.io/docs/akka/current/typed/index.html).
@@ -114,16 +120,39 @@ They provide no useful information at this level and just introduce potential fo
 a command-line UI, but that isn't the application here. We suggest dropping this since it isn't part of the JPL library.
 @@@
 
+`SegComMonitor` tests are a good way to see how testing works and how we validate the M1CS requirement to complete all
+segment commands and complete a CSW command.
+
+The following test shows sending a command to 492 segments and waiting for completion.  First the `SegmentManager` is used
+to create a full mirror configuration.  This is what the HCD does during initialization  The `tester` is a function that
+notifies the com1Response TestProbe when the command completes.
+
+Then a `SegComMonitor` is created with a test command and the list of 492 segments. It is then started, which causes the
+command to be sent to all the segments.  Then the test code waits for the Compleiton message.  Once received as a precaution
+it waits to see if any other messages arrive, then shutsdown all the segment connections and quits.
+
+Scala
+: @@snip [SegMon1](../../../lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala) { #test1 }
+
+The following code is similar but in this case, the test starts and executes two overlapping segment commands and waits for them both
+to asynchronously complete either successfully or with an error.  
+
+Scala
+: @@snip [SegMon2](../../../lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala) { #test2 }
+
+At least with the JVM simulator, it is not known which command will complete first because of the randomized delays, 
+so the test waits for 2 messages and then checks that they are the correct messages.
+
 ## Segment Actor
 The Segments HCD creates a SegmentActor instance for each configured segment. The SegmentActor
 is a wrapper for the class called `SocketClientStream`, which is the low-level communication with the segment
 and which implements the JPL-library protocol.  The code below is the interesting part of SegmentActor.
 
 Scala
-: @@snip [Monitor](../../../lscs-comps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala) { #segment-actor }
+: @@snip [SegActor](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala) { #segment-actor }
 
 First, when the SegmentActor is created in the `apply` def function. This is where the lower level `SocketClientStream`
-class is added. This is where the socket connection occurs.
+class is added and where the socket connection to the LSCS occurs.
 
 The rest of the actor is a mix of trying to make the system behave like the documentation and interfacing to the
 current simulator.

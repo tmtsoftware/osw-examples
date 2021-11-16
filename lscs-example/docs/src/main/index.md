@@ -8,6 +8,7 @@
 - @ref:[LSCS Simulators](LSCSSimulator.md)
 - @ref:[Assembly and HCD Deployment](Deploy.md)
 - @ref:[Testing and ESW-shell](TestingAndShell.md)
+- @ref:[Goals](Goals.md)
 
 @@@
 
@@ -23,14 +24,14 @@ based on a JPL library, that wraps String-based commands.
 The following figure shows the architecture targeted by this demonstration, which is based on the design of the M1CS group
 placed within the CSW architecture planned for the telescope site. 
 
-![layers](./images/M1CSFigure1.png)
+![layers](.../M1CSFigure1.png)
 
 In this figure a future browser-based M1CS Engineering User Interface issues commands to the LSCS Assembly through the ESW UI Gateway.
 The commands flow through the UI Gateway to the LSCS Assembly in the form of CSW Setup commands. The commands are passed to the HCD,
 which understands the LSCS-protocol and has established a TCP-based connection to each of the 492 LSC segment systems. As mentioned,
 the commands are Strings in the format documented in SegmentHcdCmdDict_20210902.pdf.  An example command String is:
 
-![command1](./images/Command1.png)
+![command1](.../Command1.png)
 
 The protocol is not described here, but involves completion information and updates when the commands take a long time. Interesting
 requirements of this system is that: 1) Each LSCS can execute more than one command at a time, 2) The commands may complete
@@ -40,7 +41,7 @@ is highly asynchronous and non-blocking.
 
 The following figure shows what is present in LSCS Demonstration.
 
-![layers](./images/M1CSFigure2.png)
+![layers](.../M1CSFigure2.png)
 
 ## Demonstration Products
 
@@ -59,12 +60,11 @@ The following issues are addressed:
 * Demonstration of how to create Setups that map to LSCS commands
 * Provide examples of implementing the LSCS commands (not all commands in the dictionary are provided)
 * Support for sending a command to one or all segments in the HCD
-* Support for sending commands to Segment using JPL protocol
+* Support for sending commands to Segment using JPL protocol and communicate with the M1CS-team's simulator
 * Demonstration that commands to all segments can complete when all segment commands complete
 * Demonstrate that individual segment commands can complete asynchronously
 * Demonstrate that a HCD can handle overlapping asynchronous commands
 * Demonstrate that the CSW HCD can make 492 socket connections to the project-provided LSCS simulator
-* Demonstrate that the CSW HCD can communicate with the M1CS-team's simulator
 * Show how to test the code at various levels
 * Demonstrate how to send commands to the LSCS Assembly from esw-shell
 
@@ -100,26 +100,25 @@ The Segments HCD uses an actor called the SegComMonitor to send and wait for res
 all segments complete successfully, the monitor sends a CSW Completed SubmitResponse to the caller, which in the operational
 case is the Segment Assembly.  If an Error is received from a Segment, an Error SubmitResponse is returned to the caller.
 
-When Segments HCD starts up, during its initialization, it creates connections to the segments. In the simulation the
-number of segments created in each sector is specified by a configuration value in the resource.conf file block as
-shown below. Setting the value segments to 82 results in a full mirror configuration.  Each of the 6 sectors (A-F) 
-always gets the same number of segments.  For instance if the configuration value is 2, the segments 
-A1, B1, C1, D1, E1, F1, A2, B2, C2, D2, E2, F2 are created.  The external socket connection is made when the segment is created.
+When Segments HCD starts up, during its initialization, it creates connections to the segments. The external 
+socket connection is made when the segment is created.
 
-The following snippet shows the configuration section of reference.conf. 
+The number of segments created in each sector can be specified in an application.conf m1cs file block as
+shown below. Setting `m1cs.segments` to a number smaller than 82 results in a less than full mirror.  
+Each of the 6 sectors (A-F) always gets the number of segments specified. For instance if `m1cs.segments` is 2, 
+the segments A1, B1, C1, D1, E1, F1, A2, B2, C2, D2, E2, F2 are created.  
+The following snippet shows the configuration section of application.conf in the testing area. 
 
 ```scala
-m1cs {
-  segments = 10
-  simulatorExternal = false
-}
+m1cs.segments = 20
 ```
+By default, the full mirror is configured with 82 segments in each sector if there is no m1cs.segments config value.
 
 @@@ warning
 This configuration value is present because on the macOS it is not possible to create 492 segment connections with the
-simulator.  If you are working on Linux, this value can be set to the maximum value of 82.  This is not a limitation
+simulator.  If you are working on Linux, this value can be set to the maximum value of 82. This is not a limitation
 on CSW, there is some issue or parameter in macOS that we have not discovered, and since Linux is our target platform,
-we are not concerned.
+we are not concerned. It is also possible to run the simulator on Linux and the test/client code on macOS.
 @@@
 
 @@@ note { title=Note }
@@ -151,4 +150,4 @@ code works properly with the M1CS Simulator as well. As the M1CS simulator is en
 use the C-based simulator with the identical code.  (It would also be possible to enhance the Scala-based simulator, but using the C-based library
 is probably a good idea.)
 
-Please see the other pages for a bit more detail one each of these subjects.
+Please see the other doc pages for a bit more detail one each of these subjects.

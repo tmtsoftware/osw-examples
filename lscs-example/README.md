@@ -6,8 +6,9 @@ TMT Common Software ([CSW](https://github.com/tmtsoftware/csw)) APIs.
 ## Subprojectsm1
 
 * docs - contains the sources for the paradox documentation
-* lscs-comps - contains the sources for the HCD and assembly
-* lscs-compsdeploy - for starting/deploying HCDs and assemblies
+* lscsCommands - contains source for creating LSCS Setups and segment commands
+* lscsComps - contains the sources for the HCD and assembly
+* lscsDeploy - for starting/deploying HCDs and assemblies
 * m1cs-lscs-sim - A C socket server that simulates an external socket API (see the README.md for how to build)
   (The Scala SocketServerStream class used in the tests here uses the same protocol as the C server)
 
@@ -44,11 +45,11 @@ Run the container cmd script with arguments. For example:
 * Run the HCD in a standalone mode with a local config file (The standalone config format is different than the container format):
 
 ```
-sbt "lscs-compsdeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --standalone --local ./src/main/resources/SegmentsHcdStandalone.conf"
+sbt "lscsDeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --standalone --local ./src/main/resources/SegmentsHcdStandalone.conf"
 ```
 
 * Start the HCD and assembly in a container:
 
 ```
-sbt "lscs-compsdeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --local ./src/main/resources/SegmentsContainer.conf"
+sbt "lscsDeploy/runMain m1cs.comsdeploy.ComsContainerCmdApp --local ./src/main/resources/SegmentsContainer.conf"
 ```

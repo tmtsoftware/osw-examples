@@ -50,19 +50,19 @@ Scala version of the server.
 The API for the client is basically just: `send(message)`, which returns a non-blocking Future response:
 
 Scala
-: @@snip [Send / Receive](../../../lscs-comps/src/test/scala/m1cs/segments/streams/SocketClientStreamTest.scala) { #socketClientWithSystem }
+: @@snip [Send / Receive](../../../lscsComps/src/test/scala/m1cs/segments/streams/SocketClientStreamTest.scala) { #socketClientWithSystem }
 
 The type of the message sent is `SocketMessage`, which has the same layout as the JPL C socket message:
 
 Scala
-: @@snip [SocketMessage](../../../lscs-comps/src/main/scala/m1cs/segments/streams/shared/SocketMessage.scala) { #SocketMessage }
+: @@snip [SocketMessage](../../../lscsComps/src/main/scala/m1cs/segments/streams/shared/SocketMessage.scala) { #SocketMessage }
 
 In most cases you don't need to provide the message header, since it is generated automatically from the message text.
 It contains information, such as the size of the message and a sequence number, which is also returned as part of the response.
 The header is represented by the MsgHdr class, below:
 
 Scala
-: @@snip [MsgHdr](../../../lscs-comps/src/main/scala/m1cs/segments/streams/shared/SocketMessage.scala) { #MsgHdr }
+: @@snip [MsgHdr](../../../lscsComps/src/main/scala/m1cs/segments/streams/shared/SocketMessage.scala) { #MsgHdr }
 
 The type of the response to sending a command is the same (SocketMessage).
 

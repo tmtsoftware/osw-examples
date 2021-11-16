@@ -1,6 +1,6 @@
-import sbt.Keys.version
-import sbt.{AutoPlugin, Plugins, Setting}
-
+//import sbt.Keys.version
+//import sbt.{AutoPlugin, Plugins, Setting}
+/*
 /**
 * ==================== IMPORTANT - DO NOT CHANGE =================
 * This is required to display correct version for `ComsContainerCmdApp` and `ComsHostConfigApp`
@@ -18,3 +18,5 @@ object CswBuildInfo extends AutoPlugin {
     buildInfoPackage := "csw.services"
   )
 }
+
+ */
