@@ -13,7 +13,7 @@ ThisBuild / organizationHomepage := Some(url("http://www.tmt.org"))
 ThisBuild / scalaVersion := "2.13.6"
 //ThisBuild / version := "0.1.0-SNAPSHOT"
 
-version := {
+ThisBuild / version := {
   sys.props.get("prod.publish") match {
     case Some("true") => version.value
     case _            => "0.1.0-SNAPSHOT"
@@ -35,9 +35,9 @@ ThisBuild / fork := true
 
 /* ================= Paradox Docs ============== */
 
-lazy val docs = (project in file("docs")).
-  enablePlugins(DocsPlugin).
-  settings(
+lazy val docs = (project in file("docs"))
+  .enablePlugins(ParadoxMaterialSitePlugin)
+  .settings(
     //paradoxRoots := List(
 //      "index.html"
 //    ),
