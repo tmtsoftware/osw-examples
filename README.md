@@ -1,7 +1,8 @@
 ## OSW Examples
-This repository holds examples of CSW and ESW code to provide examples and best practices.
+This repository holds examples of CSW and ESW code with the goal of providing more comprehensive examples 
+and best practices. This repository will be developed more fully with time.
 
-* This is a work in progress and is currently not uniformly ready for consumption *
+*This is a work in progress and is currently not uniformly ready for consumption.*
 
 ### Examples
 
