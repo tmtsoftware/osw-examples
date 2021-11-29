@@ -13,17 +13,17 @@ ThisBuild / Test / parallelExecution := false
 // This forks all run and tests, should be done usually: https://www.scala-sbt.org/1.x/docs/Combined+Pages.html#Forking
 ThisBuild / fork := true
 
-lazy val aggregatedProjects: Seq[ProjectReference] = Seq(
-  `command-example`,
-  `lscs-example`,
-  docs
-)
+/** PROJECTS */
 
 lazy val `osw-examples` = project
   .in(file("."))
-  .aggregate(aggregatedProjects: _*)
+  .aggregate(
+    `command-example`,
+    `lscs-example`,
+    docs
+  )
 
-
+// Command Example
 lazy val `command-example` = project
   .settings(
     libraryDependencies ++= Seq(
@@ -33,8 +33,10 @@ lazy val `command-example` = project
     )
   )
 
+// LSCS example
 lazy val `lscs-example` = project.in(file("lscs-example"))
 
+// Docs for all projects
 lazy val docs = project
   .in(file("docs"))
   .enablePlugins(
@@ -44,25 +46,21 @@ lazy val docs = project
   )
   .settings(
     name := "paradox docs",
-    version := version.value.takeWhile(_ != '-'), // strip off the -SNAPSHOT
+    version := version.value.takeWhile(_ != '-'), // strip off the -SNAPSHOT for docs
     paradoxTheme := Some(builtinParadoxTheme("generic")),
     ghpagesNoJekyll := true,
     publish / skip     := true,
-    git.remoteRepo  := "https://github.com/tmtsoftware/osw-examples.git",
+    git.remoteRepo  := "git@github.com:tmtsoftware/osw-examples.git",
     paradoxProperties ++= Map(
       "org" -> organization.value,
       "version" -> version.value,
       "image.base_url" -> "./images",
       "lscs.base" -> "../../../../lscs-example/",
-      "github.base_url" -> {
-        val v = version.value
-        s"https://github.com/tmtsoftware/osw-examples/tree/${if (v.endsWith("SNAPSHOT")) "master" else "v" + v}"
-      },
     )
   ).dependsOn(`lscs-example`)
 
 
-
+// Shared compile scalac options
 ThisBuild / Compile / scalacOptions ++= Seq(
   "-deprecation",                     // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",               // Specify character encoding used by source files.
