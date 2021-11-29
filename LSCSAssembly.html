@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>LSCS Segments Assembly · Lower Segment Control System Demonstration</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='paradox docs'/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/warnOldVersion.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<script type="text/javascript" src="js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Lower Segment Control System Demonstration
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="input-output.html" class="page">Setup Input/Output</a></li>
+  <li><a href="LSCSAssembly.html" class="active page">LSCS Segments Assembly</a></li>
+  <li><a href="LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+  <li><a href="LSCSSimulator.html" class="page">LSCS Simulator and JPL Simulator</a></li>
+  <li><a href="Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+  <li><a href="TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+  <li><a href="Goals.html" class="page">Goals and Addressed Issues Summary</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">Lower Segment Control System Demonstration</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Lower Segment Control System Demonstration
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="input-output.html" class="page">Setup Input/Output</a></li>
+  <li><a href="LSCSAssembly.html" class="active page">LSCS Segments Assembly</a></li>
+  <li><a href="LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+  <li><a href="LSCSSimulator.html" class="page">LSCS Simulator and JPL Simulator</a></li>
+  <li><a href="Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+  <li><a href="TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+  <li><a href="Goals.html" class="page">Goals and Addressed Issues Summary</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">Lower Segment Control System Demonstration</a></li>
+  <li>LSCS Segments Assembly</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#lscs-segments-assembly" name="lscs-segments-assembly" class="anchor"><span class="anchor-link"></span></a>LSCS Segments Assembly</h1>
+<p>The project includes a simplified Segments Assembly. As discussed in the <a href="index.html">overview</a>, the Segments Assembly job is to receive Assembly Setups, convert them to HCD Setups, and forward them to the Segments HCD. There are no events produced by the Assembly and no Setup commands that are handled within the Assembly itself.</p>
+<h2><a href="#top-level-actor" name="top-level-actor" class="anchor"><span class="anchor-link"></span></a>Top Level Actor</h2>
+<p>The Top Level Actor for Segments Assembly can be found in the <code>lscsComps</code> project in the file named <code>SegmentsAssemblyHandlers.scala</code>, which contains the entire Assembly. As with all CSW Assemblies, the TLA for Segments Assembly implements handlers as needed. In this Assembly, only the <code>validateCommand</code> and <code>onSubmit</code> handlers are implemented. </p>
+<h2><a href="#assembly-command-validation" name="assembly-command-validation" class="anchor"><span class="anchor-link"></span></a>Assembly Command Validation</h2>
+<p>The <code>validateCommand</code> handler is shown below.</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala#L79-L105" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * This is the validate handler. This should perform all validation needed so that
+ * the command can execute, or it should return a validation error.
+ * Here we return an error for an Observe or pass to the Setup validation.
+ * @param runId command runId
+ * @param controlCommand either a Setup or Observe
+ * @return a [ValidateCommandResponse]
+ */
+override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
+  controlCommand match {
+    case setup: Setup =&gt; handleValidation(runId, setup)
+    case observe      =&gt; Invalid(runId, UnsupportedCommandIssue(s&quot;$observe command not supported.&quot;))
+  }
+}
+
+// All Setup validation is performed here
+private def handleValidation(runId: Id, setup: Setup): ValidateCommandResponse = {
+  if (Common.ALL_COMMANDS.contains(setup.commandName) || setup.commandName.equals(HcdShutdown.shutdownCommand)) {
+    Accepted(runId)
+  }
+  else {
+    Invalid(
+      runId,
+      CommandIssue.UnsupportedCommandIssue(s&quot;Segment Assembly does not support the `${setup.commandName}` command.&quot;)
+    )
+  }
+}</code></pre></dd>
+</dl>
+<p>The <code>validateCommand</code> checks that the command is a <code>Setup</code> and returns an error if an <code>Observe</code> is received; otherwise it passes on validation of the Setup to <code>handleValidation</code>. Remember that each Setup from the outside has a Setup with the command name equal to the name of the segment command. Therefore, the validation code looks up the command name in the list of implemented commands in Common. This code is shown below:</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsCommands/src/main/scala/m1cs/segments/segcommands/Common.scala#L44-L63" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * This map is used by the Assembly to access the correct toCommand for an incoming command Setup
+ * It maps command name to a function that returns the formatted command
+ */
+val CommandMap: Map[CommandName, Setup =&gt; String] = Map(
+  ACTUATOR.COMMAND_NAME          -&gt; ACTUATOR.toCommand,
+  TARG_GEN_ACT.COMMAND_NAME      -&gt; TARG_GEN_ACT.toCommand,
+  CFG_CUR_LOOP.COMMAND_NAME      -&gt; CFG_CUR_LOOP.toCommand,
+  CFG_ACT_VC.COMMAND_NAME        -&gt; CFG_ACT_VC.toCommand,
+  CFG_ACT_OFFLD.COMMAND_NAME     -&gt; CFG_ACT_OFFLD.toCommand,
+  CFG_ACT_SNUB.COMMAND_NAME      -&gt; CFG_ACT_SNUB.toCommand,
+  SET_LIMIT_ACT.COMMAND_NAME     -&gt; SET_LIMIT_ACT.toCommand,
+  SET_PARAM_ACT.COMMAND_NAME     -&gt; SET_PARAM_ACT.toCommand,
+  CAL_WH_DEADBANDWH.COMMAND_NAME -&gt; CAL_WH_DEADBANDWH.toCommand,
+  MOVE_WH.COMMAND_NAME           -&gt; MOVE_WH.toCommand
+)
+
+// This is used by validation of Assembly and HCD to verify that the received command is currently supported. Could
+// be removed when all commands are supported
+val ALL_COMMANDS: List[CommandName] = CommandMap.keys.toList</code></pre></dd>
+</dl>
+<p>If the command name is not present, validation fails with an UnsupportedCommandIssue. Otherwise, the command is Accepted. Validation could be improved, but we assume that if the command name is within our list, then the Setup contains all the correct parameters. An error is returned during execution if the handling fails.</p>
+<h2><a href="#assembly-command-execution" name="assembly-command-execution" class="anchor"><span class="anchor-link"></span></a>Assembly Command Execution</h2>
+<p>Once validated, the <code>onSubmit</code> handler is called. The submit-related code for the Segments Assembly is shown below:</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala#L109-L171" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * The Assembly receives a Setup command with the name of the low-level command.
+ * It transforms it into an HCD command, which is just the String command to all or one segment.
+ * Ranges aren&#39;t yet supported.
+ */
+override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = {
+  controlCommand match {
+    case setup: Setup =&gt; handleSetup(runId, setup)
+    case observe      =&gt; Invalid(runId, UnsupportedCommandIssue(s&quot;$observe command not supported.&quot;))
+  }
+}
+
+/**
+ * Processes commands as Setups
+ * @param runId command runId
+ * @param assemblySetup the [[Setup]] to execute
+ * @return [[SubmitResponse]] response from the command. All commands are started currently.
+ */
+private def handleSetup(runId: Id, assemblySetup: Setup): SubmitResponse = {
+  assemblySetup.commandName match {
+    case HcdShutdown.shutdownCommand =&gt;
+      log.debug(s&quot;Segments Assembly received shutdown request: $runId and $assemblySetup&quot;)
+      val hcdSetup = Setup(assemblyPrefix, HcdShutdown.shutdownCommand)
+
+      submitAndWaitHCD(runId, hcdSetup) map { sr =&gt;
+        cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
+      }
+      Started(runId)
+    case cmd =&gt;
+      log.info(s&quot;Segments Assembly received a command: &#39;$cmd&#39;,  runId: $runId, setup: $assemblySetup&quot;)
+
+      // This simulates what the Assembly does to send to HCD - has received above Setup
+      try {
+        val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
+        // Assembly sends the Setup and updates
+        submitAndWaitHCD(runId, hcdSetup) map { sr =&gt;
+          log.info(s&quot;Assembly command completed from HCD: $sr&quot;)
+          cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
+        }
+        Started(runId)
+      }
+      catch {
+        case _: Exception =&gt;
+          CommandResponse.Error(runId, s&quot;An exception was thrown while processing setup: ${assemblySetup.commandName}&quot;)
+      }
+  }
+}
+
+/**
+ * This is a convenience routine to check the availability of HCD prior to sending
+ * @param runId command runId
+ * @param setup the Setup to send
+ * @return command response as a SubmitResponse
+ */
+private def submitAndWaitHCD(runId: Id, setup: Setup): Future[SubmitResponse] =
+  hcdCS match {
+    case Some(cs) =&gt;
+      // Added a delay here because segment commands take an unknown amount of time.
+      // Can be made an implicit for all calls in file for a more complex situation with different timeouts.
+      cs.submitAndWait(setup)(timeout = 15.seconds)
+    case None =&gt;
+      Future(CommandResponse.Error(runId, s&quot;The Segment HCD is not currently available: ${hcdConnection.componentId}&quot;))
+  }</code></pre></dd>
+</dl>
+<p>As before, the <code>Observes</code> return an Error (even through we can not get to this code in this example.) The <code>handleSetup</code> command must handle any named commands first. In this case, there is a command called <code>shutdownCommand</code> that when sent to the HCD, it causes all the segment connections to be closed and the HCD shutdown. This is useful for testing.</p>
+<p>The second case matches on any other command. In this case, the function <code>HcdDirectCommand.toHcdDirectCommand</code> is called. If it does not fail (it is wrapped in a try clause), a Setup formatted for the HCD is returned and passed to the <code>submitAndWaitHCD</code> function. All this is doing is calling Command Service submitAndWait, but it is checking that the CommandService instance created for the HCD is valid before sending. (This will be covered later.) It also provides a custom timeout, which has been arbitrarily set to 15 seconds for all the segments to complete any command. If this time is exceeded, the submitAndWait will time out and return an error. Note that if the Command Service is not available, because the HCD is not available, an Error is also returned.</p>
+<p>The function HcdDirectCommand.toHcdDirectCommand is shown below:</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/main/scala/m1cs/segments/shared/HcdCommands.scala#L10-L47" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * This object contains the parameter keys for the command sent to the HCD to process a single
+ * segment command. This is used by the segment Assembly and test code to produce an HCD Setup from
+ * an Assembly Setup.
+ */
+case object HcdDirectCommand {
+
+  val lscsDirectCommand: CommandName = CommandName(&quot;lscsDirectCommand&quot;)
+  // This key is used to store the command to be executed
+  val lscsCommandKey: Key[String]     = KeyType.StringKey.make(name = &quot;lscsCommand&quot;)
+  val lscsCommandNameKey: Key[String] = KeyType.StringKey.make(name = &quot;lscsCommandName&quot;)
+
+  /**
+   * This helper function returns a direct command Setup for the
+   * @param assemblyPrefix prefix of the Assembly as source
+   * @param assemblySetup the Setup received by the Assembly -contains segmentIdKey and command name
+   * @param obsId optional ObsId, defaults to None
+   * @return Setup ready for sending to HCD
+   */
+  def toHcdDirectCommand(assemblyPrefix: Prefix, assemblySetup: Setup, obsId: Option[ObsId] = None): Setup = {
+    val segmentIdExists    = assemblySetup.exists(segmentIdKey)
+    val segmentRangeExists = assemblySetup.exists(segmentRangeKey)
+    // Can&#39;t go on without one of these set
+    require(segmentIdExists || segmentRangeExists, s&quot;Bad segment info in the Assembly Setup: ${assemblySetup.commandName}&quot;)
+
+    // Convert setup to a String command - note that we know this will work because we validated
+    val commandAsString = CommandMap(assemblySetup.commandName)(assemblySetup)
+
+    // Grab the command name from the first part of
+    require(commandAsString.nonEmpty, &quot;The command to the HCD must not be empty, fool!&quot;)
+
+    Setup(assemblyPrefix, lscsDirectCommand, obsId).madd(
+      lscsCommandKey.set(commandAsString),
+      lscsCommandNameKey.set(assemblySetup.commandName.name),
+      assemblySetup(segmentIdKey)
+    )
+  }
+}</code></pre></dd>
+</dl>
+<p>First this function ensures that some required parameters are present in the Setup received by the Assembly. A <code>require</code> will throw an IllegalArgument exception if the condition is false. It then uses the CommandMap structure from Common (shown as part of validation) to extract the <code>toCommand</code> function for the command. This returns the String segment command as discussed in <a href="input-output.html">input</a>. It checks that the command String is not empty.</p>
+<p>Then the HCD setup is constructed using parameters from the Assembly Setup and new ones from HcdDirectCommand. The command string is passed with the lscsCommandKey parameter, and the command name is within lscsCommandNameKey. The last entry pulls the segmentIdKey from the Assembly Setup and inserts it into the HCD setup.</p>
+<p>The HCD Setup for the Assembly Setup:</p>
+<pre class="prettyprint"><code class="language-scala">Setup(paramSet=Set(ACT_ID((1,3)none), MODE((TRACK)none), TARGET((22.34)none), 
+  SegmentId((A23)none)), source=M1CS.hcdClient, commandName=CommandName(ACTUATOR), maybeObsId=None)
+</code></pre>
+<p>is:</p>
+<pre class="prettyprint"><code class="language-scala">Setup(paramSet=Set(lscsCommand((ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34)none), 
+      lscsCommandName((ACTUATOR)none), SegmentId((ALL)none)), 
+      source=M1CS.segmentAssembly, commandName=CommandName(lscsDirectCommand), maybeObsId=None)
+</code></pre>
+<h3><a href="#handling-submitresponse-from-the-segments-hcd" name="handling-submitresponse-from-the-segments-hcd" class="anchor"><span class="anchor-link"></span></a>Handling SubmitResponse from the Segments HCD</h3>
+<p>One last thing is that the Assembly must handle the SubmitResponse from the HCD. When the Assembly sends the HCD Setup to the HCD, a new <code>runId</code> is created for the command. When the command completes, the Assembly needs to pass an appropriate response back to the caller. This is handled by the following piece of code that is repeated fro above:</p>
+<pre class="prettyprint"><code class="language-scala">submitAndWaitHCD(runId, hcdSetup) map { sr =&gt;
+  cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
+}
+Started(runId)
+</code></pre>
+<p>The onSubmit handler sends the command using submitAndWaitHCD and then returns <code>Started</code> to the caller. This is a CSW long-running command (as opposed to an immediate-completion command). The HCD command runs asynchronously and returns a value in the future. When that occurs, the result is mapped to the closure shown, which calls the Assembly&rsquo;s Command Response Manager with the SubmitResponse from the HCD, but it replaces the HCD runId with the Assembly Setup&rsquo;s runId using <code>withRunId</code>. That&rsquo;s all that is needed to handle the response from the HCD to the Assembly caller.</p>
+<p>That&rsquo;s the extent of the Setup processing in the Assembly.</p>
+<h2><a href="#tracking-the-hcd-and-creation-of-command-service" name="tracking-the-hcd-and-creation-of-command-service" class="anchor"><span class="anchor-link"></span></a>Tracking the HCD and Creation of Command Service</h2>
+<p>The last bit of interesting code in the SegmentsAssemblyHandlers is how the SegmentsAssembly gets connection information about the Segments HCD, which it must have to send it commands.</p>
+<p>As a reminder, connections (i.e. hosts and ports) are not hard-coded in CSW. When a component starts up, its Supervisor registers itself with the Location Service on behalf of the TLA and that location information includes enough information so that one component can create an appropriate connection to the other. CSW supports Akka-based connections and HTTP-based connections.</p>
+<p>When the Segments Assembly starts up its Component Configuration File contains an entry that indicates to the Supervisor that it wants to <code>track</code> the HCD. The &ldquo;SegmentsAssemblyStandalone.conf&rdquo; conf file is shown here.</p>
+<pre class="prettyprint"><code class="language-scala">prefix = &quot;m1cs.segmentsAssembly&quot;
+componentType = assembly
+behaviorFactoryClassName = &quot;m1cs.segments.assembly.SegmentsAssemblyBehaviorFactory&quot;
+locationServiceUsage = RegisterAndTrackServices
+connections = [
+  {
+    prefix: &quot;m1cs.segmentsHCD&quot;
+    componentType: hcd
+    connectionType: akka
+  }
+]
+</code></pre>
+<p>This file is discussed in the CSW documentation. The key in this discussion is that the <code>connections</code> array has an entry for the an HCD with prefix <code>m1cs.segmentsHCD</code> and connectionType: Akka. This indicates to CSW and the Supervisor of the Assembly that it should track the Segments HCD and deliver events to the Assembly when the Segments HCD is available and also when/if it shuts down or crashes. To receive tracking events, the assembly overrides the <code>onLocationTrackingEvent</code> handler as shown here.</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala#L54-L75" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * This is overriding tracking events to gain events for Segments HCD. The Assembly should be started
+ * with a Component Configuration file that includes tracking and the info for the Segments HCD.
+ * This is done in the test files for reference.
+ * When the LocationUpdated event is received, a CommandService is created. When the
+ * connection goes down, the CommandService is set to None. When None an error is issued in onSubmit.
+ * @param trackingEvent CSW TrackingEvent.
+ */
+override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {
+  log.debug(s&quot;onLocationTrackingEvent called: $trackingEvent&quot;)
+  trackingEvent match {
+    case LocationUpdated(location) =&gt;
+      log.debug(s&quot;Assembly received HCD location: $location&quot;)
+      // Should be safe here since we are tracking only Akka location
+      val hcdLocation = location.asInstanceOf[AkkaLocation]
+      hcdCS = Some(CommandServiceFactory.make(hcdLocation)(ctx.system))
+    case LocationRemoved(connection) =&gt;
+      if (connection == hcdConnection) {
+        hcdCS = None
+      }
+  }
+}</code></pre></dd>
+</dl>
+<p>This code shows that the Assembly is handling two events: <code>locationUpdated</code> and <code>locationRemoved</code>. The locationUpdated is delivered when the HCD is registered and running. When this happens, the Assembly creates a CommandService instance for the HCD.</p>
+<p>In the constructor of the Assembly is the following line:</p>
+<pre class="prettyprint"><code class="language-scala">private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
+</code></pre>
+<p>Initially this is set to None, meaning there is no Command Service (i.e. the HCD is not available). When the HCD is available, a CommandService instance is created and this variable is set to its value as shown.</p>
+<p>Then, when a command is sent and processed by the <code>submitAndWaitHCD</code> call way up in the Assembly Command Execution section, it checks the value of this Option. If present, the command is sent to the HCD. If None, an Error is returned to the caller.</p>
+<p>This is an excellent way to track the availability of an Assembly or HCD using the builtin CSW functionality.</p>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/docs/src/main/paradox/LSCSAssembly.md">here</a>.
+</div>
+
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="LSCSHcd.html">LSCS Segments HCD</a></p>
+</div>
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="LSCSAssembly.html#lscs-segments-assembly" class="header">LSCS Segments Assembly</a>
+  <ul>
+    <li><a href="LSCSAssembly.html#top-level-actor" class="header">Top Level Actor</a></li>
+    <li><a href="LSCSAssembly.html#assembly-command-validation" class="header">Assembly Command Validation</a></li>
+    <li><a href="LSCSAssembly.html#assembly-command-execution" class="header">Assembly Command Execution</a></li>
+    <li><a href="LSCSAssembly.html#tracking-the-hcd-and-creation-of-command-service" class="header">Tracking the HCD and Creation of Command Service</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2021</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.1.0', '')});</script>
+
+
+</html>

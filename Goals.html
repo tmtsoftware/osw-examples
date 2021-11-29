@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>Goals and Addressed Issues Summary · Lower Segment Control System Demonstration</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='paradox docs'/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/warnOldVersion.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<script type="text/javascript" src="js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Lower Segment Control System Demonstration
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="input-output.html" class="page">Setup Input/Output</a></li>
+  <li><a href="LSCSAssembly.html" class="page">LSCS Segments Assembly</a></li>
+  <li><a href="LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+  <li><a href="LSCSSimulator.html" class="page">LSCS Simulator and JPL Simulator</a></li>
+  <li><a href="Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+  <li><a href="TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+  <li><a href="Goals.html" class="active page">Goals and Addressed Issues Summary</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">Lower Segment Control System Demonstration</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Lower Segment Control System Demonstration
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="input-output.html" class="page">Setup Input/Output</a></li>
+  <li><a href="LSCSAssembly.html" class="page">LSCS Segments Assembly</a></li>
+  <li><a href="LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+  <li><a href="LSCSSimulator.html" class="page">LSCS Simulator and JPL Simulator</a></li>
+  <li><a href="Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+  <li><a href="TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+  <li><a href="Goals.html" class="active page">Goals and Addressed Issues Summary</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">Lower Segment Control System Demonstration</a></li>
+  <li>Goals and Addressed Issues Summary</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#goals-and-addressed-issues-summary" name="goals-and-addressed-issues-summary" class="anchor"><span class="anchor-link"></span></a>Goals and Addressed Issues Summary</h1>
+<p>The following provides follow-up of the goals of lscs-example first discussed in the <a href="index.html#issues-addressed-in-the-demonstration">document overview</a> and references to any supporting documentation or code.</p>
+<h4><a href="#the-structure-of-the-m1cs-end-to-end-system" name="the-structure-of-the-m1cs-end-to-end-system" class="anchor"><span class="anchor-link"></span></a>The structure of the M1CS end-to-end system</h4>
+<p>The suggested structure of the M1CS segments control is described in the <a href="index.html">document overview</a> in the first section.</p>
+<h4><a href="#demonstration-of-how-to-create-setups-that-map-to-lscs-commands" name="demonstration-of-how-to-create-setups-that-map-to-lscs-commands" class="anchor"><span class="anchor-link"></span></a>Demonstration of how to create Setups that map to LSCS commands</h4>
+<p>A suggested approach for creating Setups for Assembly commands is presented <a href="input-output.html#implementing-commands">here</a>. This approach also shows how to go from an Assembly Setup to an SCMS segment command in the Assembly. Other approaches are possible, of course.</p>
+<h4><a href="#provide-examples-of-implementing-the-lscs-commands-not-all-commands-in-the-dictionary-are-provided-" name="provide-examples-of-implementing-the-lscs-commands-not-all-commands-in-the-dictionary-are-provided-" class="anchor"><span class="anchor-link"></span></a>Provide examples of implementing the LSCS commands (not all commands in the dictionary are provided)</h4>
+<p>Ten example commands were implemented as part of the lscs-example. The others, once fully documented, can be implemented by following the pattern. The commands are implemented in the files in the <code>lscsCommands</code> project.</p>
+<h4><a href="#support-for-sending-a-command-to-one-or-all-segments-in-the-hcd" name="support-for-sending-a-command-to-one-or-all-segments-in-the-hcd" class="anchor"><span class="anchor-link"></span></a>Support for sending a command to one or all segments in the HCD</h4>
+<p>All implemented commands support sending to 1 segment or ALL segments. A SegmentId type is available for addressing a single segment. The support for 1 or ALL segments is supported uniformly for all commands.</p>
+<p>The HCD also supports sending and completing commands to 1 or ALL segments.</p>
+<p>See <a href="input-output.html#segment-destination">here</a> and processing in the HCD <a href="LSCSHcd.html#segments-hcd-command-execution">here</a>.</p>
+<h4><a href="#support-for-sending-commands-to-segment-using-jpl-protocol-and-communicate-with-the-m1cs-teams-simulator" name="support-for-sending-commands-to-segment-using-jpl-protocol-and-communicate-with-the-m1cs-teams-simulator" class="anchor"><span class="anchor-link"></span></a>* Support for sending commands to Segment using JPL protocol and communicate with the M1CS-team&rsquo;s simulator</h4>
+<p>Allan has written a JVM-based simulator that obeys the JPL C-library protocol. It is possible to replace the JVM-based simulator with the C-based simulator in <a href="https://github.com/tmtsoftware/m1cs-lscs-sim">m1cs-lscs-sim</a> and test, etc continue to work although the behavior is not the same. The C-based simulator returns immediately for all commands. See <a href="LSCSSimulator.html">this page</a> (this is a private repo and may give 404).</p>
+<h4><a href="#demonstration-that-commands-to-all-segments-can-complete-when-all-segment-commands-complete" name="demonstration-that-commands-to-all-segments-can-complete-when-all-segment-commands-complete" class="anchor"><span class="anchor-link"></span></a>Demonstration that commands to all segments can complete when all segment commands complete</h4>
+<p>This is one of the most important goals of the demonstration project. The actor <code>SegComMonitor</code> was created to handle the responses from 1 or All segments. The way <code>SegComMonitor</code> satisfies this goal is shown <a href="LSCSHcd.html#segment-monitor">here</a>. A test showing completion for 492 segments is shown in the same section.</p>
+<h4><a href="#demonstrate-that-individual-segment-commands-can-complete-asynchronously" name="demonstrate-that-individual-segment-commands-can-complete-asynchronously" class="anchor"><span class="anchor-link"></span></a>Demonstrate that individual segment commands can complete asynchronously</h4>
+<p>Handling asynchronous commands is an important feature. The JVM-based LSCS simulator demonstrates this by delaying a random amount of time for every segment command. This allows the higher-level software to demonstrate proper functionality with asynchronous commands. The <code>SegComMonitor</code> starts 1 or 492 commands without blocking and waits asynchrnously for their completion. All CSW framework messages are asynchronous so the command from the Assembly to the HCD is also asynchronous and the command to the Assembly can also be asynchronous. This is shown in the <code>SegComMonitor</code> <a href="LSCSHcd.html#segment-monitor">reference</a> as well as the test shown (other tests are present in the SegComMonitorTests class).</p>
+<h4><a href="#demonstrate-that-a-hcd-can-handle-overlapping-asynchronous-commands" name="demonstrate-that-a-hcd-can-handle-overlapping-asynchronous-commands" class="anchor"><span class="anchor-link"></span></a>Demonstrate that a HCD can handle overlapping asynchronous commands</h4>
+<p>Similar to the previous point, the asynchronous nature of CSW makes overlapping commands operate naturally with no extra logic or special cases. The constraint on overlapping commands will come down to the functionality in the LSCS segment sofware itself. Overlapping asynchronous commands are shown in the <code>SegComMonitor</code> <a href="LSCSHcd.html#segment-monitor">reference</a> as well as the overlapping command test shown in that section.</p>
+<h4><a href="#demonstrate-that-the-csw-hcd-can-make-492-socket-connections-to-the-project-provided-lscs-simulator" name="demonstrate-that-the-csw-hcd-can-make-492-socket-connections-to-the-project-provided-lscs-simulator" class="anchor"><span class="anchor-link"></span></a>Demonstrate that the CSW HCD can make 492 socket connections to the project-provided LSCS simulator</h4>
+<p>This is the requirement that started this demonstration project. Currently, creating 492 HCDs CSW is not possible, but that is not really needed, because the interface to the LSCS is simple and creating a socket connection turns out to be lightweight (forgetting the issue with macOS, of course). It might be reasonable to create the connections only when a command is sent. The ability to make 492 segments can be tested at a very low level. The <code>SocketClientStreamTest</code> shows creating 492 segments. See the simulator <a href="LSCSSimulator.html">page</a>.</p>
+<h4><a href="#show-how-to-test-the-code-at-various-levels" name="show-how-to-test-the-code-at-various-levels" class="anchor"><span class="anchor-link"></span></a>Show how to test the code at various levels</h4>
+<p>The demonstration project shows how to create CSW tests starting at the lowest level with tests involving more and more functionality following the TMT Testing Plan. See the <a href="TestingAndShell.html">testing page</a> for a list of all tests. Also see the <code>test</code> directory under each of the projects: lscsCommands, lscsComps, lscsDeploy.</p>
+<h4><a href="#demonstrate-how-to-send-commands-to-the-lscs-assembly-from-esw-shell" name="demonstrate-how-to-send-commands-to-the-lscs-assembly-from-esw-shell" class="anchor"><span class="anchor-link"></span></a>Demonstrate how to send commands to the LSCS Assembly from esw-shell</h4>
+<p>Examples showing the use of the lscsCommands JAR file and esw-shell are shown in the testing page: <a href="TestingAndShell.html#loading-and-executing-segment-commands">testing page</a>.</p>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/docs/src/main/paradox/Goals.md">here</a>.
+</div>
+
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="Goals.html#goals-and-addressed-issues-summary" class="header">Goals and Addressed Issues Summary</a>
+  <ul>
+    <li><a href="Goals.html#the-structure-of-the-m1cs-end-to-end-system" class="header">The structure of the M1CS end-to-end system</a></li>
+    <li><a href="Goals.html#demonstration-of-how-to-create-setups-that-map-to-lscs-commands" class="header">Demonstration of how to create Setups that map to LSCS commands</a></li>
+    <li><a href="Goals.html#provide-examples-of-implementing-the-lscs-commands-not-all-commands-in-the-dictionary-are-provided-" class="header">Provide examples of implementing the LSCS commands (not all commands in the dictionary are provided)</a></li>
+    <li><a href="Goals.html#support-for-sending-a-command-to-one-or-all-segments-in-the-hcd" class="header">Support for sending a command to one or all segments in the HCD</a></li>
+    <li><a href="Goals.html#support-for-sending-commands-to-segment-using-jpl-protocol-and-communicate-with-the-m1cs-teams-simulator" class="header">* Support for sending commands to Segment using JPL protocol and communicate with the M1CS-team&rsquo;s simulator</a></li>
+    <li><a href="Goals.html#demonstration-that-commands-to-all-segments-can-complete-when-all-segment-commands-complete" class="header">Demonstration that commands to all segments can complete when all segment commands complete</a></li>
+    <li><a href="Goals.html#demonstrate-that-individual-segment-commands-can-complete-asynchronously" class="header">Demonstrate that individual segment commands can complete asynchronously</a></li>
+    <li><a href="Goals.html#demonstrate-that-a-hcd-can-handle-overlapping-asynchronous-commands" class="header">Demonstrate that a HCD can handle overlapping asynchronous commands</a></li>
+    <li><a href="Goals.html#demonstrate-that-the-csw-hcd-can-make-492-socket-connections-to-the-project-provided-lscs-simulator" class="header">Demonstrate that the CSW HCD can make 492 socket connections to the project-provided LSCS simulator</a></li>
+    <li><a href="Goals.html#show-how-to-test-the-code-at-various-levels" class="header">Show how to test the code at various levels</a></li>
+    <li><a href="Goals.html#demonstrate-how-to-send-commands-to-the-lscs-assembly-from-esw-shell" class="header">Demonstrate how to send commands to the LSCS Assembly from esw-shell</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2021</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.1.0', '')});</script>
+
+
+</html>

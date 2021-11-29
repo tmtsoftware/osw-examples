@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>LSCS Simulator and JPL Simulator · Lower Segment Control System Demonstration</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='paradox docs'/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/warnOldVersion.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<script type="text/javascript" src="js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Lower Segment Control System Demonstration
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="input-output.html" class="page">Setup Input/Output</a></li>
+  <li><a href="LSCSAssembly.html" class="page">LSCS Segments Assembly</a></li>
+  <li><a href="LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+  <li><a href="LSCSSimulator.html" class="active page">LSCS Simulator and JPL Simulator</a></li>
+  <li><a href="Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+  <li><a href="TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+  <li><a href="Goals.html" class="page">Goals and Addressed Issues Summary</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">Lower Segment Control System Demonstration</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Lower Segment Control System Demonstration
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="input-output.html" class="page">Setup Input/Output</a></li>
+  <li><a href="LSCSAssembly.html" class="page">LSCS Segments Assembly</a></li>
+  <li><a href="LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+  <li><a href="LSCSSimulator.html" class="active page">LSCS Simulator and JPL Simulator</a></li>
+  <li><a href="Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+  <li><a href="TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+  <li><a href="Goals.html" class="page">Goals and Addressed Issues Summary</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">Lower Segment Control System Demonstration</a></li>
+  <li>LSCS Simulator and JPL Simulator</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#lscs-simulator-and-jpl-simulator" name="lscs-simulator-and-jpl-simulator" class="anchor"><span class="anchor-link"></span></a>LSCS Simulator and JPL Simulator</h1>
+<p>The JVM simulator server is implemented in the <code>SocketServerStream</code> class. It implements the same low level protocol as the JPL C library, located in the <code>m1cs-lscs-sim</code> subproject. The main difference in the current version is that the Scala version of the server supports a &ldquo;DELAY ms&rdquo; command, which is used to simulate a command that takes <code>ms</code> milliseconds to complete. For testing, it also takes a <code>q</code> command that causes the server to shut down.</p>
+<h2><a href="#starting-the-socket-server" name="starting-the-socket-server" class="anchor"><span class="anchor-link"></span></a>Starting the Socket Server</h2>
+<p>For testing, the JVM socket server can be started with:</p>
+<pre class="prettyprint"><code class="language-scala">  new SocketServerStream()(actorSystem)
+</code></pre>
+<p>The C version of the server can be started with the <code>CmdSrvSim</code> command. See the README.md in the <code>m1cs-lscs-sim</code> subproject for details on the C version.</p>
+<h2><a href="#creating-a-socket-client" name="creating-a-socket-client" class="anchor"><span class="anchor-link"></span></a>Creating a Socket Client</h2>
+<p>In order to create a socket client, you need either an ActorSystem[SpawnProtocol] or an ActorContext, since the client needs to create an actor internally, in order to manage responses.</p>
+<p>To use an ActorSystem, use the <code>SocketClientStream.withSystem()</code> method:</p>
+<pre class="prettyprint"><code class="language-scala">  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), &quot;SocketServerStream&quot;)
+  // ...
+  val client1 = SocketClientStream.withSystem(&quot;client1&quot;)
+</code></pre>
+<p>If you are already in an actor, you can use the ActorContext instead (used only in the same thread to create a child actor):</p>
+<pre class="prettyprint"><code class="language-scala">    Behaviors.setup[Command] { ctx =&gt;
+      val io = SocketClientStream(ctx, name)
+      // ...
+    }
+</code></pre>
+<p>Both methods have optional arguments for the host and port to use to connect to the server. The deault is localhost:8023, which is the same default used by the C library.</p>
+<h2><a href="#sending-messages-to-the-server" name="sending-messages-to-the-server" class="anchor"><span class="anchor-link"></span></a>Sending Messages to the Server</h2>
+<p>The class used to access the socket server is <code>SocketClientStream</code> and it can talk to either the C or the Scala version of the server. </p>
+<p>The API for the client is basically just: <code>send(message)</code>, which returns a non-blocking Future response:</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/test/scala/m1cs/segments/streams/SocketClientStreamTest.scala#L51-L90" target="_blank" title="Go to snippet source">source</a><code class="language-scala">implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), &quot;SocketServerStream&quot;)
+implicit val ece: ExecutionContextExecutor              = system.executionContext
+implicit val timout: Timeout                            = Timeout(30.seconds)
+
+// Start the server
+new SocketServerStream()(system)
+
+test(&quot;Basic test&quot;) {
+  val client1 = SocketClientStream.withSystem(&quot;client1&quot;)
+  val client2 = SocketClientStream.withSystem(&quot;client2&quot;)
+  val client3 = SocketClientStream.withSystem(&quot;client3&quot;)
+
+  def showResult(msg: SocketMessage): SocketMessage = {
+    println(s&quot;XXX showResult: $msg&quot;)
+    msg
+  }
+  val f0 = client1.send(&quot;IMMEDIATE&quot;).map(showResult)
+  val f1 = client1.send(&quot;DELAY 2000&quot;).map(showResult)
+  val f2 = client2.send(&quot;DELAY 1000&quot;).map(showResult)
+  val f3 = client3.send(&quot;DELAY 500&quot;).map(showResult)
+  val f4 = client1.send(&quot;DELAY 200&quot;).map(showResult)
+  val f5 = client2.send(&quot;IMMEDIATE&quot;).map(showResult)
+
+  val f = for {
+    resp0 &lt;- f0
+    resp1 &lt;- f1
+    resp2 &lt;- f2
+    resp3 &lt;- f3
+    resp4 &lt;- f4
+    resp5 &lt;- f5
+  } yield {
+    client1.terminate()
+    client2.terminate()
+    client3.terminate()
+    List(resp0, resp1, resp2, resp3, resp4, resp5)
+  }
+  val list = Await.result(f, 30.seconds)
+  println(s&quot;XXX test1 result = $list&quot;)
+  assert(list.forall(_.cmd.endsWith(&quot; COMPLETED&quot;)))
+}</code></pre></dd>
+</dl>
+<p>The type of the message sent is <code>SocketMessage</code>, which has the same layout as the JPL C socket message:</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/main/scala/m1cs/segments/streams/shared/SocketMessage.scala#L80-L86" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * The type of a message sent to the server (also used for the reply).
+ *
+ * @param hdr message header
+ * @param cmd the actual text of the command
+ */
+case class SocketMessage(hdr: MsgHdr, cmd: String) {</code></pre></dd>
+</dl>
+<p>In most cases you don&rsquo;t need to provide the message header, since it is generated automatically from the message text. It contains information, such as the size of the message and a sequence number, which is also returned as part of the response. The header is represented by the MsgHdr class, below:</p>
+<dl>
+  <dt>Scala</dt>
+  <dd>
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/lscs-example/lscsComps/src/main/scala/m1cs/segments/streams/shared/SocketMessage.scala#L36-L42" target="_blank" title="Go to snippet source">source</a><code class="language-scala">/**
+ * @param msgId message type
+ * @param srcId sender application id
+ * @param msgLen message length including header(bytes
+ * @param seqNo sequence number
+ */
+case class MsgHdr(msgId: MessageId, srcId: SourceId, msgLen: Int, seqNo: Int)</code></pre></dd>
+</dl>
+<p>The type of the response to sending a command is the same (SocketMessage).</p>
+<h2><a href="#stopping-the-server" name="stopping-the-server" class="anchor"><span class="anchor-link"></span></a>Stopping the Server</h2>
+<p>For testing, you can use the <code>terminate()</code> method on the client to cause the server to shutdown, ending the connection. This is not supported in the C version.</p>
+<h2><a href="#wire-format" name="wire-format" class="anchor"><span class="anchor-link"></span></a>Wire Format</h2>
+<p>The wire format for a socket message is based on the C library version and uses the same header and byte order.</p>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/v0.1.0/docs/src/main/paradox/LSCSSimulator.md">here</a>.
+</div>
+
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="Deploy.html">Segments Assembly and HCD Deployment</a></p>
+</div>
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="LSCSSimulator.html#lscs-simulator-and-jpl-simulator" class="header">LSCS Simulator and JPL Simulator</a>
+  <ul>
+    <li><a href="LSCSSimulator.html#starting-the-socket-server" class="header">Starting the Socket Server</a></li>
+    <li><a href="LSCSSimulator.html#creating-a-socket-client" class="header">Creating a Socket Client</a></li>
+    <li><a href="LSCSSimulator.html#sending-messages-to-the-server" class="header">Sending Messages to the Server</a></li>
+    <li><a href="LSCSSimulator.html#stopping-the-server" class="header">Stopping the Server</a></li>
+    <li><a href="LSCSSimulator.html#wire-format" class="header">Wire Format</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2021</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.1.0', '')});</script>
+
+
+</html>
