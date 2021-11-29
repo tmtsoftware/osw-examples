@@ -69,7 +69,7 @@ class SampleAssemblyHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage],
       case LocationUpdated(location) =>
         hcdLocation = location.asInstanceOf[AkkaLocation]
         hcdCS = Some(CommandServiceFactory.make(location))
-        onSetup(Id(), Setup(prefix, shortCommand, None))
+        val _ = onSetup(Id(), Setup(prefix, shortCommand, None))
       case LocationRemoved(connection) =>
         if (connection == hcdConnection) {
           hcdCS = None
@@ -97,12 +97,12 @@ class SampleAssemblyHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage],
   }
 
   private def subscribeToHcd(): EventSubscription = {
-    log.info("Assembly: $prefix starting subscription.")
+    log.info(s"Assembly: $prefix starting subscription.")
     eventService.defaultSubscriber.subscribeCallback(Set(counterEventKey), processEvent)
   }
 
   private def unsubscribeHcd(): Unit = {
-    log.info("Assembly: $prefix stopping subscription.")
+    log.info(s"Assembly: $prefix stopping subscription.")
     maybeEventSubscription.foreach(_.unsubscribe())
   }
   //#subscribe

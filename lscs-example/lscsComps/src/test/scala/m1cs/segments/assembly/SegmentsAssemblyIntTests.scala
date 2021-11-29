@@ -51,9 +51,9 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   override def beforeAll(): Unit = {
     super.beforeAll()
     // Assembly used for all tests
-    spawnStandalone(assemblyConfig)
+    val _ = spawnStandalone(assemblyConfig)
     // Create the HCD here for all tests, may change
-    spawnStandalone(hcdConfig)
+    val _ = spawnStandalone(hcdConfig)
   }
 
   override def afterAll(): Unit = {

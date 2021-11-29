@@ -20,7 +20,7 @@ import scala.concurrent.{Await, ExecutionContext}
 //noinspection ScalaStyle
 //#intro
 class BasicSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, EventServer) with AnyWordSpecLike {
-  import frameworkTestKit.frameworkWiring._
+  import frameworkTestKit.*
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
   private implicit val ec: ExecutionContext                            = actorSystem.executionContext
@@ -65,7 +65,7 @@ class BasicSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, 
 
       val testSleep    = 1500L
       val setup: Setup = setSleepTime(Setup(testPrefix, sleep, None), testSleep)
-      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       val sr: Completed = Await.result(assemblyCS.submitAndWait(setup), 10.seconds).asInstanceOf[Completed]
       sr.result(resultKey).head shouldBe testSleep
@@ -75,7 +75,7 @@ class BasicSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, 
       val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
       val setup: Setup = Setup(testPrefix, immediateCommand, None)
-      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       Await.result(assemblyCS.submitAndWait(setup), 10.seconds) shouldBe a[Completed]
     }
@@ -87,7 +87,7 @@ class BasicSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, 
       val mediumSetup: Setup = Setup(testPrefix, mediumCommand, None)
       val longSetup: Setup   = Setup(testPrefix, longCommand, None)
 
-      val assemblyCS = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       val r1: Completed = Await.result(assemblyCS.submitAndWait(shortSetup), 10.seconds).asInstanceOf[Completed]
       r1.result(resultKey).head shouldBe shortSleepPeriod
@@ -103,7 +103,7 @@ class BasicSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, 
       val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
       val complexSetup: Setup = Setup(testPrefix, complexCommand, None)
-      val assemblyCS          = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS          = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       Await.result(assemblyCS.submitAndWait(complexSetup), 10.seconds) shouldBe a[Completed]
     }

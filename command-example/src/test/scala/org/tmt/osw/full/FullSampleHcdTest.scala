@@ -13,7 +13,7 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer, LocationServer}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import org.tmt.osw.full.shared.SampleInfo._
+import org.tmt.osw.full.shared.SampleInfo.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuiteLike
 
@@ -26,14 +26,14 @@ class FullSampleHcdTest
     extends ScalaTestFrameworkTestKit(AlarmServer, EventServer, LocationServer)
     with AnyFunSuiteLike
     with BeforeAndAfterEach {
-  import frameworkTestKit.frameworkWiring._
+  import frameworkTestKit.*
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnStandalone(com.typesafe.config.ConfigFactory.load("FullSampleHcdStandalone.conf"))
+    val _ = spawnStandalone(com.typesafe.config.ConfigFactory.load("FullSampleHcdStandalone.conf"))
   }
 
-  import scala.concurrent.duration._
+  import scala.concurrent.duration.*
   test("HCD should be locatable using Location Service") {
     val connection   = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
     val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
@@ -47,7 +47,7 @@ class FullSampleHcdTest
     val counterEventKey = EventKey(Prefix("CSW.samplehcd"), EventName("HcdCounter"))
     val hcdCounterKey   = KeyType.IntKey.make("counter")
 
-    val eventService = eventServiceFactory.make(locationService)(actorSystem)
+    //val eventService = eventServiceFactory.make(locationService)(actorSystem)
     val subscriber   = eventService.defaultSubscriber
 
     // wait for a bit to ensure HCD has started and published an event
@@ -80,9 +80,9 @@ class FullSampleHcdTest
   //#subscribe
 
   //#submit
-  implicit val typedActorSystem: ActorSystem[_] = actorSystem
+  implicit val typedActorSystem: ActorSystem[?] = actorSystem
   test("full: should be able to send sleep command to HCD") {
-    import scala.concurrent.duration._
+    import scala.concurrent.duration.*
     implicit val sleepCommandTimeout: Timeout = Timeout(10000.millis)
 
     // Construct Setup command
@@ -124,7 +124,7 @@ class FullSampleHcdTest
 
   //#exception
   test("should get timeout exception if submit timeout is too small") {
-    import scala.concurrent.duration._
+    import scala.concurrent.duration.*
     implicit val sleepCommandTimeout: Timeout = Timeout(1000.millis)
 
     // Construct Setup command

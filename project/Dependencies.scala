@@ -2,50 +2,24 @@ import sbt._
 
 object Dependencies {
 
+  private val Org           = "com.github.tmtsoftware.csw"
+  lazy val cswVersion       = "4.0.0"
+  lazy val akkaVersion      = "2.6.15" //all akka is Apache License 2.0
+  lazy val scalaTestVersion = "3.2.9"  // Apache License 2.0
+
+  val `csw-framework`       = Org %% "csw-framework" % cswVersion
+  val `csw-testkit`         = Org %% "csw-testkit"   % cswVersion
+
+
+  val `scalatest`       = "org.scalatest"          %% "scalatest"       % "3.2.9"  //Apache License 2.0
+
+  val `akka-testkit`    = "com.typesafe.akka"      %% "akka-actor-testkit-typed" % akkaVersion
+
+
+
   val CommandExample = Seq(
-    CSW.`csw-framework`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Libs.`junit` % Test,
-    Libs.`junit-interface` % Test
-  )
 
-  val Comsassembly = Seq(
-    CSW.`csw-framework`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Libs.`junit` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
-  )
-
-  val Comshcd = Seq(
-    CSW.`csw-framework`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Libs.`junit` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
-  )
-
-  val ComsDeploy = Seq(
-    CSW.`csw-framework`,
-    CSW.`csw-testkit` % Test
-  )
-
-  val SegSim = Seq(
-    CSW.`csw-framework`,
-    Akka.`akka-stream-typed`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Akka.`akka-stream-testkit` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
-  )
-
-  val SegSimClient = Seq(
-    CSW.`csw-framework`,
-    Akka.`akka-stream-typed`,
-    CSW.`csw-testkit` % Test,
-    Libs.`scalatest` % Test,
-    Akka.`akka-stream-testkit` % Test,
-    Akka.`akka-actor-testkit-typed` % Test
+//    Libs.`junit` % Test,
+//    Libs.`junit-interface` % Test
   )
 }

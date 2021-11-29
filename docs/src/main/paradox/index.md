@@ -1,6 +1,9 @@
 # Lower Segment Control System Demonstration
 
 @@@ index
+Date: 10/13/21 for 90 days
+
+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
 
 - @ref:[Input/Output](input-output.md)
 - @ref:[LSCS Assembly](LSCSAssembly.md)
@@ -11,6 +14,8 @@
 - @ref:[Goals](Goals.md)
 
 @@@
+
+Version is $version$.
 
 This is documentation for the Lower Segment Control System (LSCS) demonstration project that is present in 
 the [TMT GitHub site](https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example). This project
@@ -77,7 +82,7 @@ figure is referenced.
 
 The Segments Assembly is a CSW Assembly that receives commands in the form of CSW Setups. In this demonstration
 implementation a Setup is constructed for a subset of the commands in the SegmentHcdCmdDict_20210902.pdf document (for more
-information on the construction of Setup commands, see @ref:[Setup Input/Output](./input-output.md)). As shown in the
+information on the construction of Setup commands, see @ref:[Setup Input/Output](input-output.md)). As shown in the
 previous figure, these Setups can be constructed in many clients including: a future M1CS Engineering UI, a Sequencer
 Script, esw-shell, or test code.
 

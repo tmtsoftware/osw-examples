@@ -4,9 +4,9 @@ import akka.util.Timeout
 import csw.command.client.CommandServiceFactory
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
-import csw.params.commands.{CommandName, CommandResponse, Setup}
-import csw.params.core.generics.{KeyType, Parameter}
-import csw.params.core.models.{ExposureIdWithObsId, ExposureNumber, ObsId, TYPLevel, Units}
+import csw.params.commands.{CommandResponse, Setup}
+import csw.params.core.generics.KeyType
+import csw.params.core.models.ObsId
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.FrameworkTestKit
@@ -15,26 +15,26 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.tmt.osw.basic.shared.SampleInfo.{hcdSleep, setSleepTime, sleepTimeKey}
+import org.tmt.osw.basic.shared.SampleInfo.{hcdSleep, setSleepTime}
 
 import scala.collection.mutable
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 //noinspection ScalaStyle
 class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
   // Shared HCD connection val in all tests
-  val hcdConnection = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+  private val hcdConnection = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
   private val frameworkTestKit = FrameworkTestKit()
 
   //ScalaTestFrameworkTestKit(AlarmServer, EventServer) wit
-  import frameworkTestKit.frameworkWiring._
+  import frameworkTestKit.*
 
   override def beforeAll(): Unit = {
     frameworkTestKit.start(AlarmServer, EventServer)
     // Create one for all tests.  Could create new one in each test
-    frameworkTestKit.spawnStandalone(com.typesafe.config.ConfigFactory.load("BasicSampleHcdStandalone.conf"))
+    val _ = frameworkTestKit.spawnStandalone(com.typesafe.config.ConfigFactory.load("BasicSampleHcdStandalone.conf"))
   }
 
   // stops all services started by this testkit
@@ -50,7 +50,7 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
     val counterEventKey = EventKey(Prefix("CSW.samplehcd"), EventName("HcdCounter"))
     val hcdCounterKey   = KeyType.IntKey.make("counter")
 
-    val eventService = eventServiceFactory.make(locationService)(actorSystem)
+    //val eventService = eventServiceFactory.make(locationService)(actorSystem)
     val subscriber   = eventService.defaultSubscriber
 
     // wait for a bit to ensure HCD has started and published an event
@@ -82,7 +82,7 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
   }
 
   test("basic: should be able to send sleep command to HCD") {
-    import org.tmt.osw.basic.shared.SampleInfo._
+    import org.tmt.osw.basic.shared.SampleInfo.*
 
     implicit val sleepCommandTimeout: Timeout = Timeout(10000.millis)
 

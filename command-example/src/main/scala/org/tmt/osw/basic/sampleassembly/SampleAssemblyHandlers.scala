@@ -67,7 +67,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
       case LocationUpdated(location) =>
         hcdLocation = location.asInstanceOf[AkkaLocation]
         hcdCS = Some(CommandServiceFactory.make(location))
-        onSetup(Id(), Setup(prefix, shortCommand, None))
+        val _ = onSetup(Id(), Setup(prefix, shortCommand, None))
       case LocationRemoved(connection) =>
         if (connection == hcdConnection) {
           hcdCS = None

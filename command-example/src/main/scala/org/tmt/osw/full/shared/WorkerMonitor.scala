@@ -41,7 +41,7 @@ object WorkerMonitor {
         case RemoveWorker(runId) =>
           logger.debug(s"Worker monitor removing: $runId")
           val newMap = workerMap - runId
-          logger.debug("Worker monitor map after remove: $newMap")
+          logger.debug(s"Worker monitor map after remove: $newMap")
           monitor(logger, newMap)
 
         case Info =>

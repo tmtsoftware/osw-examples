@@ -14,7 +14,7 @@ this Assembly, only the `validateCommand` and `onSubmit` handlers are implemente
 The `validateCommand` handler is shown below.
 
 Scala
-: @@snip [Validation](../../../lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #handle-validation }
+: @@snip [Validation]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #handle-validation }
 
 The `validateCommand` checks that the command is a `Setup` and returns an error if an `Observe` is received; otherwise it passes
 on validation of the Setup to `handleValidation`. Remember that each Setup from the outside has a Setup with the command name
@@ -22,7 +22,7 @@ equal to the name of the segment command. Therefore, the validation code looks u
 commands in Common. This code is shown below:
 
 Scala
-: @@snip [CommandSupport](../../../lscsCommands/src/main/scala/m1cs/segments/segcommands/Common.scala) { #command-support }
+: @@snip [CommandSupport]($lscs.base$/lscsCommands/src/main/scala/m1cs/segments/segcommands/Common.scala) { #command-support }
 
 If the command name is not present, validation fails with an UnsupportedCommandIssue. Otherwise, the command is Accepted.
 Validation could be improved, but we assume that if the command name is within our list, then the Setup contains all the
@@ -32,7 +32,7 @@ correct parameters. An error is returned during execution if the handling fails.
 Once validated, the `onSubmit` handler is called. The submit-related code for the Segments Assembly is shown below:
 
 Scala
-: @@snip [Validation](../../../lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #important-code }
+: @@snip [Validation]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #important-code }
 
 As before, the `Observes` return an Error (even through we can not get to this code in this example.) The `handleSetup`
 command must handle any named commands first. In this case, there is a command called `shutdownCommand` that when sent to the
@@ -49,12 +49,12 @@ because the HCD is not available, an Error is also returned.
 The function HcdDirectCommand.toHcdDirectCommand is shown below:
 
 Scala
-: @@snip [toDirect](../../../lscsComps/src/main/scala/m1cs/segments/shared/HcdCommands.scala) { #hcd-direct }
+: @@snip [toDirect]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/shared/HcdCommands.scala) { #hcd-direct }
 
 First this function ensures that some required parameters are present in the Setup received by the Assembly.  A `require`
 will throw an IllegalArgument exception if the condition is false. It then uses the CommandMap structure from Common
 (shown as part of validation) to extract the `toCommand` function for the command. This returns the String segment
-command as discussed in @ref[input](./input-output.md).  It checks that the command String is not empty.
+command as discussed in @ref[input](input-output.md).  It checks that the command String is not empty.
 
 Then the HCD setup is constructed using parameters from the Assembly Setup and new ones from HcdDirectCommand. The
 command string is passed with the lscsCommandKey parameter, and the command name is within lscsCommandNameKey. The
@@ -125,7 +125,7 @@ HCD is available and also when/if it shuts down or crashes.  To receive tracking
 `onLocationTrackingEvent` handler as shown here.
 
 Scala
-: @@snip [Tracking](../../../lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #tracking-events }
+: @@snip [Tracking]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #tracking-events }
 
 This code shows that the Assembly is handling two events: `locationUpdated` and `locationRemoved`. The locationUpdated is
 delivered when the HCD is registered and running. When this happens, the Assembly creates a CommandService instance for the HCD.

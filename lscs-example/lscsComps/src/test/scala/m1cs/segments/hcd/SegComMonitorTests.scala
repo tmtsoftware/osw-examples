@@ -40,7 +40,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     // Start an internal socket server
     log.debug("Starting an external socket server")
     // Add a -DsimulatorHost property to use external simulator
-    new SocketServerStream()(testKit.internalSystem)
+    val _ = new SocketServerStream()(testKit.internalSystem)
   }
 
   override def afterAll(): Unit = {

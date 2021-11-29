@@ -48,7 +48,7 @@ class SegmentsContainerTests extends ScalaTestFrameworkTestKit() with AnyFunSuit
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnContainer(config) // I guess this works, beforeAll runs after constructor, which is logical
+    val _ = spawnContainer(config) // I guess this works, beforeAll runs after constructor, which is logical
   }
 
   override def afterAll(): Unit = {

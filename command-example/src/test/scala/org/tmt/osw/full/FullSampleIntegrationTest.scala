@@ -4,12 +4,9 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ContainerMessage
-import csw.command.client.messages.SupervisorLockMessage.Unlock
-import csw.command.client.models.framework.LockingResponse
-import csw.command.client.models.framework.LockingResponse.{LockAcquired, LockReleased}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.{Cancelled, Completed, Locked, Started}
+import csw.location.api.models.{ComponentId, ComponentType}
+import csw.params.commands.CommandResponse.{Cancelled, Completed, Started}
 import csw.params.commands.Setup
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
@@ -17,13 +14,13 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 //noinspection ScalaStyle
 //#intro
 class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, EventServer) with AnyWordSpecLike {
 
-  import frameworkTestKit.frameworkWiring._
+  import frameworkTestKit.*
 
   private val containerConnection = AkkaConnection(
     ComponentId(Prefix(Subsystem.Container, "SampleContainer"), ComponentType.Container)
@@ -45,9 +42,9 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
 
   //#locate
 
-  import org.tmt.osw.moderate.shared.SampleInfo._
+  import org.tmt.osw.moderate.shared.SampleInfo.*
 
-  import scala.concurrent.duration._
+  import scala.concurrent.duration.*
 
   "startupContainer" must {
     "Ensure container is locatable using Location Service" in {
@@ -72,7 +69,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
       val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
       val setup: Setup = Setup(testPrefix, sleep, None).add(setSleepTime(1500))
-      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       Await.result(assemblyCS.submitAndWait(setup), 10.seconds) shouldBe a[Completed]
     }
@@ -81,7 +78,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
       val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
       val setup: Setup = Setup(testPrefix, immediateCommand, None)
-      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       Await.result(assemblyCS.submitAndWait(setup), 10.seconds) shouldBe a[Completed]
     }
@@ -90,7 +87,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
       val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
       val setup: Setup = Setup(testPrefix, sleep, None).madd(setSleepTime(4500))
-      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS   = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       val r1 = Await.result(assemblyCS.submit(setup), 10.seconds)
       r1 shouldBe a[Started]
@@ -113,7 +110,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
       val mediumSetup: Setup = Setup(testPrefix, mediumCommand, None)
       val longSetup: Setup   = Setup(testPrefix, longCommand, None)
 
-      val assemblyCS = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       Await.result(assemblyCS.submitAndWait(shortSetup), 10.seconds) shouldBe a[Completed]
       Await.result(assemblyCS.submitAndWait(mediumSetup), 10.seconds) shouldBe a[Completed]
@@ -124,7 +121,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
       val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
       val complexSetup: Setup = Setup(testPrefix, complexCommand, None)
-      val assemblyCS          = CommandServiceFactory.make(assemblyLocation)
+      val assemblyCS          = CommandServiceFactory.make(assemblyLocation)(actorSystem)
 
       Await.result(assemblyCS.submitAndWait(complexSetup), 10.seconds) shouldBe a[Completed]
     }

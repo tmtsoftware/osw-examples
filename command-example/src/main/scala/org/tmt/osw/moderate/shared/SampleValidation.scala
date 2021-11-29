@@ -56,7 +56,7 @@ object SampleValidation {
       if (sleepTime < maxSleep)
         Accepted(runId)
       else
-        Invalid(runId, ParameterValueOutOfRangeIssue("sleepTime must be < $maxSleep"))
+        Invalid(runId, ParameterValueOutOfRangeIssue(s"sleepTime must be < $maxSleep"))
     }
     else {
       Invalid(runId, MissingKeyIssue(s"required sleep command key: $sleepTimeKey is missing."))

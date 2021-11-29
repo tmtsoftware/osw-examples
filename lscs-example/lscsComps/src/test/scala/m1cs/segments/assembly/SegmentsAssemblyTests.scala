@@ -45,7 +45,7 @@ class SegmentsAssemblyTests extends ScalaTestFrameworkTestKit() with AnyFunSuite
   override def beforeAll(): Unit = {
     super.beforeAll()
     // uncomment if you want one Assembly run for all tests
-    spawnStandalone(config)
+    val _ = spawnStandalone(config)
   }
 
   override def afterAll(): Unit = {

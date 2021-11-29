@@ -36,7 +36,7 @@ shown below, which includes all the features of the command implementation. With
 create a Setup and to extract a segment command. All commands are constructed the same way.
 
 Scala
-: @@snip [ACTUATOR](../../../lscsCommands/src/main/scala/m1cs/segments/segcommands/ACTUATOR.scala) { #example-command }
+: @@snip [ACTUATOR]($lscs.base$/lscsCommands/src/main/scala/m1cs/segments/segcommands/ACTUATOR.scala) { #example-command }
 
 At the top of the object common code is imported. Following this is the name of the command, which is again, the
 name of the file. 
@@ -235,7 +235,7 @@ Tests exist for each command to verify that it is working properly.  There is on
 in the lscsCommands test area.  Each command has similar tests. The following shows the tests for Actuator.
 
 Scala
-: @@snip [ACTUATOR_TESTS](../../../lscsCommands/src/test/scala/m1cs/segments/segcommands/SegmentCommandsTests.scala){ #example-tests }
+: @@snip [ACTUATOR_TESTS]($lscs.base$/lscsCommands/src/test/scala/m1cs/segments/segcommands/SegmentCommandsTests.scala){ #example-tests }
 
 The tests create Setups with varied parameters and test that the output command is correct. Following are tests
 to verify that exceptions are thrown for bad conditions. For instance, note the test for the lack of an

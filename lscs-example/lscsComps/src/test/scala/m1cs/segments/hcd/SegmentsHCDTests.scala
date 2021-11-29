@@ -46,7 +46,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
     new SocketServerStream()(testKit.internalSystem)
 
     // uncomment if you want one HCD run for all tests
-    spawnStandalone(config)
+    val _ = spawnStandalone(config)
   }
 
   override def afterAll(): Unit = {

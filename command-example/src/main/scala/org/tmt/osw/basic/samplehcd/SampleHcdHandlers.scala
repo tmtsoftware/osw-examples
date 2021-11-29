@@ -103,7 +103,7 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
     command match {
       case setup: Setup => onSetup(runId, setup)
       case _ => // implement (or not)
-        Invalid(runId, UnsupportedCommandIssue("HCD: $prefix only supports Setup commands"))
+        Invalid(runId, UnsupportedCommandIssue(s"HCD: $prefix only supports Setup commands"))
     }
   }
 

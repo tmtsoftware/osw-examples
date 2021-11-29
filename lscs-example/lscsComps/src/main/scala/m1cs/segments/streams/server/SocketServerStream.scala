@@ -58,7 +58,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
           .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
           .via(commandParser)
 
-        connection.handleWith(serverLogic)
+        val _ = connection.handleWith(serverLogic)
       })
       .run()
 

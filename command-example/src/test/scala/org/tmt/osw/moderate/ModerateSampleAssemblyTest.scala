@@ -11,18 +11,18 @@ import scala.concurrent.Await
 
 //#intro
 class ModerateSampleAssemblyTest extends ScalaTestFrameworkTestKit(AlarmServer, EventServer) with AnyFunSuiteLike {
-  import frameworkTestKit.frameworkWiring._
+  import frameworkTestKit.*
 //#intro
 
   //#setup
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnStandalone(com.typesafe.config.ConfigFactory.load("ModerateSampleAssemblyStandalone.conf"))
+    val _ = spawnStandalone(com.typesafe.config.ConfigFactory.load("ModerateSampleAssemblyStandalone.conf"))
   }
 //#setup
 
   //#locate
-  import scala.concurrent.duration._
+  import scala.concurrent.duration.*
   test("Assembly should be locatable using Location Service") {
     val connection   = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "sample"), ComponentType.Assembly))
     val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get

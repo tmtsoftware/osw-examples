@@ -18,7 +18,7 @@ Initialization in the Segments HCD does the important job of creating the Segmen
 only the job of initializing the segments is done.
 
 Scala
-: @@snip [Validation](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #initialize }
+: @@snip [Initialize]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #initialize }
 
 Any state that is initialized in the `initialize` handler must be global to the TLA. In this case, there is a 
 variable called `createdSegments` of type `Segments` that is set during initialize. The segments value is managed 
@@ -36,7 +36,7 @@ As in the Assembly, an `Observe` is rejected and the Setup is passed to another 
 The `validateCommand` handler is shown below.
 
 Scala
-: @@snip [Validation](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-validation }
+: @@snip [Validation]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-validation }
 
 The HCD can process two commands: lscsDirectCommand and shutdownCommand. For lscsDirectCommand `handleValidation` does three things:
 
@@ -60,7 +60,7 @@ execution to `handleSetup`. Checking for Observe again isn't needed since it is 
 HandleSetup is reproduced below.  This is the crux of the HCD.
 
 Scala
-: @@snip [Submit](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-submit }
+: @@snip [Submit]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/hcd/SegmentsHcdHandlers.scala) { #handle-submit }
 
 There are two commands, `lscsDirectCommand`, and `shutdownCommand`.
 
@@ -83,7 +83,7 @@ Segment Monitor is the longest piece of code in the project. Segment Monitor is 
 finite state machine that has the job of executing a segment command and waiting for responses.  The code is long but is included here.
 
 Scala
-: @@snip [Submit](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegComMonitor.scala) { #seg-mon }
+: @@snip [Submit]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/hcd/SegComMonitor.scala) { #seg-mon }
 
 `SegComMonior` is created in the `starting` state, awaiting the `start` message from the HCD TLA. When received, it sends the full segment
 command to each of the SegmentActors on the list passed into the monitor from the TLA (it will be 1 segment or a list of all segments). 
@@ -132,13 +132,13 @@ command to be sent to all the segments.  Then the test code waits for the Comple
 it waits to see if any other messages arrive, then shutsdown all the segment connections and quits.
 
 Scala
-: @@snip [SegMon1](../../../lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala) { #test1 }
+: @@snip [SegMon1]($lscs.base$/lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala) { #test1 }
 
 The following code is similar but in this case, the test starts and executes two overlapping segment commands and waits for them both
 to asynchronously complete either successfully or with an error.  
 
 Scala
-: @@snip [SegMon2](../../../lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala) { #test2 }
+: @@snip [SegMon2]($lscs.base$/lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala) { #test2 }
 
 At least with the JVM simulator, it is not known which command will complete first because of the randomized delays, 
 so the test waits for 2 messages and then checks that they are the correct messages.
@@ -149,7 +149,7 @@ is a wrapper for the class called `SocketClientStream`, which is the low-level c
 and which implements the JPL-library protocol.  The code below is the interesting part of SegmentActor.
 
 Scala
-: @@snip [SegActor](../../../lscsComps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala) { #segment-actor }
+: @@snip [SegActor]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala) { #segment-actor }
 
 First, when the SegmentActor is created in the `apply` def function. This is where the lower level `SocketClientStream`
 class is added and where the socket connection to the LSCS occurs.
@@ -179,4 +179,4 @@ client to send the command to the segment socket. This is an asynchronous call u
 the SegmentActor sends a response to the caller, which is a `SegComMon` instance to be counted.
 
 The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket
-connection to the segment. These shutdown commands are present so that tests always work correctly.  
+connection to the segment. These shutdown commands are present so that tests always work correctly.

@@ -67,12 +67,12 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     log.debug(s"onLocationTrackingEvent called: $trackingEvent")
     trackingEvent match {
       case LocationUpdated(location) =>
-        log.debug("HCD: $location created")
+        log.debug(s"HCD: $location created")
         hcdLocation = location.asInstanceOf[AkkaLocation]
         hcdCS = Some(CommandServiceFactory.make(location))
       case LocationRemoved(connection) =>
         if (connection == hcdConnection) {
-          log.info("HCD: $connection no longer available")
+          log.info(s"HCD: $connection no longer available")
           hcdCS = None
         }
     }
@@ -196,7 +196,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     hcdCS match {
       case Some(cs) =>
         val s = Setup(prefix, hcdSleep, setup.maybeObsId).add(setSleepTime(sleepTime))
-        cs.submit(s).map {
+        val _ = cs.submit(s).map {
           case started: Started =>
             // Could do some work between started and queryFinal here
             cs.queryFinal(started.runId).foreach { sr => commandResponseManager.updateCommand(sr.withRunId(runId)) }
