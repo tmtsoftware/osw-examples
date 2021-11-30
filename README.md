@@ -18,6 +18,6 @@ This is an example of an end-to-end approach to the Assembly and HCD needed for 
 
 ### Documentation
 
-Documentation for osw-examples can be found @extref[here](https://tmtsoftware.github.io/osw-examples).
+Documentation for osw-examples can be found [here](https://tmtsoftware.github.io/osw-examples).
 
 
