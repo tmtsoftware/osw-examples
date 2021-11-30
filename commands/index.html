@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>Commands Example Documentation · OSW Examples Documentation</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='paradox docs'/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="../lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../js/page.js"></script>
+<script type="text/javascript" src="../js/warnOldVersion.js"></script>
+<script type="text/javascript" src="../js/groups.js"></script>
+<script type="text/javascript" src="../js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="../lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="../images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="../index.html" >
+<span class="home-icon">⌂</span>OSW Examples Documentation
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../commands/index.html" class="active page">Commands Example Documentation</a></li>
+  <li><a href="../lscs/index.html" class="page">Lower Segment Control System Demonstration</a>
+  <ul>
+    <li><a href="../lscs/input-output.html" class="page">Setup Input/Output</a></li>
+    <li><a href="../lscs/LSCSAssembly.html" class="page">LSCS Segments Assembly</a></li>
+    <li><a href="../lscs/LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+    <li><a href="../lscs/LSCSSimulator.html" class="page">LSCS Simulator and JPL Simulator</a></li>
+    <li><a href="../lscs/Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+    <li><a href="../lscs/TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+    <li><a href="../lscs/Goals.html" class="page">Goals and Addressed Issues Summary</a></li>
+  </ul></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="../index.html">OSW Examples Documentation</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="../index.html" >
+<span class="home-icon">⌂</span>OSW Examples Documentation
+</a>
+<div class="version-number">
+0.1.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../commands/index.html" class="active page">Commands Example Documentation</a></li>
+  <li><a href="../lscs/index.html" class="page">Lower Segment Control System Demonstration</a>
+  <ul>
+    <li><a href="../lscs/input-output.html" class="page">Setup Input/Output</a></li>
+    <li><a href="../lscs/LSCSAssembly.html" class="page">LSCS Segments Assembly</a></li>
+    <li><a href="../lscs/LSCSHcd.html" class="page">LSCS Segments HCD</a></li>
+    <li><a href="../lscs/LSCSSimulator.html" class="page">LSCS Simulator and JPL Simulator</a></li>
+    <li><a href="../lscs/Deploy.html" class="page">Segments Assembly and HCD Deployment</a></li>
+    <li><a href="../lscs/TestingAndShell.html" class="page">Testing LSCS Code and Using esw-shell</a></li>
+    <li><a href="../lscs/Goals.html" class="page">Goals and Addressed Issues Summary</a></li>
+  </ul></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="../index.html">OSW Examples Documentation</a></li>
+  <li>Commands Example Documentation</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#commands-example-documentation" name="commands-example-documentation" class="anchor"><span class="anchor-link"></span></a>Commands Example Documentation</h1>
+<p>There are three supplemental versions of the tutorial Assembly and HCD called: basic, moderate, and full. The basic version is similar to the tutorial example here with possible best practices. Two other versions are included that introduce ways of programming components along with increasing functionality. The following table shows the features of each version. Moderate adds functionality to Basic, and Full adds functionality to Moderate.</p>
+<p>The code for the enhanced tutorials is in the CSW distribution at the following locations:</p>
+<p>Scala versions are <a href="$github.dir.base_url$/examples/src/main/scala/example/tutorial/">here</a><br/>Scala test code is <a href="$github.dir.base_url$/examples/src/test/scala/example/tutorial/">here</a><br/>Java version of basic is <a href="$github.dir.base_url$/examples/src/main/java/example/tutorial/">here</a><br/>Java test code is <a href="$github.dir.base_url$/examples/src/test/java/example/tutorial/">here</a></p>
+<p>At this time there is no Java versions of moderate and full.</p>
+<h2><a href="#basic" name="basic" class="anchor"><span class="anchor-link"></span></a>Basic</h2>
+<h3><a href="#basic-hcd" name="basic-hcd" class="anchor"><span class="anchor-link"></span></a>Basic HCD</h3>
+<ul>
+  <li>Implements a simple sleep worker in HCD using Time Service scheduler.</li>
+  <li>Provides basic command validation.</li>
+  <li>Shows one way to write onSetup handler.</li>
+  <li>Shows how to publish events.</li>
+</ul>
+<h3><a href="#basic-assembly" name="basic-assembly" class="anchor"><span class="anchor-link"></span></a>Basic Assembly</h3>
+<ul>
+  <li>Provides simple validation in HCD and Assembly.</li>
+  <li>Assembly shows how to use onTrackEvent to manage CommandService creation and loss of HCD.</li>
+  <li>Code shows how to send a command while noticing if HCD is available.</li>
+  <li>Simulates different commands that use the sleep functionality of HCD.</li>
+  <li>Shows how to use CommandResponseManager to update a long-running command.</li>
+  <li>Shows a &ldquo;complex&rdquo; command that uses CommandResponseManager queryFinalAll call.</li>
+  <li>Shows how to subscribe to events and process events.</li>
+</ul>
+<p>Includes standalone HCD tests and Assembly+HCD integration tests that start a container with both components.</p>
+<h2><a href="#moderate" name="moderate" class="anchor"><span class="anchor-link"></span></a>Moderate</h2>
+<h3><a href="#moderate-hcd" name="moderate-hcd" class="anchor"><span class="anchor-link"></span></a>Moderate HCD</h3>
+<ul>
+  <li>Sleep worker is interruptable allowing sleep command to be cancelled.</li>
+  <li>Supports command that will cancel the &ldquo;long command&rdquo;.</li>
+  <li>Uses validation code shared with Assembly.</li>
+  <li>Uses &ldquo;info&rdquo; file that is shared between HCD and Assembly.</li>
+</ul>
+<h3><a href="#moderate-assembly" name="moderate-assembly" class="anchor"><span class="anchor-link"></span></a>Moderate Assembly</h3>
+<ul>
+  <li>Adds command to cancel &ldquo;long command&rdquo;. Keeps track of long command runId.</li>
+  <li>Uses validation code shared with Assembly.</li>
+  <li>Uses &ldquo;info&rdquo; file that is shared between HCD and Assembly.</li>
+</ul>
+<p>Includes standalone HCD tests and Assembly+HCD integration tests that start a container with both components. Adds test to start a long command and cancel it.</p>
+<h2><a href="#full" name="full" class="anchor"><span class="anchor-link"></span></a>Full</h2>
+<h3><a href="#full-hcd" name="full-hcd" class="anchor"><span class="anchor-link"></span></a>Full HCD</h3>
+<ul>
+  <li>Adds a worker monitor that tracks data allowing any sleep command to be cancelled.</li>
+  <li>Sleep worker enhanced to work with worker monitor.</li>
+  <li>Implements cancel &ldquo;long command&rdquo; using new functionality.</li>
+</ul>
+<h3><a href="#full-assembly" name="full-assembly" class="anchor"><span class="anchor-link"></span></a>Full Assembly</h3>
+<ul>
+  <li>Uses worker monitor to associate runIds with sub-commandIds.</li>
+  <li>Imlements cancel &ldquo;long command&rdquo; using worker monitor.</li>
+</ul>
+<p>Includes standalone HCD tests and Assembly+HCD integration tests that start a container with both components. Integration test to start a long command and cancel it.</p>
+<p>To be completed!</p>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/src/main/paradox/commands/index.md">here</a>.
+</div>
+
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="../lscs/index.html">Lower Segment Control System Demonstration</a></p>
+</div>
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../commands/index.html#commands-example-documentation" class="header">Commands Example Documentation</a>
+  <ul>
+    <li><a href="../commands/index.html#basic" class="header">Basic</a></li>
+    <li><a href="../commands/index.html#moderate" class="header">Moderate</a></li>
+    <li><a href="../commands/index.html#full" class="header">Full</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2021</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="../lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="../js/magellan.js"></script>
+
+<style type="text/css">@import "../lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="../lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="../lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.1.0', '')});</script>
+
+
+</html>
