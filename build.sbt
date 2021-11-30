@@ -7,6 +7,7 @@ ThisBuild / scalaVersion := "2.13.7"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / resolvers += "jitpack" at "https://jitpack.io"
+ThisBuild / scmInfo := Some(ScmInfo(url("https://github.com/tmtsoftware/osw-examples/"), "scm:git:git@github.com:tmtsoftware/osw-examples.git"))
 
 // This makes tests run serially, not in parallel, which is the default
 ThisBuild / Test / parallelExecution := false
@@ -55,7 +56,7 @@ lazy val docs = project
       "org" -> organization.value,
       "version" -> version.value,
       "image.base_url" -> "./images",
-      "lscs.base" -> "../../../../lscs-example/",
+      "lscs.base" -> "../../../../../lscs-example/",
     )
   ).dependsOn(`lscs-example`)
 

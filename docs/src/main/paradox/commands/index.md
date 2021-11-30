@@ -1,4 +1,5 @@
-## Enhanced Tutorial Versions
+# Commands Example Documentation
+
 There are three supplemental versions of the tutorial Assembly and HCD called: basic, moderate, and full. The
 basic version is similar to the tutorial example here with possible best practices. Two other versions are included that introduce
 ways of programming components along with increasing functionality.  The following table shows the
@@ -6,22 +7,22 @@ features of each version. Moderate adds functionality to Basic, and Full adds fu
 
 The code for the enhanced tutorials is in the CSW distribution at the following locations:
 
-Scala versions are @extref[here](github:examples/src/main/scala/example/tutorial/)  
-Scala test code is @extref[here](github:examples/src/test/scala/example/tutorial/)  
-Java version of basic is @extref[here](github:examples/src/main/java/example/tutorial/)  
-Java test code is @extref[here](github:examples/src/test/java/example/tutorial/)
+Scala versions are [here]($github.dir.base_url$/examples/src/main/scala/example/tutorial/)  
+Scala test code is [here]($github.dir.base_url$/examples/src/test/scala/example/tutorial/)  
+Java version of basic is [here]($github.dir.base_url$/examples/src/main/java/example/tutorial/)  
+Java test code is [here]($github.dir.base_url$/examples/src/test/java/example/tutorial/)
 
 At this time there is no Java versions of moderate and full.
 
-### Basic
+## Basic
 
-#### Basic HCD
+### Basic HCD
 * Implements a simple sleep worker in HCD using Time Service scheduler.
 * Provides basic command validation.
 * Shows one way to write onSetup handler.
 * Shows how to publish events.
 
-#### Basic Assembly
+### Basic Assembly
 * Provides simple validation in HCD and Assembly.
 * Assembly shows how to use onTrackEvent to manage CommandService creation and loss of HCD.
 * Code shows how to send a command while noticing if HCD is available.
@@ -32,14 +33,14 @@ At this time there is no Java versions of moderate and full.
 
 Includes standalone HCD tests and Assembly+HCD integration tests that start a container with both components.
 
-### Moderate
-#### Moderate HCD
+## Moderate
+### Moderate HCD
 * Sleep worker is interruptable allowing sleep command to be cancelled.
 * Supports command that will cancel the "long command".
 * Uses validation code shared with Assembly.
 * Uses "info" file that is shared between HCD and Assembly.
 
-#### Moderate Assembly
+### Moderate Assembly
 * Adds command to cancel "long command". Keeps track of long command runId.
 * Uses validation code shared with Assembly.
 * Uses "info" file that is shared between HCD and Assembly.
@@ -47,16 +48,18 @@ Includes standalone HCD tests and Assembly+HCD integration tests that start a co
 Includes standalone HCD tests and Assembly+HCD integration tests that start a container with both components.
 Adds test to start a long command and cancel it.
 
-### Full
+## Full
 
-#### Full HCD
+### Full HCD
 * Adds a worker monitor that tracks data allowing any sleep command to be cancelled.
 * Sleep worker enhanced to work with worker monitor.
 * Implements cancel "long command" using new functionality.
 
-#### Full Assembly
+### Full Assembly
 * Uses worker monitor to associate runIds with sub-commandIds.
 * Imlements cancel "long command" using worker monitor.
 
 Includes standalone HCD tests and Assembly+HCD integration tests that start a container with both components.
 Integration test to start a long command and cancel it.
+
+To be completed!
