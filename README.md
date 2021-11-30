@@ -16,4 +16,8 @@ ways of programming components along with increasing functionality.
 
 This is an example of an end-to-end approach to the Assembly and HCD needed for M1CS.
 
+### Documentation
+
+Documentation for osw-examples can be found @extref[here](https://tmtsoftware.github.io/osw-examples).
+
 
