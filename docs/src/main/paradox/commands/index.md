@@ -7,10 +7,8 @@ features of each version. Moderate adds functionality to Basic, and Full adds fu
 
 The code for the enhanced tutorials is in the CSW distribution at the following locations:
 
-Scala versions are [here]($github.dir.base_url$/examples/src/main/scala/example/tutorial/)  
-Scala test code is [here]($github.dir.base_url$/examples/src/test/scala/example/tutorial/)  
-Java version of basic is [here]($github.dir.base_url$/examples/src/main/java/example/tutorial/)  
-Java test code is [here]($github.dir.base_url$/examples/src/test/java/example/tutorial/)
+Scala versions are @github[here](/command-example/src/main/scala/org/tmt/osw).
+Scala test code is @github[here](/command-example/src/test/scala/org/tmt/osw/).  
 
 At this time there is no Java versions of moderate and full.
 

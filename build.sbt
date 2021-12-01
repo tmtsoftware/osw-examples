@@ -55,7 +55,8 @@ lazy val docs = project
     paradoxProperties ++= Map(
       "org" -> organization.value,
       "version" -> version.value,
-      "image.base_url" -> "./../images",
+      "github.base_url" -> "https://github.com/tmtsoftware/osw-examples/tree/master",
+      "image.base_url" -> ".../images",
       "lscs.base" -> "../../../../../lscs-example/",
     )
   ).dependsOn(`lscs-example`)
