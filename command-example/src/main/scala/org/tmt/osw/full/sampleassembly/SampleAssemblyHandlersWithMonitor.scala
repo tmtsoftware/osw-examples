@@ -14,18 +14,18 @@ import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.{ControlCommand, Observe, Result, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.models.Id
-import csw.params.events._
+import csw.params.events.*
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import org.tmt.osw.full.shared.{SampleValidation, WorkerMonitor}
 import org.tmt.osw.full.shared.WorkerMonitor.{AddWorker, GetWorker, RemoveWorker, Response}
-import org.tmt.osw.full.shared.SampleInfo._
+import org.tmt.osw.full.shared.SampleInfo.*
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
@@ -39,7 +39,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 class SampleAssemblyHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
 
-  import cswCtx._
+  import cswCtx.*
   private implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private implicit val system: ActorSystem[Nothing] = ctx.system
   private implicit val timeout: Timeout             = 10.seconds

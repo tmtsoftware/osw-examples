@@ -11,7 +11,7 @@ For testing, it also takes a `q` command that causes the server to shut down.
 For testing, the JVM socket server can be started with:
 
 ```scala
-  new SocketServerStream()(actorSystem)
+new SocketServerStream()(actorSystem)
 ```
 
 The C version of the server can be started with the `CmdSrvSim` command.
@@ -25,9 +25,9 @@ since the client needs to create an actor internally, in order to manage respons
 To use an ActorSystem, use the `SocketClientStream.withSystem()` method:
 
 ```scala
-  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
-  // ...
-  val client1 = SocketClientStream.withSystem("client1")
+implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
+  
+val client1 = SocketClientStream.withSystem("client1")
 ```
 
 If you are already in an actor, you can use the ActorContext instead (used only in the same thread to create a child actor):

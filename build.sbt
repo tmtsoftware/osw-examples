@@ -20,7 +20,9 @@ lazy val `osw-examples` = project
   .in(file("."))
   .aggregate(
     `command-example`,
-    `lscs-example`,
+    lscsComps,
+    lscsCommands,
+    lscsDeploy,
     docs
   )
 
@@ -35,7 +37,42 @@ lazy val `command-example` = project
   )
 
 // LSCS example
-lazy val `lscs-example` = project.in(file("lscs-example"))
+
+// All LSCS JVM components
+lazy val lscsComps = project
+  .in(file("lscs-example/lscsComps"))
+  .dependsOn(lscsCommands)
+  .settings(
+    libraryDependencies ++= Seq(
+      `csw-framework`,
+      `csw-testkit` % Test,
+      `akka-testkit` % Test,
+      `scalatest` % Test
+    )
+  )
+
+// Command Support
+lazy val lscsCommands = project
+  .in(file("lscs-example/lscsCommands"))
+  .settings(
+    libraryDependencies ++= Seq(
+      `csw-framework`,
+      `csw-testkit` % Test,
+      `scalatest` % Test
+    )
+  )
+
+// LSCS deploy module
+lazy val lscsDeploy = project
+  .in(file("lscs-example/lscsDeploy"))
+  .dependsOn(lscsComps, lscsCommands)
+  .settings(
+    Compile / packageBin / mainClass := Some("m1cs.segments.deploy.SegmentsContainerApp"),
+    libraryDependencies ++= Seq(
+      `csw-framework`,
+      `csw-testkit` % Test
+    )
+  )
 
 // Docs for all projects
 lazy val docs = project
@@ -43,8 +80,10 @@ lazy val docs = project
   .enablePlugins(
     ParadoxPlugin,
     ParadoxSitePlugin,
-    GhpagesPlugin
+    GhpagesPlugin,
+    MdocPlugin
   )
+  .dependsOn(lscsCommands, lscsComps)
   .settings(
     name := "paradox docs",
     version := version.value.takeWhile(_ != '-'), // strip off the -SNAPSHOT for docs
@@ -57,9 +96,24 @@ lazy val docs = project
       "version" -> version.value,
       "github.base_url" -> "https://github.com/tmtsoftware/osw-examples/tree/master",
       "image.base_url" -> ".../images",
-      "lscs.base" -> "../../../../../lscs-example/",
+      "lscs.base" -> "../../../../lscs-example/",
+    ),
+    mdocIn := (baseDirectory.value) / "src" / "main" / "paradox",
+    makeSite := makeSite.dependsOn(mdoc.toTask("")).value,
+    Compile / paradox / sourceDirectory := mdocOut.value,
+    mdocExtraArguments := Seq("--no-link-hygiene"), // paradox handles this
+    commands += Command.command("openSite") { state =>
+      val uri = s"file://${Project.extract(state).get(Compile / paradox / target)}/index.html"
+      state.log.info(s"Opening browser at $uri ...")
+      java.awt.Desktop.getDesktop.browse(new java.net.URI(uri))
+      state
+    },
+    libraryDependencies ++= Seq(
+      `csw-framework`,
+      `csw-testkit` % Test,
+      `scalatest` % Test
     )
-  ).dependsOn(`lscs-example`)
+  )
 
 
 // Shared compile scalac options

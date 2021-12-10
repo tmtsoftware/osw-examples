@@ -22,8 +22,8 @@ Scala
 
 Any state that is initialized in the `initialize` handler must be global to the TLA. In this case, there is a 
 variable called `createdSegments` of type `Segments` that is set during initialize. The segments value is managed 
-by the SegmentManager object, but it is essentially a Map of SegmentId values to SegmentActor references.  
-The variable `createdSegments` is used by the onSubmit handler.
+by the SegmentManager object, but it is essentially a Map of SegmentId values to SegmentActor references. The 
+variable `createdSegments` is used by the onSubmit handler.
 
 As shown, the code gets the `maxSegments` value from the reference.conf file and hands it to the SegmentManager to create segments. 
 As mentioned before, the Segment Manager will create that number of segments in each sector.  Therefore, the maximum value for
@@ -70,8 +70,8 @@ Setup. Then the segmentKeyValue, which is either ALL_SEGMENTS or a specific segm
 to access a list of segments for the command. It calls SegmentManager to return on or all.
 
 Then a `SegComMonitor` actor is created, which takes the command String, the list of segments, the runId of
-the request, and a function to execute when all the segments have completed.  
-The `SegComMonitor.Start` message is sent to the monitor, which causes the sending of the command to all the segments.
+the request, and a function to execute when all the segments have completed. The `SegComMonitor.Start` message is 
+sent to the monitor, which causes the sending of the command to all the segments.
 
 Just as a note in case it is not clear. These lscsDirectCommands executed by the HCD are totally asynchronous. As you can see
 from the code, once a monitor is started, the submit-handler returns `Started` indicating to the caller that a long-
@@ -80,12 +80,12 @@ its own SegComMonitor. The tests demonstrate that this works.
 
 ## Segment Monitor
 Segment Monitor is the longest piece of code in the project. Segment Monitor is an actor implementing a two state
-finite state machine that has the job of executing a segment command and waiting for responses.  The code is long but is included here.
+finite state machine with the job of executing a segment command and waiting for responses. The code is long but is included here.
 
 Scala
 : @@snip [Submit]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/hcd/SegComMonitor.scala) { #seg-mon }
 
-`SegComMonior` is created in the `starting` state, awaiting the `start` message from the HCD TLA. When received, it sends the full segment
+`SegComMonitor` is created in the `starting` state, awaiting the `start` message from the HCD TLA. When received, it sends the full segment
 command to each of the SegmentActors on the list passed into the monitor from the TLA (it will be 1 segment or a list of all segments). 
 Once the commands are sent, it moves to the `waiting` state.
 
@@ -167,7 +167,7 @@ be dropped.
 
 SegmentActor has two messages related to sending a message to the segment. The first is Send, which is the operational
 case. It sends a command to the segment.  The second is SendWithTime, which allows sending a time for the simulator delay
-to allow easier testing of things like multiple commands and overlapping commands.
+allowing easier testing of things like multiple commands and overlapping commands.
 
 At this level, all segment commands are implemented as a variable delay on the segment side of the socket. We send the
 command: DELAY MILLIS such as DELAY 1234 to the socket client. The delay is random returned by the `getRandomDelay` function.

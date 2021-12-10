@@ -60,23 +60,31 @@ Then the HCD setup is constructed using parameters from the Assembly Setup and n
 command string is passed with the lscsCommandKey parameter, and the command name is within lscsCommandNameKey. The
 last entry pulls the segmentIdKey from the Assembly Setup and inserts it into the HCD setup.
 
-The HCD Setup for the Assembly Setup:
+The HCD Setup for the following Setup received at the Assembly:
 
-```scala
-Setup(paramSet=Set(ACT_ID((1,3)none), MODE((TRACK)none), TARGET((22.34)none), 
-  SegmentId((A23)none)), source=M1CS.hcdClient, commandName=CommandName(ACTUATOR), maybeObsId=None)
+```scala mdoc
+import csw.prefix.models.Prefix
+import csw.params.commands.Setup
+
+import m1cs.segments.segcommands.SegmentId
+import m1cs.segments.segcommands.ACTUATOR.*
+import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
+import m1cs.segments.shared.HcdDirectCommand
+
+val clientPrefix = Prefix("ESW.testClient")
+val assemblySetup = toActuator(clientPrefix, Set(1,3)).withMode(TRACK).withTarget(22.34).toSegment(SegmentId("A23")).asSetup
 ```
-is:
-```scala
-Setup(paramSet=Set(lscsCommand((ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34)none), 
-      lscsCommandName((ACTUATOR)none), SegmentId((ALL)none)), 
-      source=M1CS.segmentAssembly, commandName=CommandName(lscsDirectCommand), maybeObsId=None)
+is the following Setup for the segments HCD:
+
+```scala mdoc
+val assemblyPrefix = Prefix("M1CS.segmentsAssembly")
+val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
 ```
 
 ### Handling SubmitResponse from the Segments HCD
 One last thing is that the Assembly must handle the SubmitResponse from the HCD. When the Assembly sends the HCD Setup
-to the HCD, a new `runId` is created for the command. When the command completes, the Assembly needs to pass an
-appropriate response back to the caller.  This is handled by the following piece of code that is repeated fro above:
+to the HCD, a new `runId` is created for the command. When the HCD command completes, the Assembly needs to pass an
+appropriate response back to the caller.  This is handled by the following piece of code that is repeated from above:
 
 ```scala
 submitAndWaitHCD(runId, hcdSetup) map { sr =>
@@ -84,8 +92,8 @@ submitAndWaitHCD(runId, hcdSetup) map { sr =>
 }
 Started(runId)
 ```
-The onSubmit handler sends the command using submitAndWaitHCD and then returns `Started` to the caller. This is a CSW
-long-running command (as opposed to an immediate-completion command). The HCD command runs asynchronously and returns
+The onSubmit handler sends the command using submitAndWaitHCD and then returns `Started` to the caller. This indicates a CSW
+long-running command (as opposed to an immediate-completion command). The HCD command command runs asynchronously and returns
 a value in the future. When that occurs, the result is mapped to the closure shown, which calls the
 Assembly's Command Response Manager with the SubmitResponse from the HCD, but it replaces the HCD runId with the
 Assembly Setup's runId using `withRunId`.  That's all that is needed to handle the response from the HCD to the Assembly
@@ -102,7 +110,7 @@ Supervisor registers itself with the Location Service on behalf of the TLA
 and that location information includes enough information so that one component can create an
 appropriate connection to the other. CSW supports Akka-based connections and HTTP-based connections.
 
-When the Segments Assembly starts up its Component Configuration File contains an entry that indicates to the Supervisor that it wants
+When the Segments Assembly starts up, its Component Configuration File contains an entry that indicates to the Supervisor that it wants
 to `track` the HCD. The "SegmentsAssemblyStandalone.conf" conf file is shown here.
 
 ```scala
@@ -127,14 +135,16 @@ HCD is available and also when/if it shuts down or crashes.  To receive tracking
 Scala
 : @@snip [Tracking]($lscs.base$/lscsComps/src/main/scala/m1cs/segments/assembly/SegmentsAssemblyHandlers.scala) { #tracking-events }
 
-This code shows that the Assembly is handling two events: `locationUpdated` and `locationRemoved`. The locationUpdated is
+This code shows that the Assembly is handling two events delivered by the Assembly's Supervisor: `locationUpdated` and `locationRemoved`. The `locationUpdated` is
 delivered when the HCD is registered and running. When this happens, the Assembly creates a CommandService instance for the HCD.
 
-In the constructor of the Assembly is the following line:
-```scala
+In the constructor of the Assembly is the following variable declaration:
+```scala mdoc:silent
+import csw.command.api.scaladsl.CommandService
+
 private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
 ```
-Initially this is set to None, meaning there is no Command Service (i.e. the HCD is not available). When
+Initially the HCD CommandService is set to None, meaning there is no Command Service (i.e. the HCD is not available). When
 the HCD is available, a CommandService instance is created and this variable is set to its value as shown.
 
 Then, when a command is sent and processed by the `submitAndWaitHCD` call way up in the Assembly Command Execution section,

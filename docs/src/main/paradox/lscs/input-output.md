@@ -59,8 +59,14 @@ say Set(1,2,3) or ALL_ACTUATORS, which is an alias for Set(1,2,3).  If the sourc
 minimal Actuator command is:
 
 
-```scala
-val prefix=Prefix("M1CS.client") 
+```scala mdoc:silent
+import csw.prefix.models.Prefix
+import m1cs.segments.segcommands.Common.*
+import m1cs.segments.segcommands.ACTUATOR.*
+import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
+
+ 
+val prefix=Prefix("M1CS.client")
 toActuator(prefix, Set(1))
 ```
 This command is somewhat meaningless, because to be a correct ACTUATOR command it must have at least one of the
@@ -71,20 +77,21 @@ The value returned by toActuator is a `toActuator` instance. Optional values are
 `fluid-style` API so options can be added as needed.  For example to add the optional actuator mode and target, the following
 are all possible:
 
-```scala
-val prefix=Prefix("M1CS.client")
-
+```scala mdoc:silent
 toActuator(prefix, Set(1)).withMode(SLEW)
 
 toActuator(prefix, Set(1)).withTarget(22.3)
+```
+This last example shows the optional parameters can be combined as needed:
 
+```scala mdoc:silent
 toActuator(prefix, ALL_ACTUATORS).withMode(SLEW).withTarget(22.3)
 ```
 
 The case classes include `with` methods to add optional parameters as in:
 
 ```scala
- def withMode(mode: ActuatorMode): toActuator = {
+def withMode(mode: ActuatorMode): toActuator = {
   setup = setup.add(actuatorModeKey.set(Choice(mode.toString)))
   this
 }
@@ -100,7 +107,11 @@ reasonable way to support optional parameters in a typeable API.
 ## Choice Parameters
 There are quite a few choice parameters. I've implemented them as enumerations as shown below for `ActuatorMode`:
 
-```scala
+```scala mdoc:silent
+import csw.params.core.models.{Choice, Choices}
+import csw.params.core.generics.KeyType.ChoiceKey
+import csw.params.core.generics.{GChoiceKey, Key, KeyType}
+
 object ActuatorModes extends Enumeration {
     type ActuatorMode = Value
 
@@ -110,18 +121,16 @@ object ActuatorModes extends Enumeration {
     val CALIBRATE: Value = Value(4, "CALIBRATE")
   }
 
-  import ActuatorModes.*
-
 val actuatorChoices: Choices    = Choices.from(OFF.toString, TRACK.toString, SLEW.toString, CALIBRATE.toString)
 val actuatorModeKey: GChoiceKey = ChoiceKey.make("MODE", actuatorChoices)
 val targetKey: Key[Float]       = KeyType.FloatKey.make("TARGET")
 ```
 
-The values must be imported. This is also true with the API is used externally.  Each enumeration is supported
-with a `GChoiceKey` and the Choices are made up of the enumeration values as Strings.
+The choice values must be imported as shown. This is also true when the API is used externally (i.e., not inside the command implementation).
+Each enumeration is supported with a `GChoiceKey` and the Choices are made up of the enumeration values as Strings.
 
 The last line shows that there is a Float key for the TARGET value. Note that the API takes a Double, not a Float.
-This is because in Scala (and Java) you must add an `f` to make a value a Float. The conversion from a Double to a
+This is because in Scala (and Java) you must add an `f` to make a value a Float, which is annoying. The conversion from a Double to a
 Float is done inside the code to make it a little more friendly to typing.
 
 ## Conversion to Setup
@@ -146,14 +155,15 @@ included.  If neither of these parameters is provided, an exception is thrown.  
 internal Setup is returned.
 
 @@@ warning
-Many of the commands in the documentation have optional commands there is no information on what combinations are
+Many of the commands in the documentation have optional commands, but there is no information on what combinations are
 legal or which ones must really be provided as in the above ACTUATOR case. This can be fixed in the same way as the
 above was done once the documentation is improved.
 @@@
 
-In summary, to create a Setup to send to the Segment Assembly for the ACTUATOR command, the following is an example:
+In summary, to create a Setup to send to the Segment Assembly for the ACTUATOR command, the following is an example
+and the contents of the Setup:
 
-```scala
+```scala mdoc
 val setup = toActuator(prefix, ALL_ACTUATORS).withMode(SLEW).withTarget(22.3).asSetup
 ```
 
@@ -167,7 +177,9 @@ The output then is to extract the segment command from the Assembly Setup.  Each
 method called `toCommand`, which uses the parameters of the Setup to create a well-formed command.  The
 following is the `toCommand` method for the ACTUATOR command.
 
-```scala
+```scala mdoc:silent
+import csw.params.commands.{CommandName, Setup}
+
  /**
    * Returns a formatted ACTUATOR command from a [Setup]
    *
@@ -191,26 +203,21 @@ the values for actuator, which is required. It creates a Boolean to check to see
 target exists by checking for `actuatorModeKey` and `targetKey`. 
 
 Then a StringBuilder is created that creates a String for the command. First, the command is extracted using
-the Scala String interpolator syntax (${parameter}). The like starting with actIdVal checks to see whether
+the Scala String interpolator syntax (${parameter}). The line starting with actIdVal checks to see whether
 there is a subset or all of the actuators. The valuesToString method formats a proper value for the command (as
 in (1,2)). Finally, if the mode and target exist, parameters are added to the String for each.
 
 The example below is shows the output command that goes with the created Assembly Setup.
-```scala
-println(toCommand(toActuator(prefix, AllActuators).withMode(TRACK).withTarget(22.34).asSetup))
-
-ACTUATOR ACT_ID=ALL, MODE=TRACK, TARGET=22.34
+```scala mdoc
+toCommand(toActuator(prefix, ALL_ACTUATORS).withMode(TRACK).withTarget(22.34).asSetup)
 ```
 ### Segment Destination
 Each command requires a segment location, but the location does not appear in the output command. The
 Setup contains a parameter for the segment destination.  The following is the printed value of an 
 ACTUATOR Setup for the example above.
 
-```scala
-println(toActuator(prefix, AllActuators).withMode(TRACK).withTarget(22.34).asSetup)
-
-Setup(paramSet=Set(SegmentId((ALL)none), ACT_ID((1,2,3)none), MODE((TRACK)none), TARGET((22.34)none)), 
-      source=M1CS.client, commandName=CommandName(ACTUATOR), maybeObsId=None)
+```scala mdoc
+toActuator(prefix, ALL_ACTUATORS).withMode(TRACK).withTarget(22.34).asSetup
 ```
 There is an extra SegmentId parameter with the value ALL, indicating the command will be sent to all 
 segments. This parameter is used by the HCD to do the right thing. The SegmentId parameter is handled within
@@ -242,7 +249,7 @@ to verify that exceptions are thrown for bad conditions. For instance, note the 
 optional parameter.
 
 ```scala
- // Check for no optional
+ // Check for no options
 assertThrows[IllegalArgumentException] {
   toActuator(prefix, Set(1, 2, 3)).asSetup
 }

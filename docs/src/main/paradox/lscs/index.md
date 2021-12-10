@@ -92,7 +92,7 @@ SubmitResponse.  When the SubmitResponse is received from the HCD, it forwards i
 The Segments HCD is the component that keeps track of connections to the segments. It receives HCD Setups, typically
 from the Segments Assembly, but any client can send a properly formatted HCD Setup to the Segments HCD. In this 
 implementation, there is one command called `lscsDirectCommand`. An instance of this command contains a formatted
-LSCS command String converted by the Assembly along with the destination, which can be a single segment, or all
+LSCS command String converted by the Assembly along with the destination, which can be a single segment or all
 segments.
 
 The Segments HCD's only job is to handle these Setups by sending the formatted command to one or all of the configured segments
@@ -106,10 +106,10 @@ When Segments HCD starts up, during its initialization, it creates connections t
 socket connection is made when the segment is created.
 
 The number of segments created in each sector can be specified in an application.conf m1cs file block as
-shown below. Setting `m1cs.segments` to a number smaller than 82 results in a less than full mirror.  
-Each of the 6 sectors (A-F) always gets the number of segments specified. For instance if `m1cs.segments` is 2, 
-the segments A1, B1, C1, D1, E1, F1, A2, B2, C2, D2, E2, F2 are created.  
-The following snippet shows the configuration section of application.conf in the testing area. 
+shown below. Setting `m1cs.segments` to a number smaller than 82 results in a less than full mirror. Each of the 6 sectors (A-F) 
+always gets the number of segments specified. For instance if `m1cs.segments` is 2, the segments A1, B1, C1, D1, 
+E1, F1, A2, B2, C2, D2, E2, F2 are created. The following snippet shows the configuration section of application.conf in 
+the testing area. 
 
 ```scala
 m1cs.segments = 20
