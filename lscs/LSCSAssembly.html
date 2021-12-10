@@ -298,28 +298,96 @@ case object HcdDirectCommand {
 </dl>
 <p>First this function ensures that some required parameters are present in the Setup received by the Assembly. A <code>require</code> will throw an IllegalArgument exception if the condition is false. It then uses the CommandMap structure from Common (shown as part of validation) to extract the <code>toCommand</code> function for the command. This returns the String segment command as discussed in <a href="input-output.html">input</a>. It checks that the command String is not empty.</p>
 <p>Then the HCD setup is constructed using parameters from the Assembly Setup and new ones from HcdDirectCommand. The command string is passed with the lscsCommandKey parameter, and the command name is within lscsCommandNameKey. The last entry pulls the segmentIdKey from the Assembly Setup and inserts it into the HCD setup.</p>
-<p>The HCD Setup for the Assembly Setup:</p>
-<pre class="prettyprint"><code class="language-scala">Setup(paramSet=Set(ACT_ID((1,3)none), MODE((TRACK)none), TARGET((22.34)none), 
-  SegmentId((A23)none)), source=M1CS.hcdClient, commandName=CommandName(ACTUATOR), maybeObsId=None)
+<p>The HCD Setup for the following Setup received at the Assembly:</p>
+<pre class="prettyprint"><code class="language-scala">import csw.prefix.models.Prefix
+import csw.params.commands.Setup
+
+import m1cs.segments.segcommands.SegmentId
+import m1cs.segments.segcommands.ACTUATOR.*
+import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
+import m1cs.segments.shared.HcdDirectCommand
+
+val clientPrefix = Prefix(&quot;ESW.testClient&quot;)
+// clientPrefix: Prefix = Prefix(subsystem = ESW, componentName = &quot;testClient&quot;)
+val assemblySetup = toActuator(clientPrefix, Set(1,3)).withMode(TRACK).withTarget(22.34).toSegment(SegmentId(&quot;A23&quot;)).asSetup
+// assemblySetup: Setup = Setup(
+//   source = Prefix(subsystem = ESW, componentName = &quot;testClient&quot;),
+//   commandName = CommandName(name = &quot;ACTUATOR&quot;),
+//   maybeObsId = None,
+//   paramSet = Set(
+//     Parameter(
+//       keyName = &quot;ACT_ID&quot;,
+//       keyType = IntKey,
+//       items = ArraySeq(1, 3),
+//       units = none
+//     ),
+//     Parameter(
+//       keyName = &quot;MODE&quot;,
+//       keyType = ChoiceKey,
+//       items = ArraySeq(Choice(name = &quot;TRACK&quot;)),
+//       units = none
+//     ),
+//     Parameter(
+//       keyName = &quot;TARGET&quot;,
+//       keyType = FloatKey,
+//       items = ArraySeq(22.34F),
+//       units = none
+//     ),
+//     Parameter(
+//       keyName = &quot;SegmentId&quot;,
+//       keyType = StringKey,
+//       items = ArraySeq(&quot;A23&quot;),
+//       units = none
+//     )
+//   )
+// )
 </code></pre>
-<p>is:</p>
-<pre class="prettyprint"><code class="language-scala">Setup(paramSet=Set(lscsCommand((ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34)none), 
-      lscsCommandName((ACTUATOR)none), SegmentId((ALL)none)), 
-      source=M1CS.segmentAssembly, commandName=CommandName(lscsDirectCommand), maybeObsId=None)
+<p>is the following Setup for the segments HCD:</p>
+<pre class="prettyprint"><code class="language-scala">val assemblyPrefix = Prefix(&quot;M1CS.segmentsAssembly&quot;)
+// assemblyPrefix: Prefix = Prefix(
+//   subsystem = M1CS,
+//   componentName = &quot;segmentsAssembly&quot;
+// )
+val hcdSetup: Setup = HcdDirectCommand.toHcdDirectCommand(assemblyPrefix, assemblySetup)
+// hcdSetup: Setup = Setup(
+//   source = Prefix(subsystem = M1CS, componentName = &quot;segmentsAssembly&quot;),
+//   commandName = CommandName(name = &quot;lscsDirectCommand&quot;),
+//   maybeObsId = None,
+//   paramSet = Set(
+//     Parameter(
+//       keyName = &quot;lscsCommand&quot;,
+//       keyType = StringKey,
+//       items = ArraySeq(&quot;ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34&quot;),
+//       units = none
+//     ),
+//     Parameter(
+//       keyName = &quot;lscsCommandName&quot;,
+//       keyType = StringKey,
+//       items = ArraySeq(&quot;ACTUATOR&quot;),
+//       units = none
+//     ),
+//     Parameter(
+//       keyName = &quot;SegmentId&quot;,
+//       keyType = StringKey,
+//       items = ArraySeq(&quot;A23&quot;),
+//       units = none
+//     )
+//   )
+// )
 </code></pre>
 <h3><a href="#handling-submitresponse-from-the-segments-hcd" name="handling-submitresponse-from-the-segments-hcd" class="anchor"><span class="anchor-link"></span></a>Handling SubmitResponse from the Segments HCD</h3>
-<p>One last thing is that the Assembly must handle the SubmitResponse from the HCD. When the Assembly sends the HCD Setup to the HCD, a new <code>runId</code> is created for the command. When the command completes, the Assembly needs to pass an appropriate response back to the caller. This is handled by the following piece of code that is repeated fro above:</p>
+<p>One last thing is that the Assembly must handle the SubmitResponse from the HCD. When the Assembly sends the HCD Setup to the HCD, a new <code>runId</code> is created for the command. When the HCD command completes, the Assembly needs to pass an appropriate response back to the caller. This is handled by the following piece of code that is repeated from above:</p>
 <pre class="prettyprint"><code class="language-scala">submitAndWaitHCD(runId, hcdSetup) map { sr =&gt;
   cswCtx.commandResponseManager.updateCommand(sr.withRunId(runId))
 }
 Started(runId)
 </code></pre>
-<p>The onSubmit handler sends the command using submitAndWaitHCD and then returns <code>Started</code> to the caller. This is a CSW long-running command (as opposed to an immediate-completion command). The HCD command runs asynchronously and returns a value in the future. When that occurs, the result is mapped to the closure shown, which calls the Assembly&rsquo;s Command Response Manager with the SubmitResponse from the HCD, but it replaces the HCD runId with the Assembly Setup&rsquo;s runId using <code>withRunId</code>. That&rsquo;s all that is needed to handle the response from the HCD to the Assembly caller.</p>
+<p>The onSubmit handler sends the command using submitAndWaitHCD and then returns <code>Started</code> to the caller. This indicates a CSW long-running command (as opposed to an immediate-completion command). The HCD command command runs asynchronously and returns a value in the future. When that occurs, the result is mapped to the closure shown, which calls the Assembly&rsquo;s Command Response Manager with the SubmitResponse from the HCD, but it replaces the HCD runId with the Assembly Setup&rsquo;s runId using <code>withRunId</code>. That&rsquo;s all that is needed to handle the response from the HCD to the Assembly caller.</p>
 <p>That&rsquo;s the extent of the Setup processing in the Assembly.</p>
 <h2><a href="#tracking-the-hcd-and-creation-of-command-service" name="tracking-the-hcd-and-creation-of-command-service" class="anchor"><span class="anchor-link"></span></a>Tracking the HCD and Creation of Command Service</h2>
 <p>The last bit of interesting code in the SegmentsAssemblyHandlers is how the SegmentsAssembly gets connection information about the Segments HCD, which it must have to send it commands.</p>
 <p>As a reminder, connections (i.e. hosts and ports) are not hard-coded in CSW. When a component starts up, its Supervisor registers itself with the Location Service on behalf of the TLA and that location information includes enough information so that one component can create an appropriate connection to the other. CSW supports Akka-based connections and HTTP-based connections.</p>
-<p>When the Segments Assembly starts up its Component Configuration File contains an entry that indicates to the Supervisor that it wants to <code>track</code> the HCD. The &ldquo;SegmentsAssemblyStandalone.conf&rdquo; conf file is shown here.</p>
+<p>When the Segments Assembly starts up, its Component Configuration File contains an entry that indicates to the Supervisor that it wants to <code>track</code> the HCD. The &ldquo;SegmentsAssemblyStandalone.conf&rdquo; conf file is shown here.</p>
 <pre class="prettyprint"><code class="language-scala">prefix = &quot;m1cs.segmentsAssembly&quot;
 componentType = assembly
 behaviorFactoryClassName = &quot;m1cs.segments.assembly.SegmentsAssemblyBehaviorFactory&quot;
@@ -359,15 +427,17 @@ override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {
   }
 }</code></pre></dd>
 </dl>
-<p>This code shows that the Assembly is handling two events: <code>locationUpdated</code> and <code>locationRemoved</code>. The locationUpdated is delivered when the HCD is registered and running. When this happens, the Assembly creates a CommandService instance for the HCD.</p>
-<p>In the constructor of the Assembly is the following line:</p>
-<pre class="prettyprint"><code class="language-scala">private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
+<p>This code shows that the Assembly is handling two events delivered by the Assembly&rsquo;s Supervisor: <code>locationUpdated</code> and <code>locationRemoved</code>. The <code>locationUpdated</code> is delivered when the HCD is registered and running. When this happens, the Assembly creates a CommandService instance for the HCD.</p>
+<p>In the constructor of the Assembly is the following variable declaration:</p>
+<pre class="prettyprint"><code class="language-scala">import csw.command.api.scaladsl.CommandService
+
+private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
 </code></pre>
-<p>Initially this is set to None, meaning there is no Command Service (i.e. the HCD is not available). When the HCD is available, a CommandService instance is created and this variable is set to its value as shown.</p>
+<p>Initially the HCD CommandService is set to None, meaning there is no Command Service (i.e. the HCD is not available). When the HCD is available, a CommandService instance is created and this variable is set to its value as shown.</p>
 <p>Then, when a command is sent and processed by the <code>submitAndWaitHCD</code> call way up in the Assembly Command Execution section, it checks the value of this Option. If present, the command is sent to the HCD. If None, an Error is returned to the caller.</p>
 <p>This is an excellent way to track the availability of an Assembly or HCD using the builtin CSW functionality.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/src/main/paradox/lscs/LSCSAssembly.md">here</a>.
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/target/mdoc/lscs/LSCSAssembly.md">here</a>.
 </div>
 
 <div class="nav-next">

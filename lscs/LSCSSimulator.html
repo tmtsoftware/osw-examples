@@ -123,15 +123,15 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <p>The JVM simulator server is implemented in the <code>SocketServerStream</code> class. It implements the same low level protocol as the JPL C library, located in the <code>m1cs-lscs-sim</code> subproject. The main difference in the current version is that the Scala version of the server supports a &ldquo;DELAY ms&rdquo; command, which is used to simulate a command that takes <code>ms</code> milliseconds to complete. For testing, it also takes a <code>q</code> command that causes the server to shut down.</p>
 <h2><a href="#starting-the-socket-server" name="starting-the-socket-server" class="anchor"><span class="anchor-link"></span></a>Starting the Socket Server</h2>
 <p>For testing, the JVM socket server can be started with:</p>
-<pre class="prettyprint"><code class="language-scala">  new SocketServerStream()(actorSystem)
+<pre class="prettyprint"><code class="language-scala">new SocketServerStream()(actorSystem)
 </code></pre>
 <p>The C version of the server can be started with the <code>CmdSrvSim</code> command. See the README.md in the <code>m1cs-lscs-sim</code> subproject for details on the C version.</p>
 <h2><a href="#creating-a-socket-client" name="creating-a-socket-client" class="anchor"><span class="anchor-link"></span></a>Creating a Socket Client</h2>
 <p>In order to create a socket client, you need either an ActorSystem[SpawnProtocol] or an ActorContext, since the client needs to create an actor internally, in order to manage responses.</p>
 <p>To use an ActorSystem, use the <code>SocketClientStream.withSystem()</code> method:</p>
-<pre class="prettyprint"><code class="language-scala">  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), &quot;SocketServerStream&quot;)
-  // ...
-  val client1 = SocketClientStream.withSystem(&quot;client1&quot;)
+<pre class="prettyprint"><code class="language-scala">implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), &quot;SocketServerStream&quot;)
+  
+val client1 = SocketClientStream.withSystem(&quot;client1&quot;)
 </code></pre>
 <p>If you are already in an actor, you can use the ActorContext instead (used only in the same thread to create a child actor):</p>
 <pre class="prettyprint"><code class="language-scala">    Behaviors.setup[Command] { ctx =&gt;
@@ -217,7 +217,7 @@ case class MsgHdr(msgId: MessageId, srcId: SourceId, msgLen: Int, seqNo: Int)</c
 <h2><a href="#wire-format" name="wire-format" class="anchor"><span class="anchor-link"></span></a>Wire Format</h2>
 <p>The wire format for a socket message is based on the C library version and uses the same header and byte order.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/src/main/paradox/lscs/LSCSSimulator.md">here</a>.
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/target/mdoc/lscs/LSCSSimulator.md">here</a>.
 </div>
 
 <div class="nav-next">

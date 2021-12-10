@@ -149,7 +149,7 @@ override def initialize(): Unit = {
   createdSegments = SegmentManager.createSegments(creator, segmentRange, log)
 }</code></pre></dd>
 </dl>
-<p>Any state that is initialized in the <code>initialize</code> handler must be global to the TLA. In this case, there is a variable called <code>createdSegments</code> of type <code>Segments</code> that is set during initialize. The segments value is managed by the SegmentManager object, but it is essentially a Map of SegmentId values to SegmentActor references.<br/>The variable <code>createdSegments</code> is used by the onSubmit handler.</p>
+<p>Any state that is initialized in the <code>initialize</code> handler must be global to the TLA. In this case, there is a variable called <code>createdSegments</code> of type <code>Segments</code> that is set during initialize. The segments value is managed by the SegmentManager object, but it is essentially a Map of SegmentId values to SegmentActor references. The variable <code>createdSegments</code> is used by the onSubmit handler.</p>
 <p>As shown, the code gets the <code>maxSegments</code> value from the reference.conf file and hands it to the SegmentManager to create segments. As mentioned before, the Segment Manager will create that number of segments in each sector. Therefore, the maximum value for maxSegments is MAX_SEGMENT_NUMBER and once one is happy with the simulator, the check can either be eliminated or set to 82 in the reference.conf file.</p>
 <h2><a href="#hcd-command-validation" name="hcd-command-validation" class="anchor"><span class="anchor-link"></span></a>HCD Command Validation</h2>
 <p>As in the Assembly, an <code>Observe</code> is rejected and the Setup is passed to another function for validation. The <code>validateCommand</code> handler is shown below.</p>
@@ -254,10 +254,10 @@ private def handleSetup(runId: Id, setup: Setup): SubmitResponse = {
 <p>There are two commands, <code>lscsDirectCommand</code>, and <code>shutdownCommand</code>.</p>
 <h2><a href="#lscsdirectcommand-implementation" name="lscsdirectcommand-implementation" class="anchor"><span class="anchor-link"></span></a>lscsDirectCommand Implementation</h2>
 <p>The first thing that occurs is the command name, the segment destination, and the command String are extracted from the Setup. Then the segmentKeyValue, which is either ALL_SEGMENTS or a specific segment ID is tested for and used to access a list of segments for the command. It calls SegmentManager to return on or all.</p>
-<p>Then a <code>SegComMonitor</code> actor is created, which takes the command String, the list of segments, the runId of the request, and a function to execute when all the segments have completed.<br/>The <code>SegComMonitor.Start</code> message is sent to the monitor, which causes the sending of the command to all the segments.</p>
+<p>Then a <code>SegComMonitor</code> actor is created, which takes the command String, the list of segments, the runId of the request, and a function to execute when all the segments have completed. The <code>SegComMonitor.Start</code> message is sent to the monitor, which causes the sending of the command to all the segments.</p>
 <p>Just as a note in case it is not clear. These lscsDirectCommands executed by the HCD are totally asynchronous. As you can see from the code, once a monitor is started, the submit-handler returns <code>Started</code> indicating to the caller that a long- running command is started. The HCD is then available to accept and process another HCD/segment command, which starts its own SegComMonitor. The tests demonstrate that this works.</p>
 <h2><a href="#segment-monitor" name="segment-monitor" class="anchor"><span class="anchor-link"></span></a>Segment Monitor</h2>
-<p>Segment Monitor is the longest piece of code in the project. Segment Monitor is an actor implementing a two state finite state machine that has the job of executing a segment command and waiting for responses. The code is long but is included here.</p>
+<p>Segment Monitor is the longest piece of code in the project. Segment Monitor is an actor implementing a two state finite state machine with the job of executing a segment command and waiting for responses. The code is long but is included here.</p>
 <dl>
   <dt>Scala</dt>
   <dd>
@@ -375,7 +375,7 @@ class SegMonitor private[SegComMonitor] (
     }
 }</code></pre></dd>
 </dl>
-<p><code>SegComMonior</code> is created in the <code>starting</code> state, awaiting the <code>start</code> message from the HCD TLA. When received, it sends the full segment command to each of the SegmentActors on the list passed into the monitor from the TLA (it will be 1 segment or a list of all segments). Once the commands are sent, it moves to the <code>waiting</code> state.</p>
+<p><code>SegComMonitor</code> is created in the <code>starting</code> state, awaiting the <code>start</code> message from the HCD TLA. When received, it sends the full segment command to each of the SegmentActors on the list passed into the monitor from the TLA (it will be 1 segment or a list of all segments). Once the commands are sent, it moves to the <code>waiting</code> state.</p>
 <p>The state is called <code>waiting</code> because it is waiting for the responses from the SegmentActors. First note that waiting starts a timer so that if something goes wrong in a SegmentActor, after a timeout period, the CommandTimeout message will be sent to itself, which will cause an Error SubmitResponse to be returned to the runId through the <code>replyTo</code> function.</p>
 <p>The monitor is written to assume the SegmentActor will return responses as described in the M1CS docs including Started, and Processing, and Error messages. The happy case is the SegmentActor.Completed message. All the monitor does is count happy responses until it receives the correct number, it then sends Completed to the runId through the replyTo function. </p>
 <p>If a single Error is returned, the monitor stops immediately&ndash;if a single segment produces an error out of all segments, it means the command fails immediately, and an Error is returned to the client through the runId and replyTo function.</p>
@@ -512,12 +512,12 @@ class SegMonitor private[SegComMonitor] (
 <p>The rest of the actor is a mix of trying to make the system behave like the documentation and interfacing to the current simulator.</p>
 <p>For instance, the feature of sending a <code>Started</code> to the caller when the command takes greater than 1 second was added to ensure the system can handle that eventually. This is also true with the Processing message. </p><div class="callout note "><div class="callout-title">Note</div>
 <p>But as it turns out, the higher level software and CSW can not do anything with these Started and Processing messages, so they should just be dropped.</p></div>
-<p>SegmentActor has two messages related to sending a message to the segment. The first is Send, which is the operational case. It sends a command to the segment. The second is SendWithTime, which allows sending a time for the simulator delay to allow easier testing of things like multiple commands and overlapping commands.</p>
+<p>SegmentActor has two messages related to sending a message to the segment. The first is Send, which is the operational case. It sends a command to the segment. The second is SendWithTime, which allows sending a time for the simulator delay allowing easier testing of things like multiple commands and overlapping commands.</p>
 <p>At this level, all segment commands are implemented as a variable delay on the segment side of the socket. We send the command: DELAY MILLIS such as DELAY 1234 to the socket client. The delay is random returned by the <code>getRandomDelay</code> function. The delay is currently set to be between 10 and 1250 millis. </p>
 <p>The important message of SegmentActor is the processing under <code>SendWithTime</code>. The code checks to see if the delay is greater than 1 second, if so it sends a <code>Started</code> message back to the caller. Then it uses the <code>send</code> method of the socket client to send the command to the segment socket. This is an asynchronous call using a Future. When the call completes, the SegmentActor sends a response to the caller, which is a <code>SegComMon</code> instance to be counted.</p>
 <p>The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket connection to the segment. These shutdown commands are present so that tests always work correctly.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/src/main/paradox/lscs/LSCSHcd.md">here</a>.
+The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/target/mdoc/lscs/LSCSHcd.md">here</a>.
 </div>
 
 <div class="nav-next">
