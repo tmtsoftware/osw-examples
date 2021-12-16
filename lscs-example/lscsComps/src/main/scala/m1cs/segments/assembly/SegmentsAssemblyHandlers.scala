@@ -23,7 +23,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
  * SegmentsAssemblyHandlers is the TLA for the Segments Assembly
- * It receives Setups the are formatted according to the commands in [[m1cs.segments.segcommands.*]]
+ * It receives Setups the are formatted according to the commands in m1cs.segments.segcommands package.
  */
 //noinspection DuplicatedCode
 class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)

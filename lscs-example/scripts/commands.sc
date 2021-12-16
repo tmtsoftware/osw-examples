@@ -2,7 +2,7 @@
 import $repo.`https://jitpack.io`
 
 // This loads the lscscommands jar file.  If you change the version, you must update this also.
-interp.load.ivy("com.github.tmtsoftware.m1cs" %% "lscscommands" % "0.0.1-SNAPSHOT")
+interp.load.ivy("com.github.tmtsoftware.osw-examples" %% "lscscommands" % "0.1.0-SNAPSHOT")
 
 // These imports are needed to send the 10 implemented commands
 import m1cs.segments.segcommands._
@@ -26,27 +26,17 @@ val testStrains: Array[Double] = Array(1, 2, 3, 4, 5, 6, 6, 8, 9, 10, 11, 12, 13
 val prefix = Prefix("ESW.test")
 
 // Create an ACTUATOR command.
-val to = ACTUATOR.toActuator(prefix, Set(1,3)).withMode(TRACK)
+val ac = ACTUATOR.toActuator(prefix, Set(1,3)).withMode(TRACK)
 
-val s = to.asSetup
+// View the setup
+val s = ac.asSetup
 
-s: Setup = Setup(
-  source = Prefix(subsystem = ESW, componentName = "test"),
-  commandName = CommandName(name = "ACTUATOR"),
-  maybeObsId = None,
-  paramSet = Set(
-    Parameter(keyName = "SegmentId", keyType = StringKey, items = ArraySeq("ALL"), units = none),
-    Parameter(keyName = "ACT_ID", keyType = IntKey, items = ArraySeq(1, 3), units = none),
-    Parameter(keyName = "MODE", keyType = ChoiceKey, items = ArraySeq(Choice(name = "TRACK")), units = none)
-  )
-)
-
+// View the actuator command string
 val c = ACTUATOR.toCommand(s)
 
-c: String = "ACTUATOR ACT_ID=(1,3), MODE=TRACK"
-
+// Connect to the Segments Assembly
 val segA = assemblyCommandService("M1CS.segmentsAssembly")
-segA: csw.command.api.scaladsl.CommandService = csw.command.client.internal.CommandServiceImpl@2645d6fd
 
+// Send the Setup to the Segments Assembly and wait
 segA.submitAndWait(s)
 segA.submitAndWait(s).get

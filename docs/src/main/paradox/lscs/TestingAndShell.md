@@ -47,13 +47,44 @@ Setting things up can be a bit complicated. There are a number of considerations
 So before using esw-shell successfully, CSW services must be running, a simulator must be running, and the Segments Assembly 
 and HCD must be running.  The following will show one approach.
 
+### Locally Install LSCS JAR File
+
+This example requires that esw-shell can find and load the lscscommands JAR file. To do that, after building the osw-examples, you
+must "publish" the LSCS JAR files locally using the SBT command in the `osw-examples` directory:
+
+```
+publishLocal
+```
+
+within the executing `sbt` or,
+
+```azure
+sbt publishLocal
+```
+in the `osw-examples` directory.
+
+This creates and copies the JAR files to your `ivy` repository in the directory ~/.ivy2/local.  Now when looking up
+dependencies, esw-shell will find the lscscommands JAR file.  After issuing this command, you can see the JAR files 
+for version 0.1.0 in the directory:
+
+```
+~/.ivy2/local/com.github.tmtsoftware.osw-examples/lscscommands_2.13/0.1.0-SNAPSHOT/jars
+```
+
+@@@ note
+If you are doing this for the first time, the recommendation is to create a terminal window for each of these steps:
+csw-services, simulator, LSCS container, and esw-shell.
+
+Be sure that you have the CSW environment variables set for the network interface.
+@@@
+
 ### Install and Run csw-services
 
 Follow the instructions [here](https://tmtsoftware.github.io/csw/apps/cswservices.html) to install csw-services.
 Only Location Service is needed, but you must start with an option.
 
 ```scala
-csw-services -e
+csw-services start -e
 ```
 This starts csw-services with Location Service and Event Service
 
@@ -86,12 +117,12 @@ file that includes both.  That is the most convenient.  Use sbt to start the two
 the deploy section.
 
 ```
-sbt "lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf"
+sbt "lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf"
 ```
 or for a remote LSCS Simulator:
 
 ```
-sbt "lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf -DsimulatorHost=192.168.1.230" 
+sbt "lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf -DsimulatorHost=192.168.1.230" 
 ```
 
 ### Loading and Executing Segment Commands
@@ -113,7 +144,7 @@ script, so you can copy/paste.
 import $repo.`https://jitpack.io`
 
 // This loads the lscscommands JAR file.  If you change the version, you must update this also.
-interp.load.ivy("com.github.tmtsoftware.m1cs" %% "lscscommands" % "0.0.1-SNAPSHOT")
+interp.load.ivy("com.github.tmtsoftware.osw-examples" %% "lscscommands" % "0.1.0-SNAPSHOT")
 
 // These imports are needed to send the 10 implemented commands
 import m1cs.segments.segcommands._

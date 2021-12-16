@@ -61,7 +61,8 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
    * Here we return an error for an Observe or pass to the Setup validation.
    * @param runId command runId
    * @param controlCommand either a Setup or Observe
-   * @return a [[ValidateCommandResponse]]
+   *
+   * returns a CSW `ValidateCommandResponse`
    */
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = {
     controlCommand match {

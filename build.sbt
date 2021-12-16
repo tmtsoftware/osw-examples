@@ -1,6 +1,6 @@
 import Dependencies._
 
-ThisBuild / organization := "org.tmt"
+ThisBuild / organization := "com.github.tmtsoftware.osw-examples"
 ThisBuild / organizationName := "TMT International Observatory"
 ThisBuild / organizationHomepage := Some(url("http://www.tmt.org"))
 ThisBuild / scalaVersion := "2.13.7"
@@ -89,8 +89,8 @@ lazy val docs = project
     version := version.value.takeWhile(_ != '-'), // strip off the -SNAPSHOT for docs
     paradoxTheme := Some(builtinParadoxTheme("generic")),
     ghpagesNoJekyll := true,
-    publish / skip     := true,
-    git.remoteRepo  := "git@github.com:tmtsoftware/osw-examples.git",
+    publish / skip := true,
+    git.remoteRepo := "git@github.com:tmtsoftware/osw-examples.git",
     paradoxProperties ++= Map(
       "org" -> organization.value,
       "version" -> version.value,
