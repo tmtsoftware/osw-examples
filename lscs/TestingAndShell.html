@@ -204,9 +204,22 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li>Should I start the Assembly and HCD separately or in a container?</li>
 </ul>
 <p>So before using esw-shell successfully, CSW services must be running, a simulator must be running, and the Segments Assembly and HCD must be running. The following will show one approach.</p>
+<h3><a href="#locally-install-lscs-jar-file" name="locally-install-lscs-jar-file" class="anchor"><span class="anchor-link"></span></a>Locally Install LSCS JAR File</h3>
+<p>This example requires that esw-shell can find and load the lscscommands JAR file. To do that, after building the osw-examples, you must &ldquo;publish&rdquo; the LSCS JAR files locally using the SBT command in the <code>osw-examples</code> directory:</p>
+<pre><code>publishLocal
+</code></pre>
+<p>within the executing <code>sbt</code> or,</p>
+<pre class="prettyprint"><code class="language-azure">sbt publishLocal
+</code></pre>
+<p>in the <code>osw-examples</code> directory.</p>
+<p>This creates and copies the JAR files to your <code>ivy</code> repository in the directory ~/.ivy2/local. Now when looking up dependencies, esw-shell will find the lscscommands JAR file. After issuing this command, you can see the JAR files for version 0.1.0 in the directory:</p>
+<pre><code>~/.ivy2/local/com.github.tmtsoftware.osw-examples/lscscommands_2.13/0.1.0-SNAPSHOT/jars
+</code></pre><div class="callout note "><div class="callout-title">Note</div>
+<p>If you are doing this for the first time, the recommendation is to create a terminal window for each of these steps: csw-services, simulator, LSCS container, and esw-shell.</p>
+<p>Be sure that you have the CSW environment variables set for the network interface.</p></div>
 <h3><a href="#install-and-run-csw-services" name="install-and-run-csw-services" class="anchor"><span class="anchor-link"></span></a>Install and Run csw-services</h3>
 <p>Follow the instructions <a href="https://tmtsoftware.github.io/csw/apps/cswservices.html">here</a> to install csw-services. Only Location Service is needed, but you must start with an option.</p>
-<pre class="prettyprint"><code class="language-scala">csw-services -e
+<pre class="prettyprint"><code class="language-scala">csw-services start -e
 </code></pre>
 <p>This starts csw-services with Location Service and Event Service</p>
 <h3><a href="#start-the-lscs-simulator" name="start-the-lscs-simulator" class="anchor"><span class="anchor-link"></span></a>Start the LSCS Simulator</h3>
@@ -222,10 +235,10 @@ run
 <p>You may also start the simulator on a different machine and use the -DsimulatorHost option to indicate where the simulator is located. This causes the SegmentActor to connect to the port 8023 on the host indicated. This is a good way to keep a simulator runing on a Linux machine.</p></div>
 <h3><a href="#starting-the-segments-assembly-and-segments-hcd" name="starting-the-segments-assembly-and-segments-hcd" class="anchor"><span class="anchor-link"></span></a>Starting the Segments Assembly and Segments HCD</h3>
 <p>There are component configuration files for standalone HCD and Assembly as well as a container configuration file that includes both. That is the most convenient. Use sbt to start the two in a container as discussed in the deploy section.</p>
-<pre><code>sbt &quot;lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf&quot;
+<pre><code>sbt &quot;lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf&quot;
 </code></pre>
 <p>or for a remote LSCS Simulator:</p>
-<pre><code>sbt &quot;lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf -DsimulatorHost=192.168.1.230&quot; 
+<pre><code>sbt &quot;lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf -DsimulatorHost=192.168.1.230&quot; 
 </code></pre>
 <h3><a href="#loading-and-executing-segment-commands" name="loading-and-executing-segment-commands" class="anchor"><span class="anchor-link"></span></a>Loading and Executing Segment Commands</h3>
 <p>At this point, CSW services are running, the LSCS Simulator is running, and the Segments Assembly/HCD are running.</p>
@@ -236,7 +249,7 @@ run
 import $repo.`https://jitpack.io`
 
 // This loads the lscscommands JAR file.  If you change the version, you must update this also.
-interp.load.ivy(&quot;com.github.tmtsoftware.m1cs&quot; %% &quot;lscscommands&quot; % &quot;0.0.1-SNAPSHOT&quot;)
+interp.load.ivy(&quot;com.github.tmtsoftware.osw-examples&quot; %% &quot;lscscommands&quot; % &quot;0.1.0-SNAPSHOT&quot;)
 
 // These imports are needed to send the 10 implemented commands
 import m1cs.segments.segcommands._
