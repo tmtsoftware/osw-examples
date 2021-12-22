@@ -19,21 +19,31 @@ import scala.concurrent.{Future, Promise}
  * If the command is "DELAY ms" the reply is made after the given ms delay.
  */
 class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?]) {
+
   import system.*
 
   private val connections = Tcp()(system.classicSystem).bind(host, port)
+
+  // For random delay before replying to message
+  private val rnd = new scala.util.Random
+  private val minDelay = system.settings.config.getInt("m1cs.segment.streams.server.minDelay") // ms
+  private val maxDelay = system.settings.config.getInt("m1cs.segment.streams.server.maxDelay") // ms
 
   // Reply to an incoming socket message.
   // The DELAY command is supported here, with one arg: the number of ms. For example: "DELAY 1000",
   // which just sleeps for that amount of time before replying with: "DELAY: Completed".
   // For now, all other commands get an immediate reply.
   private def handleMessage(bs: ByteString): Future[ByteString] = {
-    val msg     = SocketMessage.parse(bs)
-    val cmd     = msg.cmd.split(' ').head
-    val s       = if (cmd.startsWith("ERROR")) "ERROR" else "COMPLETED"
+    val msg = SocketMessage.parse(bs)
+    val cmd = msg.cmd.split(' ').head
+    val s = if (cmd.startsWith("ERROR")) "ERROR" else "COMPLETED"
     val respMsg = s"$cmd: $s"
-    val resp    = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
-    val delayMs = if (cmd == "DELAY") msg.cmd.split(" ")(1).toInt else 0
+    val resp = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
+    val delayMs = if (cmd == "DELAY")
+      msg.cmd.split(" ")(1).toInt
+    else
+      minDelay + rnd.nextInt((maxDelay - minDelay) + 1)
+
     if (delayMs == 0) {
       Future.successful(resp.toByteString)
     }
@@ -69,6 +79,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
 
   /**
    * Shuts down the server
+   *
    * @return
    */
   def terminate(): Future[Unit] = {
