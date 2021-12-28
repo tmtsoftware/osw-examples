@@ -67,6 +67,23 @@ and then to run:
 
 For future reference, here are some notes about building a single jar or native app, based on Scala and Akka:
 
+### Generating the files in the ./configs dir:
+
+The files in the ./configs dir are referenced in build.sbt settings and generated using these commands:
+```
+sbt lscsDeploy/assembly
+mkdir configs
+$GRAALHOME/bin/java -agentlib:native-image-agent=config-output-dir=./configs \
+    -jar lscsDeploy-assembly-0.1.0-SNAPSHOT.jar 
+    --local src/main/resources/SegmentsContainer.conf
+```
+
+This assumes that the application executes all the branches of code needed to determine which classes are loaded 
+using reflection, which resource files are accessed, etc. The last command generates the JSON
+files under ./configs that are used to configure the native image build.
+
+### Other Useful Information:
+
 * Useful information and examples:
   See https://www.vandebron.tech/blog/building-native-images-and-compiling-with-graalvm-and-sbt
 
