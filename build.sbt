@@ -74,12 +74,20 @@ lazy val lscsDeploy = project
       `csw-testkit` % Test
     ),
     // Note: See https://www.vandebron.tech/blog/building-native-images-and-compiling-with-graalvm-and-sbt
+    // and https://github.com/ignission/aws-lambda-graal-native-scala-example
     graalVMNativeImageOptions ++= Seq(
       "--allow-incomplete-classpath",
       "-H:ResourceConfigurationFiles=../../configs/resource-config.json",
       "-H:ReflectionConfigurationFiles=../../configs/reflect-config.json",
       "-H:JNIConfigurationFiles=../../configs/jni-config.json",
-      "-H:DynamicProxyConfigurationFiles=../../configs/proxy-config.json"
+      "-H:DynamicProxyConfigurationFiles=../../configs/proxy-config.json",
+      "-H:+ReportExceptionStackTraces",
+      "-H:+AllowVMInspection",
+      "-H:IncludeResources=.*\\.properties",
+      "-H:EnableURLProtocols=http,https",
+      "-H:TraceClassInitialization=true",
+      "--no-fallback",
+      "--no-server",
     ),
     // Copied from default settings for sbt-assembly, but changed to default to "first" for conflicts
     // (XXX might be risky)
