@@ -73,17 +73,28 @@ lazy val lscsDeploy = project
       `csw-framework`,
       `csw-testkit` % Test
     ),
-    graalVMNativeImageOptions ++= Seq("--allow-incomplete-classpath"),
+    // Note: See https://www.vandebron.tech/blog/building-native-images-and-compiling-with-graalvm-and-sbt
+    graalVMNativeImageOptions ++= Seq(
+      "--allow-incomplete-classpath",
+      "-H:ResourceConfigurationFiles=../../configs/resource-config.json",
+      "-H:ReflectionConfigurationFiles=../../configs/reflect-config.json",
+      "-H:JNIConfigurationFiles=../../configs/jni-config.json",
+      "-H:DynamicProxyConfigurationFiles=../../configs/proxy-config.json"
+    ),
+    // Copied from default settings for sbt-assembly, but changed to default to "first" for conflicts
+    // (XXX might be risky)
     ThisBuild / assemblyMergeStrategy := {
       case x if Assembly.isConfigFile(x) =>
         MergeStrategy.concat
-      case PathList(ps @ _*) if Assembly.isReadme(ps.last) || Assembly.isLicenseFile(ps.last) =>
+      case PathList(ps@_*) if Assembly.isReadme(ps.last) || Assembly.isLicenseFile(ps.last) =>
         MergeStrategy.rename
-      case PathList("META-INF", xs @ _*) =>
-        (xs map {_.toLowerCase}) match {
+      case PathList("META-INF", xs@_*) =>
+        (xs map {
+          _.toLowerCase
+        }) match {
           case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
             MergeStrategy.discard
-          case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
+          case ps@(x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
             MergeStrategy.discard
           case "plexus" :: xs =>
             MergeStrategy.discard
@@ -141,32 +152,32 @@ lazy val docs = project
 
 // Shared compile scalac options
 ThisBuild / Compile / scalacOptions ++= Seq(
-  "-deprecation",                     // Emit warning and location for usages of deprecated APIs.
-  "-encoding", "utf-8",               // Specify character encoding used by source files.
-  "-explaintypes",                    // Explain type errors in more detail.
-  "-feature",                         // Emit warning and location for usages of features that should be imported explicitly.
-  "-language:existentials",           // Existential types (besides wildcard types) can be written and inferred
-  "-language:experimental.macros",    // Allow macro definition (besides implementation and application)
-  "-language:higherKinds",            // Allow higher-kinded types
-  "-language:implicitConversions",    // Allow definition of implicit functions called views
-  "-Xcheckinit",                      // Wrap field accessors to throw an exception on uninitialized access.
-  "-Xfatal-warnings",                 // Fail the compilation if there are any warnings.
-  "-Xsource:3",                       // Treat compiler input as Scala source for the specified version
-  "-Xlint:adapted-args",              // Warn if an argument list is modified to match the receiver.
-  "-Xlint:delayedinit-select",        // Selecting member of DelayedInit.
-  "-Xlint:doc-detached",              // A Scaladoc comment appears to be detached from its element.
-  "-Xlint:inaccessible",              // Warn about inaccessible types in method signatures.
-  "-Xlint:infer-any",                 // Warn when a type argument is inferred to be `Any`.
-  "-Xlint:missing-interpolator",      // A string literal appears to be missing an interpolator id.
-  "-Xlint:nullary-unit",              // Warn when nullary methods return Unit.
-  "-Xlint:option-implicit",           // Option.apply used implicit view.
-  "-Xlint:package-object-classes",    // Class or object defined in package object.
-  "-Xlint:private-shadow",            // A private field (or class parameter) shadows a superclass field.
-  "-Xlint:stars-align",               // Pattern sequence wildcard must align with sequence component.
-  "-Xlint:type-parameter-shadow",     // A local type parameter shadows a type already in scope.
-  "-Wdead-code",                      // Warn when dead code is identified.
-  "-Wextra-implicit",                 // Warn when more than one implicit parameter section is defined.
-  "-Wnumeric-widen",                  // Warn when numerics are widened.
+  "-deprecation", // Emit warning and location for usages of deprecated APIs.
+  "-encoding", "utf-8", // Specify character encoding used by source files.
+  "-explaintypes", // Explain type errors in more detail.
+  "-feature", // Emit warning and location for usages of features that should be imported explicitly.
+  "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
+  "-language:experimental.macros", // Allow macro definition (besides implementation and application)
+  "-language:higherKinds", // Allow higher-kinded types
+  "-language:implicitConversions", // Allow definition of implicit functions called views
+  "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
+  "-Xfatal-warnings", // Fail the compilation if there are any warnings.
+  "-Xsource:3", // Treat compiler input as Scala source for the specified version
+  "-Xlint:adapted-args", // Warn if an argument list is modified to match the receiver.
+  "-Xlint:delayedinit-select", // Selecting member of DelayedInit.
+  "-Xlint:doc-detached", // A Scaladoc comment appears to be detached from its element.
+  "-Xlint:inaccessible", // Warn about inaccessible types in method signatures.
+  "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
+  "-Xlint:missing-interpolator", // A string literal appears to be missing an interpolator id.
+  "-Xlint:nullary-unit", // Warn when nullary methods return Unit.
+  "-Xlint:option-implicit", // Option.apply used implicit view.
+  "-Xlint:package-object-classes", // Class or object defined in package object.
+  "-Xlint:private-shadow", // A private field (or class parameter) shadows a superclass field.
+  "-Xlint:stars-align", // Pattern sequence wildcard must align with sequence component.
+  "-Xlint:type-parameter-shadow", // A local type parameter shadows a type already in scope.
+  "-Wdead-code", // Warn when dead code is identified.
+  "-Wextra-implicit", // Warn when more than one implicit parameter section is defined.
+  "-Wnumeric-widen", // Warn when numerics are widened.
   //"-Wunused",                         // Enable -Wunused:imports,privates,locals,implicits.
-  "-Wvalue-discard"                   // Warn when non-Unit expression results are unused.
+  "-Wvalue-discard" // Warn when non-Unit expression results are unused.
 )
