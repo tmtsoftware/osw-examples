@@ -16,6 +16,13 @@ ways of programming components along with increasing functionality.
 
 This is an example of an end-to-end approach to the Assembly and HCD needed for M1CS.
 
+Note: the [lscs-example/lscsDeploy](lscs-example/lscsDeploy) subproject supports creating
+a single jar (using the [sbt-assembly](https://github.com/sbt/sbt-assembly) plugin) and
+creating a native app, using [Graalvm Native Image](https://www.graalvm.org/). 
+The [sbt-native-packager](https://github.com/sbt/sbt-native-packager) plugin can also be used
+to create a local app with start script (using `sbt stage`).
+See [lscs-example/lscsDeploy/README.md](lscs-example/lscsDeploy/README.md) for build details.
+
 ### Documentation
 
 Documentation for osw-examples can be found [here](https://tmtsoftware.github.io/osw-examples).
