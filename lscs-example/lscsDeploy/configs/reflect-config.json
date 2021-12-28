@@ -340,10 +340,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]}
 ,
 {
-  "name":"akka.remote.artery.tcp.ArteryTcpTransport$$Lambda$1144/0x0000000840786840",
-  "methods":[{"name":"writeReplace","parameterTypes":[] }]}
-,
-{
   "name":"akka.remote.routing.RemoteRouterConfig"}
 ,
 {
