@@ -71,7 +71,8 @@ lazy val lscsDeploy = project
     Compile / packageBin / mainClass := Some("m1cs.segments.deploy.SegmentsContainerApp"),
     libraryDependencies ++= Seq(
       `csw-framework`,
-      `csw-testkit` % Test
+      `scalatest` % Test,
+      `akka-testkit` % Test
     ),
     // Note: See https://www.vandebron.tech/blog/building-native-images-and-compiling-with-graalvm-and-sbt
     // and https://github.com/ignission/aws-lambda-graal-native-scala-example
@@ -84,7 +85,7 @@ lazy val lscsDeploy = project
       "-H:+ReportExceptionStackTraces",
       "-H:+AllowVMInspection",
       "-H:IncludeResources=.*\\.properties",
-      "-H:EnableURLProtocols=http,https",
+      "-H:EnableURLProtocols=http,https,tcp",
       "-H:TraceClassInitialization=true",
       "--no-fallback",
       "--no-server",

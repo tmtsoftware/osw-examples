@@ -13,7 +13,11 @@ To build the single jar, run:
 
     sbt lscsDeploy/assembly
 
-Then you can run a container as follows:
+Start the socket server before the assembly and HCD:
+
+    sbt 'lscsComps/runMain m1cs.segments.streams.server.SocketServerStream'
+
+Then you can run the container as follows:
 
     cd lscs-example/lscsDeploy
     java -jar target/scala-2.13/lscsDeploy-assembly-0.1.0-SNAPSHOT.jar --local src/main/resources/SegmentsContainer.conf
@@ -40,6 +44,10 @@ Run this to build the native app (This will take a while...):
 or 
 
     sbt -java-home $GRAALHOME lscsDeploy/graalvm-native-image:packageBin
+
+Start the socket server before the assembly and HCD:
+
+    sbt 'lscsComps/runMain m1cs.segments.streams.server.SocketServerStream'
 
 Then, to run the native application:
 
@@ -81,6 +89,9 @@ $GRAALHOME/bin/java -agentlib:native-image-agent=config-output-dir=./configs \
 This assumes that the application executes all the branches of code needed to determine which classes are loaded 
 using reflection, which resource files are accessed, etc. The last command generates the JSON
 files under ./configs that are used to configure the native image build.
+In order to execute all branches of the code, it is necessary to run tests that talk to the running assembly and HCD.
+The resulting files under ./configs are required to correctly build the native image, with access to all 
+possible classes that are accessed via reflection.
 
 ### Other Useful Information:
 

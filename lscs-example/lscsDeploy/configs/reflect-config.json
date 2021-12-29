@@ -3,6 +3,18 @@
   "name":"[B"}
 ,
 {
+  "name":"[D"}
+,
+{
+  "name":"[F"}
+,
+{
+  "name":"[I"}
+,
+{
+  "name":"[J"}
+,
+{
   "name":"[Lakka.actor.ActorRef;"}
 ,
 {
@@ -33,10 +45,16 @@
   "name":"[Lcom.fasterxml.jackson.databind.ser.Serializers;"}
 ,
 {
+  "name":"[Lcsw.params.core.models.Choice;"}
+,
+{
   "name":"[Ljava.lang.Class;"}
 ,
 {
   "name":"[Ljava.lang.String;"}
+,
+{
+  "name":"[S"}
 ,
 {
   "name":"akka.Done"}
@@ -340,6 +358,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]}
 ,
 {
+  "name":"akka.remote.artery.tcp.ArteryTcpTransport$$Lambda$1140/0x0000000840783040",
+  "methods":[{"name":"writeReplace","parameterTypes":[] }]}
+,
+{
   "name":"akka.remote.routing.RemoteRouterConfig"}
 ,
 {
@@ -510,6 +532,12 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]}
 ,
 {
+  "name":"csw.command.client.messages.CommandMessage$Submit"}
+,
+{
+  "name":"csw.command.client.messages.QueryFinal"}
+,
+{
   "name":"csw.command.client.messages.SupervisorContainerCommonMessages$Shutdown$"}
 ,
 {
@@ -537,6 +565,12 @@
 ,
 {
   "name":"csw.logging.models.codecs.LoggingSerializable"}
+,
+{
+  "name":"csw.params.commands.CommandResponse$Completed"}
+,
+{
+  "name":"csw.params.commands.CommandResponse$Started"}
 ,
 {
   "name":"csw.serializable.CommandSerializable"}
