@@ -19,6 +19,7 @@ Start the socket server before the assembly and HCD:
 
 Then you can run the container as follows:
 
+    csw-services start -e -c -k
     cd lscs-example/lscsDeploy
     java -jar target/scala-2.13/lscsDeploy-assembly-0.1.0-SNAPSHOT.jar --local src/main/resources/SegmentsContainer.conf
 
@@ -51,6 +52,7 @@ Start the socket server before the assembly and HCD:
 
 Then, to run the native application:
 
+    csw-services start -e -c -k
     cd lscs-example/lscsDeploy
     target/graalvm-native-image/lscsDeploy --local src/main/resources/SegmentsContainer.conf
 
@@ -70,6 +72,13 @@ and then to run:
     cd lscs-example/lscsDeploy
     target/universal/stage/bin/lscsdeploy --local src/main/resources/SegmentsContainer.conf
 
+## Test to verify that it is working
+
+There is a test `M1csTestClient` that expects csw-services, the socket server, assembly and HCD to be running externally.
+Since it should not run automatically, an @Ignore annotation needs to be commented out before 
+manually running, either in Idea or with sbt:
+
+    sbt lscsDeploy/test
 
 ## Notes on the build
 
