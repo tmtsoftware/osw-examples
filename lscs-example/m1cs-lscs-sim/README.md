@@ -1,15 +1,15 @@
-# M1CS Lower Segment Box Server Simulator 
+# M1CS Lower Segment Box Server Simulator
 
-This project contains a simulator for the lower segment box command server (CmdSrvSim), a command line test client (CmdTool), as well as a copy of the network services library (libnet.a).
+This project contains a simulator for the lower segment box command server (CmdSrvSim), a command line test client (CmdTool), as well as a copy of the network services library (libnet.a).  This is a precursor for the M1 Simulator that is to be developed as part of the M1CS RTC development that is eventually needed for delivery to STIL.
 
-The Command Server Simulator's functionality is limited to: 
-1. Accepting client connections (up to 20 at a time).
+Currently Command Server Simulator's functionality is limited to:
+1. Accepting client connections (up to 492 at a time).
 2. Receiving generic CmdMsg's and returning RspMsg's.
 3. Currently it doesn't parse the command syntax.  The RspMsg will be formated as: <first word>": Completed."
+4. Crude multithreading of the command processing that randomizes the RspMsg delay.
 
 CmdSrvSim currently processes CmdMsg's in the order they are received.  Future versions will add:
 1. Integrating the LSCS command parser.
-2. Multithreading the command processing and randomizing the RspMsg delay.
 3. Returning the various DataMsg's for the commands that would generate them.
 
 CmdTool provides a basic command line interface that will allow the user to enter commands from the keyboard, and print out the RspMsg results.
