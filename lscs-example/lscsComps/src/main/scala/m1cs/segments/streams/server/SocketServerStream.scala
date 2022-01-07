@@ -13,10 +13,11 @@ import scala.concurrent.{Future, Promise}
 /**
  * A TCL socket server that listens on the given host:port for connections
  * and accepts String messages in the format "id cmd". A reply is sent for
- * each message: "id COMPLETED".
+ * each message: "cmd Completed."
  *
- * Currently any command can be sent and COMPLETED is always returned.
- * If the command is "DELAY ms" the reply is made after the given ms delay.
+ * Currently any command can be sent and "Completed." is always returned.
+ * If the command is "DELAY ms" the reply is made after the given ms delay,
+ * otherwise after a random delay configured in reference.conf.
  */
 class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?]) {
 
@@ -36,10 +37,10 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   private def handleMessage(bs: ByteString): Future[ByteString] = {
     val msg = SocketMessage.parse(bs)
     val cmd = msg.cmd.split(' ').head
-    val s = if (cmd.startsWith("ERROR")) "ERROR" else "COMPLETED"
+    val s = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
     val respMsg = s"$cmd: $s"
     val resp = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
-    val delayMs = if (cmd == "DELAY")
+    val delayMs = if (cmd.toUpperCase() == "DELAY")
       msg.cmd.split(" ")(1).toInt
     else
       minDelay + rnd.nextInt((maxDelay - minDelay) + 1)
