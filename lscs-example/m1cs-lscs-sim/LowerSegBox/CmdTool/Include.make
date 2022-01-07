@@ -46,7 +46,7 @@ LLIBS = -lnet$(TARGET_SYS) -lparser$(TARGET_SYS)
 LLIBS = -lnet$(TARGET_SYS) 
 
 # LDLIBS: system libraries/library paths to linked to EXE
-LDLIBS =  
+LDLIBS = -lpthread
 
 # EXES: name of executable(s) to be created.
 EXES = CmdTool$(TARGET_SYS) CmdSrvSim$(TARGET_SYS)

@@ -36,7 +36,7 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
         val fList       = clientPairs.map(p => p._2.send(s"DELAY ${p._1 * 10}"))
         Future
           .sequence(fList)
-          .map(_.forall(_.cmd.endsWith("COMPLETED")))
+          .map(_.forall(_.cmd.endsWith("Completed.")))
           .foreach(replyTo ! _)
         Behaviors.same
 
@@ -64,12 +64,12 @@ class SocketClientStreamTest extends AnyFunSuite {
       println(s"XXX showResult: $msg")
       msg
     }
-    val f0 = client1.send("IMMEDIATE").map(showResult)
+    val f0 = client1.send("IMMEDIATE arg1 arg2").map(showResult)
     val f1 = client1.send("DELAY 2000").map(showResult)
     val f2 = client2.send("DELAY 1000").map(showResult)
     val f3 = client3.send("DELAY 500").map(showResult)
     val f4 = client1.send("DELAY 200").map(showResult)
-    val f5 = client2.send("IMMEDIATE").map(showResult)
+    val f5 = client2.send("IMMEDIATE arg1 arg2 arg3").map(showResult)
 
     val f = for {
       resp0 <- f0
@@ -86,7 +86,7 @@ class SocketClientStreamTest extends AnyFunSuite {
     }
     val list = Await.result(f, 30.seconds)
     println(s"XXX test1 result = $list")
-    assert(list.forall(_.cmd.endsWith(" COMPLETED")))
+    assert(list.forall(_.cmd.endsWith(" Completed.")))
   }
   //#socketClientWithSystem
 
