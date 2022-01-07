@@ -6,6 +6,7 @@ import akka.util.Timeout
 import csw.logging.api.scaladsl.Logger
 import m1cs.segments.streams.client.SocketClientStream
 import m1cs.segments.segcommands.SegmentId
+import m1cs.segments.streams.shared.SocketMessage.MessageId
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration, MILLISECONDS}
 import scala.util.{Failure, Properties, Random, Success}
@@ -28,31 +29,45 @@ object SegmentActor {
     }
   }
 
-  private def getRandomDelay: FiniteDuration = FiniteDuration(Random.between(10, 1250), MILLISECONDS)
-
   private def handle(io: SocketClientStream, seqNo: Int, segmentId: SegmentId, log: Logger): Behavior[Command] =
     Behaviors.receive[Command] { (ctx, m) =>
       import ctx.executionContext
       m match {
-        case Send(commandName, args, replyTo) =>
-          ctx.self ! SendWithTime(commandName, args, getRandomDelay, replyTo)
-          handle(io, seqNo, segmentId, log)
+        case Send(commandName, command, replyTo) =>
+          log.debug(s"Sending commandName: $commandName and command: $command to simulator.")
+          // This branch sends the JPL command directly, TMT simulator will delay a random time before replying
+          // For testing, it is possible to send ERROR and TMT simulator will reply with ERROR rather than COMPLETED
+          val simCommand = if (commandName == ERROR_COMMAND_NAME) {
+            s"ERROR ${command}"
+          } else {
+            command
+          }
+          io.send(simCommand, MessageId(seqNo)).onComplete {
+            case Success(m) =>
+              if (m.cmd.toUpperCase.contains("COMPLETED")) {
+                log.debug(s"Message seqNo: ${m.hdr.seqNo}")
+                replyTo ! Completed(commandName, seqNo, segmentId)
+              } else {
+                replyTo ! Error(commandName, seqNo, segmentId, "Error received from simulator.")
+              }
+              log.debug(s"Command completed with: ${m.cmd}")
+            case Failure(exception) =>
+              log.error(s"Socket send failed: $exception", ex = exception)
+              replyTo ! Error(commandName, seqNo, segmentId, "Error received from simulator.")
+          }
+          handle(io, seqNo + 1, segmentId, log)
 
         case SendWithTime(commandName, _, delay, replyTo) =>
-          // The following fakes JPL Started until sim does it
-          if (delay.toMillis > 1000)
-            replyTo ! Started(commandName, seqNo, segmentId)
-
-          // Right now simulator just does random delays
+          // If DELAY command is sent, TMT simulator waits for specified time, this is for testing overlaps
           val simCommand = s"DELAY ${delay.toMillis.toString}"
+          log.debug(s"Sending command: $simCommand to simulator.")
+
           io.send(simCommand).onComplete {
-            case Success(_) =>
-              // The value returned from the simulator is not used at this point.  That could change.
-              // Message from simulator not used at this point
-              if (commandName == ERROR_COMMAND_NAME)
-                replyTo ! Error(commandName, seqNo, segmentId, FAKE_ERROR_MESSAGE)
-              else
-                replyTo ! Completed(commandName, seqNo, segmentId)
+            case Success(m) =>
+              // The value returned from the simulator for DELAY is not used at this point.  That could change.
+              // Message from simulator not used at this point - cannot handle ERROR
+              log.debug(s"Received: ${m.cmd}")
+              replyTo ! Completed(commandName, seqNo, segmentId)
             case Failure(exception) =>
               log.error(s"Socket send failed: $exception", ex = exception)
               replyTo ! Error(commandName, seqNo, segmentId, "Error received from simulator.")
@@ -86,7 +101,7 @@ object SegmentActor {
     val segmentId: SegmentId
   }
 
-  case class Send(commandName: String, args: String, replyTo: ActorRef[SegmentActor.Response]) extends Command
+  case class Send(commandName: String, command: String, replyTo: ActorRef[SegmentActor.Response]) extends Command
   case class SendWithTime(commandName: String, command: String, time: FiniteDuration, replyTo: ActorRef[SegmentActor.Response])
       extends Command
   case class CommandFinished(commandName: String, commandId: Int)              extends Command

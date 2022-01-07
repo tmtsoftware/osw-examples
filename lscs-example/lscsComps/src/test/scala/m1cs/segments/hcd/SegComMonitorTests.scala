@@ -21,10 +21,10 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   import frameworkTestKit.*
 
   private val cn1     = "ACTUATOR"
-  private val cn1full = "ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
+  private val cn1full = "ACTUATOR ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
 
   private val cn2     = "CFG_CUR_LOOP"
-  private val cn2full = "ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=(1.2,2.3,3.4)"
+  private val cn2full = "CFG_CUR_LOOP ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=(1.2,2.3,3.4)"
 
   LoggingSystemFactory.forTestingOnly()
   private val log = GenericLoggerFactory.getLogger

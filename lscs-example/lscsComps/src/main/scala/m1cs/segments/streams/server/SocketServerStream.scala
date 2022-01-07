@@ -37,7 +37,8 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
     val msg = SocketMessage.parse(bs)
     val cmd = msg.cmd.split(' ').head
     val s = if (cmd.startsWith("ERROR")) "ERROR" else "COMPLETED"
-    val respMsg = s"$cmd: $s"
+    // Splitting off the command name for the response
+    val respMsg = s"${cmd.split(' ')(0)}: $s"
     val resp = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
     val delayMs = if (cmd == "DELAY")
       msg.cmd.split(" ")(1).toInt
@@ -74,7 +75,6 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
 
   binding.foreach { b =>
     println(s"server: local address: ${b.localAddress}")
-
   }
 
   /**

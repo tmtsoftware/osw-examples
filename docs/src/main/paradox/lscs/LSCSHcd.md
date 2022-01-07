@@ -113,11 +113,6 @@ The SegComMonitor is written in the functional typed actor style. See [akka.io](
 @@@ warning
 Neither simulator implements the protocol that includes: Processing and Started messages. We suggest they not be implemented
 and keep the low-level protocol simple.
-
-The Segment Actor tries to implement some features of the protocol, but it has little effect on the monitor or the HCD
-and Assembly, there is very little reason to send Started if the command is longer than 1 second or Processing messages. 
-They provide no useful information at this level and just introduce potential for errors. This might be useful for
-a command-line UI, but that isn't the application here. We suggest dropping this since it isn't part of the JPL library.
 @@@
 
 `SegComMonitor` tests are a good way to see how testing works and how we validate the M1CS requirement to complete all
@@ -128,7 +123,7 @@ to create a full mirror configuration.  This is what the HCD does during initial
 notifies the com1Response TestProbe when the command completes.
 
 Then a `SegComMonitor` is created with a test command and the list of 492 segments. It is then started, which causes the
-command to be sent to all the segments.  Then the test code waits for the Compleiton message.  Once received as a precaution
+command to be sent to all the segments.  Then the test code waits for the Completion message.  Once received as a precaution
 it waits to see if any other messages arrive, then shutsdown all the segment connections and quits.
 
 Scala
@@ -154,29 +149,21 @@ Scala
 First, when the SegmentActor is created in the `apply` def function. This is where the lower level `SocketClientStream`
 class is added and where the socket connection to the LSCS occurs.
 
-The rest of the actor is a mix of trying to make the system behave like the documentation and interfacing to the
-current simulator.
+SegmentActor has two messages for sending a message to the LSCS simulator. The first is Send, which is the message
+meant for the operating use case. It sends a command String to the segment LSCS.  The second is SendWithTime, which allows 
+sending specified delay to the simulator allowing predictable testing of things like multiple commands and overlapping commands.
 
-For instance, the feature of sending a `Started` to the caller when the command takes greater than 1 second was added
-to ensure the system can handle that eventually.  This is also true with the Processing message. 
+At this time both segment commands are implemented as a variable delay on the segment side of the socket. With
+the `Send` command, the command String is sent to the simulator, which in the JVM simulator, returns the COMPLETE response
+after a random delay.  With the `sendWithTime` message, we send the
+command: DELAY MILLIS such as DELAY 1234 to the socket client. The desired delay is an argument of the message. The
+JVM simulator waits for the specified time before returning COMPLETE.
 
-@@@ note
-But as it turns out, the higher level software and CSW can not do anything with these Started and Processing messages, so they should just
-be dropped.
-@@@
-
-SegmentActor has two messages related to sending a message to the segment. The first is Send, which is the operational
-case. It sends a command to the segment.  The second is SendWithTime, which allows sending a time for the simulator delay
-allowing easier testing of things like multiple commands and overlapping commands.
-
-At this level, all segment commands are implemented as a variable delay on the segment side of the socket. We send the
-command: DELAY MILLIS such as DELAY 1234 to the socket client. The delay is random returned by the `getRandomDelay` function.
-The delay is currently set to be between 10 and 1250 millis.  
-
-The important message of SegmentActor is the processing under `SendWithTime`. The code checks to see if the delay is greater
-than 1 second, if so it sends a `Started` message back to the caller. Then it uses the `send` method of the socket
-client to send the command to the segment socket. This is an asynchronous call using a Future. When the call completes,
-the SegmentActor sends a response to the caller, which is a `SegComMon` instance to be counted.
+Tthe `send` method of the socket client sends the command to the segment socket. This is an asynchronous call using a Future. 
+When the response is received, the SegmentActor sends the response to the caller, which is a `SegComMon` instance to be counted.
 
 The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket
-connection to the segment. These shutdown commands are present so that tests always work correctly.
+connection to the segment. These shutdown commands are present so that tests always work correctly. In the
+operations case, the sockets would probably stay open and would probably need to be opened. It might be
+worth-while to investigate created the sockets during a command and closing them after if commands are relatively
+infrequent.

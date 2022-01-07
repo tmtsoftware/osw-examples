@@ -94,26 +94,6 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     testKit.stop(s1, 5.seconds)
   }
 
-  test("One Segment - long with started") {
-    val s1id = SegmentId(A, 1)
-    val s1   = testKit.spawn(hcd.SegmentActor(s1id, log), s1id.toString)
-
-    val com1Response = TestProbe[SegmentActor.Response]()
-
-    s1 ! SegmentActor.SendWithTime(cn1, cn1full, 1200.milli, com1Response.ref)
-
-    // Started from long command
-    val r1 = com1Response.expectMessageType[SegmentActor.Started]
-    r1.commandName shouldBe cn1
-    // Finished from long
-    val r2 = com1Response.expectMessageType[SegmentActor.Completed]
-    r2.commandName shouldBe cn1
-
-    val boolResponse = TestProbe[Boolean]()
-    s1 ! SegmentActor.ShutdownSegment2(boolResponse.ref)
-    testKit.stop(s1, 5.seconds)
-  }
-
   test("One Segment - interleave") {
     val s1id = SegmentId(A, 1)
     val s1   = testKit.spawn(hcd.SegmentActor(s1id, log), s1id.toString)
@@ -122,10 +102,6 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     s1 ! SegmentActor.SendWithTime(cn1, cn1full, 1200.milli, com1Response.ref)
     s1 ! SegmentActor.SendWithTime(cn2, cn2full, 250.milli, com1Response.ref)
-
-    // Started from long command
-    val r1 = com1Response.expectMessageType[SegmentActor.Started]
-    r1.commandName shouldBe cn1
 
     // Finished from short
     var r2 = com1Response.expectMessageType[SegmentActor.Completed]
@@ -145,7 +121,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
 
     val com1Response = TestProbe[SegmentActor.Response]()
 
-    s1 ! SegmentActor.SendWithTime(SegmentActor.ERROR_COMMAND_NAME, cn1full, 500.milli, com1Response.ref)
+    s1 ! SegmentActor.Send(SegmentActor.ERROR_COMMAND_NAME, cn1full, com1Response.ref)
 
     // Finished for error command
     val r1 = com1Response.expectMessageType[SegmentActor.Error]
