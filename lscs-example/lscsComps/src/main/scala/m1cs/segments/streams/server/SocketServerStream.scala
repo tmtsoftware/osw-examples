@@ -11,7 +11,7 @@ import scala.concurrent.duration.*
 import scala.concurrent.{Future, Promise}
 
 /**
- * A TCL socket server that listens on the given host:port for connections
+ * A TCP socket server that listens on the given host:port for connections
  * and accepts String messages in the format "id cmd". A reply is sent for
  * each message: "cmd Completed."
  *
