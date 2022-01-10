@@ -37,11 +37,11 @@ The third option that starts a container with Assembly and HCD is the most usefu
 To launch the container from the command line, type:
 
 ```scala
-sbt "lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf"
+sbt "lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf"
 ```
 From within sbt use the runMain option:
 ```scala
-lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf
+lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf
 ```
 In this case, both the Assembly and HCD are started within the same process in a CSW container, which does little other
 than manage the creation and shutdown of the components.  There is no performance penalty for using a container.
@@ -49,6 +49,6 @@ than manage the creation and shutdown of the components.  There is no performanc
 To launch a standalone conf you must add the -standalone option, but everything else is the same:
 
 ```scala
-sbt "lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --standalone --local src/main/resources/SegmentsContainer.conf"
+sbt "lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --standalone --local src/main/resources/SegmentsContainer.conf"
 ```
 

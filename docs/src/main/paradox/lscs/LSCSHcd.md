@@ -93,8 +93,8 @@ The state is called `waiting` because it is waiting for the responses from the S
 a timer so that if something goes wrong in a SegmentActor, after a timeout period, the CommandTimeout message will be sent
 to itself, which will cause an Error SubmitResponse to be returned to the runId through the `replyTo` function.
 
-The monitor is written to assume the SegmentActor will return responses as described in the M1CS docs including Started,
-and Processing, and Error messages. The happy case is the SegmentActor.Completed message. All the monitor does is 
+The monitor is written to assume the SegmentActor will return Completed or Error responses as described in the M1CS docs
+(Started and Processing are not handled). The happy case is the SegmentActor.Completed message. All the monitor does is 
 count happy responses until it receives the correct number, it then sends Completed to the runId through the replyTo 
 function. 
 
@@ -154,16 +154,16 @@ meant for the operating use case. It sends a command String to the segment LSCS.
 sending specified delay to the simulator allowing predictable testing of things like multiple commands and overlapping commands.
 
 At this time both segment commands are implemented as a variable delay on the segment side of the socket. With
-the `Send` command, the command String is sent to the simulator, which in the JVM simulator, returns the COMPLETE response
+the `Send` command, the command String is sent to the simulator, which in the JVM simulator, returns the `Completed` response
 after a random delay.  With the `sendWithTime` message, we send the
-command: DELAY MILLIS such as DELAY 1234 to the socket client. The desired delay is an argument of the message. The
-JVM simulator waits for the specified time before returning COMPLETE.
+command: DELAY MILLIS such as DELAY 1234, to the socket client. The desired delay is an argument of the message. The
+JVM simulator waits for the specified time before returning `Completed`.
 
 Tthe `send` method of the socket client sends the command to the segment socket. This is an asynchronous call using a Future. 
-When the response is received, the SegmentActor sends the response to the caller, which is a `SegComMon` instance to be counted.
+When the response is received, the SegmentActor sends the response to the caller, which is a `SegComMon` instance, to be counted.
 
 The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket
 connection to the segment. These shutdown commands are present so that tests always work correctly. In the
-operations case, the sockets would probably stay open and would probably need to be opened. It might be
+operations case, the sockets would probably stay open and would probably not need to be closed. It might be
 worth-while to investigate created the sockets during a command and closing them after if commands are relatively
 infrequent.

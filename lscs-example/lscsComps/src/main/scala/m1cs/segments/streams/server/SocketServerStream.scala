@@ -36,6 +36,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   // For now, all other commands get an immediate reply.
   private def handleMessage(bs: ByteString): Future[ByteString] = {
     val msg = SocketMessage.parse(bs)
+    println(s"Received: $msg")
     val cmd = msg.cmd.split(' ').head
     val s = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
     val respMsg = s"$cmd: $s"

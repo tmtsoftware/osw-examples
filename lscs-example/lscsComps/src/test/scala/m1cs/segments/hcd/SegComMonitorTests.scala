@@ -26,6 +26,9 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   private val cn2     = "CFG_CUR_LOOP"
   private val cn2full = "CFG_CUR_LOOP ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=(1.2,2.3,3.4)"
 
+  private val cn3     = "TARG_GEN_ACT"
+  private val cn3full = "TARG_GEN_ACT ACT_ID=ALL, AMPL=2.3"
+
   LoggingSystemFactory.forTestingOnly()
   private val log = GenericLoggerFactory.getLogger
 
@@ -39,8 +42,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     // Start an internal socket server
     log.debug("Starting an external socket server")
-    // Add a -DsimulatorHost property to use external simulator
-    val _ = new SocketServerStream()(testKit.internalSystem)
+    //val _ = new SocketServerStream()(testKit.internalSystem)
   }
 
   override def afterAll(): Unit = {
@@ -125,10 +127,10 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     testKit.stop(mon, 5.seconds)
   }
 
-  test("82 segments - send 3 overlapping commands") {
+  test("82 segments - 1 sector - send 3 overlapping commands") {
     val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
 
-    // Create segments
+    // Create 1 segment A
     val segments      = SegmentManager.createSectorSegments(testCreator, A, range, log)
     val segmentActors = segments.getAllSegments.segments
 
@@ -144,7 +146,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     mon2 ! SegComMonitor.Start
 
     val runId3 = Id()
-    val mon3   = testKit.spawn(hcd.SegComMonitor(cn2, cn2full, segmentActors, runId3, tester, log))
+    val mon3   = testKit.spawn(hcd.SegComMonitor(cn3, cn3full, segmentActors, runId3, tester, log))
     mon3 ! SegComMonitor.Start
 
     // This verifies that all three commands finished successfully
@@ -165,7 +167,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   }
 
   //#test1
-  test("492 segments - send 1 - external") {
+  test("492 segments - all sectors - send 1") {
     // Note: This test fails on Mac, server must be running on Linux due to open file issue?
 
     val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
@@ -193,7 +195,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   //#test1
 
   //#test2
-  test("492 segments - overlap - external") {
+  test("492 segments - all sectors - overlap") {
     // Note: This test fails on Mac, server must be running on Linux due to open file issue?
 
     val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
