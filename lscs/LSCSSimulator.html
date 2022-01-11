@@ -162,12 +162,12 @@ test(&quot;Basic test&quot;) {
     println(s&quot;XXX showResult: $msg&quot;)
     msg
   }
-  val f0 = client1.send(&quot;IMMEDIATE&quot;).map(showResult)
+  val f0 = client1.send(&quot;IMMEDIATE arg1 arg2&quot;).map(showResult)
   val f1 = client1.send(&quot;DELAY 2000&quot;).map(showResult)
   val f2 = client2.send(&quot;DELAY 1000&quot;).map(showResult)
   val f3 = client3.send(&quot;DELAY 500&quot;).map(showResult)
   val f4 = client1.send(&quot;DELAY 200&quot;).map(showResult)
-  val f5 = client2.send(&quot;IMMEDIATE&quot;).map(showResult)
+  val f5 = client2.send(&quot;IMMEDIATE arg1 arg2 arg3&quot;).map(showResult)
 
   val f = for {
     resp0 &lt;- f0
@@ -184,7 +184,7 @@ test(&quot;Basic test&quot;) {
   }
   val list = Await.result(f, 30.seconds)
   println(s&quot;XXX test1 result = $list&quot;)
-  assert(list.forall(_.cmd.endsWith(&quot; COMPLETED&quot;)))
+  assert(list.forall(_.cmd.endsWith(&quot; Completed.&quot;)))
 }</code></pre></dd>
 </dl>
 <p>The type of the message sent is <code>SocketMessage</code>, which has the same layout as the JPL C socket message:</p>
@@ -279,7 +279,7 @@ The source code for this page can be found <a href="https://github.com/tmtsoftwa
 
 <!--
 <div class="copyright">
-<span class="text">&copy; 2021</span>
+<span class="text">&copy; 2022</span>
 <a href="https://www.example.com" class="logo">logo</a>
 </div>
 -->

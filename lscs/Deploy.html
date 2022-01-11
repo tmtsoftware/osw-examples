@@ -153,14 +153,14 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 </table>
 <p>The third option that starts a container with Assembly and HCD is the most useful when testing externally. </p>
 <p>To launch the container from the command line, type:</p>
-<pre class="prettyprint"><code class="language-scala">sbt &quot;lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf&quot;
+<pre class="prettyprint"><code class="language-scala">sbt &quot;lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf&quot;
 </code></pre>
 <p>From within sbt use the runMain option:</p>
-<pre class="prettyprint"><code class="language-scala">lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf
+<pre class="prettyprint"><code class="language-scala">lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf
 </code></pre>
 <p>In this case, both the Assembly and HCD are started within the same process in a CSW container, which does little other than manage the creation and shutdown of the components. There is no performance penalty for using a container.</p>
 <p>To launch a standalone conf you must add the -standalone option, but everything else is the same:</p>
-<pre class="prettyprint"><code class="language-scala">sbt &quot;lscs-deploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --standalone --local src/main/resources/SegmentsContainer.conf&quot;
+<pre class="prettyprint"><code class="language-scala">sbt &quot;lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --standalone --local src/main/resources/SegmentsContainer.conf&quot;
 </code></pre>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/target/mdoc/lscs/Deploy.md">here</a>.
@@ -222,7 +222,7 @@ The source code for this page can be found <a href="https://github.com/tmtsoftwa
 
 <!--
 <div class="copyright">
-<span class="text">&copy; 2021</span>
+<span class="text">&copy; 2022</span>
 <a href="https://www.example.com" class="logo">logo</a>
 </div>
 -->

@@ -377,19 +377,18 @@ class SegMonitor private[SegComMonitor] (
 </dl>
 <p><code>SegComMonitor</code> is created in the <code>starting</code> state, awaiting the <code>start</code> message from the HCD TLA. When received, it sends the full segment command to each of the SegmentActors on the list passed into the monitor from the TLA (it will be 1 segment or a list of all segments). Once the commands are sent, it moves to the <code>waiting</code> state.</p>
 <p>The state is called <code>waiting</code> because it is waiting for the responses from the SegmentActors. First note that waiting starts a timer so that if something goes wrong in a SegmentActor, after a timeout period, the CommandTimeout message will be sent to itself, which will cause an Error SubmitResponse to be returned to the runId through the <code>replyTo</code> function.</p>
-<p>The monitor is written to assume the SegmentActor will return responses as described in the M1CS docs including Started, and Processing, and Error messages. The happy case is the SegmentActor.Completed message. All the monitor does is count happy responses until it receives the correct number, it then sends Completed to the runId through the replyTo function. </p>
+<p>The monitor is written to assume the SegmentActor will return Completed or Error responses as described in the M1CS docs (Started and Processing are not handled). The happy case is the SegmentActor.Completed message. All the monitor does is count happy responses until it receives the correct number, it then sends Completed to the runId through the replyTo function. </p>
 <p>If a single Error is returned, the monitor stops immediately&ndash;if a single segment produces an error out of all segments, it means the command fails immediately, and an Error is returned to the client through the runId and replyTo function.</p>
 <p>The important part for completion is the code around the SegmentActor.Completed message. Whenever a segment returns a positive response, the count is incremented and waiting is called again (which appears recursive, but actually isn&rsquo;t). Once all the responses are received, the Completed SubmitResponse is sent to the caller through the replyTo function. The Behavior of the monitor becomes <code>Behaviors.stopped</code>, which causes the monitor actor to stop.</p><div class="callout note "><div class="callout-title">Note</div>
 <p>The SegComMonitor is written in the functional typed actor style. See <a href="https://doc.akka.io/docs/akka/current/typed/index.html">akka.io</a>.</p></div><div class="callout warning "><div class="callout-title">Warning</div>
-<p>Neither simulator implements the protocol that includes: Processing and Started messages. We suggest they not be implemented and keep the low-level protocol simple.</p>
-<p>The Segment Actor tries to implement some features of the protocol, but it has little effect on the monitor or the HCD and Assembly, there is very little reason to send Started if the command is longer than 1 second or Processing messages. They provide no useful information at this level and just introduce potential for errors. This might be useful for a command-line UI, but that isn&rsquo;t the application here. We suggest dropping this since it isn&rsquo;t part of the JPL library.</p></div>
+<p>Neither simulator implements the protocol that includes: Processing and Started messages. We suggest they not be implemented and keep the low-level protocol simple.</p></div>
 <p><code>SegComMonitor</code> tests are a good way to see how testing works and how we validate the M1CS requirement to complete all segment commands and complete a CSW command.</p>
 <p>The following test shows sending a command to 492 segments and waiting for completion. First the <code>SegmentManager</code> is used to create a full mirror configuration. This is what the HCD does during initialization The <code>tester</code> is a function that notifies the com1Response TestProbe when the command completes.</p>
-<p>Then a <code>SegComMonitor</code> is created with a test command and the list of 492 segments. It is then started, which causes the command to be sent to all the segments. Then the test code waits for the Compleiton message. Once received as a precaution it waits to see if any other messages arrive, then shutsdown all the segment connections and quits.</p>
+<p>Then a <code>SegComMonitor</code> is created with a test command and the list of 492 segments. It is then started, which causes the command to be sent to all the segments. Then the test code waits for the Completion message. Once received as a precaution it waits to see if any other messages arrive, then shutsdown all the segment connections and quits.</p>
 <dl>
   <dt>Scala</dt>
   <dd>
-  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example/lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala#L168-L192" target="_blank" title="Go to snippet source">source</a><code class="language-scala">test(&quot;492 segments - send 1 - external&quot;) {
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example/lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala#L170-L194" target="_blank" title="Go to snippet source">source</a><code class="language-scala">test(&quot;492 segments - all sectors - send 1&quot;) {
   // Note: This test fails on Mac, server must be running on Linux due to open file issue?
 
   val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
@@ -419,7 +418,7 @@ class SegMonitor private[SegComMonitor] (
 <dl>
   <dt>Scala</dt>
   <dd>
-  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example/lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala#L196-L229" target="_blank" title="Go to snippet source">source</a><code class="language-scala">test(&quot;492 segments - overlap - external&quot;) {
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example/lscsComps/src/test/scala/m1cs/segments/hcd/SegComMonitorTests.scala#L198-L231" target="_blank" title="Go to snippet source">source</a><code class="language-scala">test(&quot;492 segments - all sectors - overlap&quot;) {
   // Note: This test fails on Mac, server must be running on Linux due to open file issue?
 
   val range = 1 to SegmentId.MAX_SEGMENT_NUMBER
@@ -460,62 +459,81 @@ class SegMonitor private[SegComMonitor] (
 <dl>
   <dt>Scala</dt>
   <dd>
-  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example/lscsComps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala#L14-L60" target="_blank" title="Go to snippet source">source</a><code class="language-scala">object SegmentActor {
+  <pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/tmtsoftware/osw-examples/tree/master/lscs-example/lscsComps/src/main/scala/m1cs/segments/hcd/SegmentActor.scala#L14-L82" target="_blank" title="Go to snippet source">source</a><code class="language-scala">object SegmentActor {
 
   // The following is temp hack for testing errors
   val ERROR_SEG_ID: Int                = 6
   val ERROR_COMMAND_NAME: String       = &quot;ERROR&quot;
-  val FAKE_ERROR_MESSAGE: String       = &quot;Fake Error Message&quot;
+  val FAKE_ERROR_MESSAGE: String       = &quot;Error received from simulator.&quot;
   private implicit val timout: Timeout = Timeout(5.seconds)
 
   def apply(segmentId: SegmentId, log: Logger): Behavior[Command] = {
     Behaviors.setup[Command] { ctx =&gt;
       // Here we check to see if there is a property called simulatorHost
       val simulatorHost          = Properties.propOrElse(&quot;simulatorHost&quot;, &quot;localhost&quot;)
+      log.debug(s&quot;Connecting to: $simulatorHost&quot;)
       val io: SocketClientStream = SocketClientStream(ctx, segmentId.toString, host = simulatorHost)
-      handle(io, seqNo = 1, segmentId, log)
+      handle(io, segmentId, log)
     }
   }
 
-  private def getRandomDelay: FiniteDuration = FiniteDuration(Random.between(10, 1250), MILLISECONDS)
-
-  private def handle(io: SocketClientStream, seqNo: Int, segmentId: SegmentId, log: Logger): Behavior[Command] =
+  private def handle(io: SocketClientStream, segmentId: SegmentId, log: Logger): Behavior[Command] =
     Behaviors.receive[Command] { (ctx, m) =&gt;
+      // This is an error sequence number to return when send fails
+      val errorSeqNum = -1
       import ctx.executionContext
       m match {
-        case Send(commandName, args, replyTo) =&gt;
-          ctx.self ! SendWithTime(commandName, args, getRandomDelay, replyTo)
-          handle(io, seqNo, segmentId, log)
+        case Send(commandName, command, replyTo) =&gt;
+          log.debug(s&quot;Sending segment $segmentId =&gt; $command&quot;)
+          // This branch is here to test error only. TMT simulator will delay a random time before replying with ERROR
+          // For testing, it is possible to send ERROR and TMT simulator will reply with ERROR rather than COMPLETED
+          // This will only happen if the error command is sent to error segment
+          val simCommand = if (commandName == ERROR_COMMAND_NAME &amp;&amp; segmentId.number == ERROR_SEG_ID) {
+            s&quot;ERROR $command&quot;
+          } else {
+            command
+          }
+          io.send(simCommand).onComplete {
+            case Success(m) =&gt;
+              // This is the sequence number used by the low level socket code to send the command
+              // It is created by the SocketServerStream code
+              val seqNum = m.hdr.seqNo
+              if (m.cmd.toLowerCase.contains(&quot;completed&quot;)) {
+                replyTo ! Completed(commandName, seqNum, segmentId)
+              } else {
+                replyTo ! Error(commandName, seqNum, segmentId, &quot;Error received from simulator.&quot;)
+              }
+              log.debug(s&quot;Segment $segmentId: ${m.cmd}&quot;)
+            case Failure(exception) =&gt;
+              // This branch occurs when for instance, the socket send fails
+              log.error(s&quot;Socket send failed: $exception&quot;, ex = exception)
+              replyTo ! Error(commandName, errorSeqNum, segmentId, &quot;Error failure received from simulator.&quot;)
+          }
+          handle(io, segmentId, log)
 
         case SendWithTime(commandName, _, delay, replyTo) =&gt;
-          // The following fakes JPL Started until sim does it
-          if (delay.toMillis &gt; 1000)
-            replyTo ! Started(commandName, seqNo, segmentId)
-
-          // Right now simulator just does random delays
+          // If DELAY command is sent, TMT simulator waits for specified time, this is for testing overlaps
           val simCommand = s&quot;DELAY ${delay.toMillis.toString}&quot;
+          log.debug(s&quot;Sending segment: $segmentId =&gt; $simCommand&quot;)
+
           io.send(simCommand).onComplete {
-            case Success(_) =&gt;
-              // The value returned from the simulator is not used at this point.  That could change.
-              // Message from simulator not used at this point
-              if (commandName == ERROR_COMMAND_NAME)
-                replyTo ! Error(commandName, seqNo, segmentId, FAKE_ERROR_MESSAGE)
-              else
-                replyTo ! Completed(commandName, seqNo, segmentId)
+            case Success(m) =&gt;
+              // The value returned from the simulator for DELAY is not used at this point.  That could change.
+              // Message from simulator not used at this point - cannot handle ERROR
+              val seqNum = m.hdr.seqNo
+              log.debug(s&quot;Received: ${m.cmd} $seqNum&quot;)
+              replyTo ! Completed(commandName, seqNum, segmentId)
             case Failure(exception) =&gt;
               log.error(s&quot;Socket send failed: $exception&quot;, ex = exception)
-              replyTo ! Error(commandName, seqNo, segmentId, &quot;Error received from simulator.&quot;)
+              replyTo ! Error(commandName, errorSeqNum, segmentId, &quot;Error received from simulator.&quot;)
           }
-          handle(io, seqNo + 1, segmentId, log)</code></pre></dd>
+          handle(io, segmentId, log)</code></pre></dd>
 </dl>
 <p>First, when the SegmentActor is created in the <code>apply</code> def function. This is where the lower level <code>SocketClientStream</code> class is added and where the socket connection to the LSCS occurs.</p>
-<p>The rest of the actor is a mix of trying to make the system behave like the documentation and interfacing to the current simulator.</p>
-<p>For instance, the feature of sending a <code>Started</code> to the caller when the command takes greater than 1 second was added to ensure the system can handle that eventually. This is also true with the Processing message. </p><div class="callout note "><div class="callout-title">Note</div>
-<p>But as it turns out, the higher level software and CSW can not do anything with these Started and Processing messages, so they should just be dropped.</p></div>
-<p>SegmentActor has two messages related to sending a message to the segment. The first is Send, which is the operational case. It sends a command to the segment. The second is SendWithTime, which allows sending a time for the simulator delay allowing easier testing of things like multiple commands and overlapping commands.</p>
-<p>At this level, all segment commands are implemented as a variable delay on the segment side of the socket. We send the command: DELAY MILLIS such as DELAY 1234 to the socket client. The delay is random returned by the <code>getRandomDelay</code> function. The delay is currently set to be between 10 and 1250 millis. </p>
-<p>The important message of SegmentActor is the processing under <code>SendWithTime</code>. The code checks to see if the delay is greater than 1 second, if so it sends a <code>Started</code> message back to the caller. Then it uses the <code>send</code> method of the socket client to send the command to the segment socket. This is an asynchronous call using a Future. When the call completes, the SegmentActor sends a response to the caller, which is a <code>SegComMon</code> instance to be counted.</p>
-<p>The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket connection to the segment. These shutdown commands are present so that tests always work correctly.</p>
+<p>SegmentActor has two messages for sending a message to the LSCS simulator. The first is Send, which is the message meant for the operating use case. It sends a command String to the segment LSCS. The second is SendWithTime, which allows sending specified delay to the simulator allowing predictable testing of things like multiple commands and overlapping commands.</p>
+<p>At this time both segment commands are implemented as a variable delay on the segment side of the socket. With the <code>Send</code> command, the command String is sent to the simulator, which in the JVM simulator, returns the <code>Completed</code> response after a random delay. With the <code>sendWithTime</code> message, we send the command: DELAY MILLIS such as DELAY 1234, to the socket client. The desired delay is an argument of the message. The JVM simulator waits for the specified time before returning <code>Completed</code>.</p>
+<p>Tthe <code>send</code> method of the socket client sends the command to the segment socket. This is an asynchronous call using a Future. When the response is received, the SegmentActor sends the response to the caller, which is a <code>SegComMon</code> instance, to be counted.</p>
+<p>The ShutdownSegment command is also handled. When this occurs, the client is terminated, which closes the socket connection to the segment. These shutdown commands are present so that tests always work correctly. In the operations case, the sockets would probably stay open and would probably not need to be closed. It might be worth-while to investigate created the sockets during a command and closing them after if commands are relatively infrequent.</p>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/tmtsoftware/osw-examples/tree/master/docs/target/mdoc/lscs/LSCSHcd.md">here</a>.
 </div>
@@ -581,7 +599,7 @@ The source code for this page can be found <a href="https://github.com/tmtsoftwa
 
 <!--
 <div class="copyright">
-<span class="text">&copy; 2021</span>
+<span class="text">&copy; 2022</span>
 <a href="https://www.example.com" class="logo">logo</a>
 </div>
 -->
