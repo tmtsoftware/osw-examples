@@ -46,7 +46,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   LoggingSystemFactory.forTestingOnly()
   private val log = GenericLoggerFactory.getLogger
 
-  //private val socketServer = new SocketServerStream()(testKit.internalSystem)
+  private val socketServer = new SocketServerStream()(testKit.internalSystem)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

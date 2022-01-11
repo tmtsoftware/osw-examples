@@ -30,7 +30,7 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
     super.beforeAll()
 
     // Start a local simulator
-   // val _ = new SocketServerStream()(testKit.system)
+    val _ = new SocketServerStream()(testKit.system)
   }
 
   override def afterAll(): Unit = {

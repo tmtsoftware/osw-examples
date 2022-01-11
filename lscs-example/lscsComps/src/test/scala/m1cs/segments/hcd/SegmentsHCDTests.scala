@@ -42,8 +42,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    println("Starting an external socket server")
-    new SocketServerStream()(testKit.internalSystem)
+    val _ = new SocketServerStream()(testKit.internalSystem)
 
     // uncomment if you want one HCD run for all tests
     val _ = spawnStandalone(config)
