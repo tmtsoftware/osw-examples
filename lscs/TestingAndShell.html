@@ -238,8 +238,9 @@ run
 <pre><code>sbt &quot;lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf&quot;
 </code></pre>
 <p>or for a remote LSCS Simulator:</p>
-<pre><code>sbt &quot;lscsDeploy/runMain m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf -DsimulatorHost=192.168.1.230&quot; 
-</code></pre>
+<pre><code>sbt &quot;lscsDeploy/runMain -DsimulatorHost=192.168.1.230 m1cs.segments.deploy.SegmentsContainerCmdApp --local src/main/resources/SegmentsContainer.conf&quot; 
+</code></pre><div class="callout note "><div class="callout-title">Note</div>
+<p>The positioning of the -D option is critical. I won&rsquo;t work if it is outside of the quotes and it won&rsquo;t work if it is after the &ndash;local argument&quot;</p></div>
 <h3><a href="#loading-and-executing-segment-commands" name="loading-and-executing-segment-commands" class="anchor"><span class="anchor-link"></span></a>Loading and Executing Segment Commands</h3>
 <p>At this point, CSW services are running, the LSCS Simulator is running, and the Segments Assembly/HCD are running.</p>
 <p>The <code>lscsCommands</code> project is created to only include the functions that create Segment Assembly Setups. This means it can be loaded into esw-shell and used to send commands to the Segments Assembly.</p>

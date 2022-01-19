@@ -471,7 +471,7 @@ class SegMonitor private[SegComMonitor] (
     Behaviors.setup[Command] { ctx =&gt;
       // Here we check to see if there is a property called simulatorHost
       val simulatorHost          = Properties.propOrElse(&quot;simulatorHost&quot;, &quot;localhost&quot;)
-      log.debug(s&quot;Connecting to: $simulatorHost&quot;)
+      log.debug(s&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;Connecting to: $simulatorHost&quot;)
       val io: SocketClientStream = SocketClientStream(ctx, segmentId.toString, host = simulatorHost)
       handle(io, segmentId, log)
     }
