@@ -16,6 +16,19 @@ object SocketMessage {
   val RSP_TYPE: MessageId  = MessageId(2 << 8)
   val LOG_TYPE: MessageId  = MessageId(3 << 8)
   val DATA_TYPE: MessageId = MessageId(4 << 8)
+//  SEG_STATUS_DATA = DATA_TYPE + 1, //!< SegmentStatusMsg
+//  WH_STRAIN_DATA,                  //!< WarpHarnStrainMsg
+//  WH_CALIB_DATA,                   //!< WarpHarnCalibMsg
+//  SENS_CFG_DATA,                   //!< SensConfigMsg
+//  SENS_DIAG_DATA,                  //!< SensDiagMsg
+//  ACT_CFG_DATA,                    //!< ActConfigMsg
+//  ACT_DIAG_DATA,                   //!< ActDiagMsg
+//  ACT_TRANSIENT_DATA,              //!< ActTransDataMsg
+//  ACT_SNAPSHOT_DATA,               //!< ActSnapshotDataMsg
+//  SEG_REALTIME_DATA,               //!< SegRtDataMsg
+//  ACT_REALTIME_DATA,               //!< ActTargetMsg
+//  RAW_DATA,                        //!< RawDataMsg data
+//  MAX_MSG_ID                      //!< Maximum valid message id
 
   // ascii representation for "<TT>"
   private val NET_HDR_ID           = 0x3c54543e

@@ -206,6 +206,12 @@ object SocketClientStreamApp extends App {
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketClientStream")
   implicit val timout: Timeout                            = Timeout(5.seconds)
   val client                                              = SocketClientStream.withSystem("socketClientStream")
-  val resp                                                = Await.result(client.send(args.mkString(" ")), timout.duration)
+  try {
+    val resp                                                = Await.result(client.send(args.mkString(" ")), timout.duration)
+    println(s"XXX resp = ${resp.cmd}")
+  } catch {
+    case ex: Exception =>
+      println(s"Error: Failed to send to server: ${ex.getMessage}")
+  }
   system.terminate()
 }
