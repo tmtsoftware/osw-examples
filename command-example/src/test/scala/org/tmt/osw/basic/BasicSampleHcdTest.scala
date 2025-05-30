@@ -1,8 +1,8 @@
 package org.tmt.osw.basic
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 import csw.command.client.CommandServiceFactory
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.params.commands.{CommandResponse, Setup}
 import csw.params.core.generics.KeyType
@@ -14,7 +14,7 @@ import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.shouldBe
 import org.tmt.osw.basic.shared.SampleInfo.{hcdSleep, setSleepTime}
 
 import scala.collection.mutable
@@ -24,7 +24,7 @@ import scala.concurrent.duration.*
 //noinspection ScalaStyle
 class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
   // Shared HCD connection val in all tests
-  private val hcdConnection = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+  private val hcdConnection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
   private val frameworkTestKit = FrameworkTestKit()
 
@@ -41,9 +41,9 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
   override protected def afterAll(): Unit = frameworkTestKit.shutdown()
 
   test("HCD should be locatable using Location Service") {
-    val akkaLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    val location = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
-    akkaLocation.connection shouldBe hcdConnection
+    location.connection shouldBe hcdConnection
   }
 
   test("should be able to subscribe to HCD events") {
@@ -92,9 +92,9 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
     // Helper to get units set
     val setupCommand = setSleepTime(Setup(testPrefix, hcdSleep, Some(ObsId("2020A-001-123"))), 5000)
 
-    val akkaLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    val location = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
-    val hcd = CommandServiceFactory.make(akkaLocation)(actorSystem)
+    val hcd = CommandServiceFactory.make(location)(actorSystem)
     // submit command and handle response
     val responseF = hcd.submitAndWait(setupCommand)
 
@@ -109,9 +109,9 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
 
     val setupCommand = setSleepTime(Setup(testPrefix, hcdSleep, Some(ObsId("2020A-001-123"))), 5000)
 
-    val akkaLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    val location = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
-    val hcd = CommandServiceFactory.make(akkaLocation)(actorSystem)
+    val hcd = CommandServiceFactory.make(location)(actorSystem)
 
     // submit command and handle response
     intercept[java.util.concurrent.TimeoutException] {

@@ -1,10 +1,10 @@
 package org.tmt.osw.full
 
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import org.apache.pekko.util.Timeout
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ContainerMessage
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Cancelled, Completed, Started}
 import csw.params.commands.Setup
@@ -22,13 +22,13 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
 
   import frameworkTestKit.*
 
-  private val containerConnection = AkkaConnection(
+  private val containerConnection = PekkoConnection(
     ComponentId(Prefix(Subsystem.Container, "SampleContainer"), ComponentType.Container)
   )
-  private val assemblyConnection = AkkaConnection(
+  private val assemblyConnection = PekkoConnection(
     ComponentId(Prefix(Subsystem.CSW, "sample"), ComponentType.Assembly)
   )
-  private val hcdConnection = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+  private val hcdConnection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
   private var containerRef: ActorRef[ContainerMessage] = _
 
@@ -126,7 +126,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
       Await.result(assemblyCS.submitAndWait(complexSetup), 10.seconds) shouldBe a[Completed]
     }
 
-    import csw.command.client.extensions.AkkaLocationExt._
+    import csw.command.client.extensions.PekkoLocationExt._
     import scala.concurrent.Await
     /*
     "Lock HCD and send command then unlock and send again" in {

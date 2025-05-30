@@ -1,7 +1,7 @@
 package m1cs.segments.hcd
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, Behavior, PostStop}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorRef, Behavior, PostStop}
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.core.models.Id

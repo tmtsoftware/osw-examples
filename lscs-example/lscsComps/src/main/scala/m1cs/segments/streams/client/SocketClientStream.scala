@@ -1,16 +1,16 @@
 package m1cs.segments.streams.client
 
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.*
-import akka.util.{ByteString, Timeout}
-import akka.stream.scaladsl.Framing
+import org.apache.pekko.stream.OverflowStrategy
+import org.apache.pekko.stream.scaladsl.*
+import org.apache.pekko.util.{ByteString, Timeout}
+import org.apache.pekko.stream.scaladsl.Framing
 
 import scala.concurrent.{Await, ExecutionContext, Future}
-import akka.NotUsed
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Props, SpawnProtocol}
-import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
-import akka.actor.typed.scaladsl.adapter.*
-import akka.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior, Props, SpawnProtocol}
+import org.apache.pekko.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
+import org.apache.pekko.actor.typed.scaladsl.adapter.*
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 import SocketClientActor.*
 import SocketClientStream.*
 import m1cs.segments.streams.shared.SocketMessage
@@ -103,7 +103,8 @@ object SocketClientStream {
     println(s"Connecting to: $host and $port")
     val spawnHelper = new SpawnHelper {
       def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U] = {
-        import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
+        import csw.logging.client.commons
+       // import org.apache.pekko.TypedExtension.UserActorFactory
         system.spawn(behavior, name, props)
       }
     }

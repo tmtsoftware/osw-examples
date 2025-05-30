@@ -1,6 +1,6 @@
 package org.tmt.osw.moderate
 
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
@@ -24,10 +24,10 @@ class ModerateSampleAssemblyTest extends ScalaTestFrameworkTestKit(AlarmServer, 
   //#locate
   import scala.concurrent.duration.*
   test("Assembly should be locatable using Location Service") {
-    val connection   = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "sample"), ComponentType.Assembly))
-    val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val connection   = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "sample"), ComponentType.Assembly))
+    val location = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
-    akkaLocation.connection shouldBe connection
+    location.connection shouldBe connection
   }
   //#locate
 }

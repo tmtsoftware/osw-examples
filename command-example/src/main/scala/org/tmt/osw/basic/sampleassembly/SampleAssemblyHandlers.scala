@@ -1,8 +1,8 @@
 package org.tmt.osw.basic.sampleassembly
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.ActorContext
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandResponseManager.{OverallFailure, OverallSuccess}
 import csw.command.client.CommandServiceFactory
@@ -10,8 +10,8 @@ import csw.command.client.messages.TopLevelActorMessage
 import csw.event.api.scaladsl.EventSubscription
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
+import csw.location.api.models.Connection.PekkoConnection
 import csw.params.commands.CommandIssue.{MissingKeyIssue, ParameterValueOutOfRangeIssue, UnsupportedCommandIssue}
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandIssue, ControlCommand, Observe, Result, Setup}
@@ -37,118 +37,111 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
   import cswCtx._
+
   private implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private implicit val system: ActorSystem[Nothing] = ctx.system
-  private implicit val timeout: Timeout             = 10.seconds
-  private val log                                   = loggerFactory.getLogger
-  private val prefix: Prefix                        = cswCtx.componentInfo.prefix
-  private val hcdConnection                         = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "SampleHcd"), ComponentType.HCD))
-  private var hcdLocation: AkkaLocation             = _
-  private var hcdCS: Option[CommandService]         = None
+  private implicit val timeout: Timeout = 10.seconds
+  private val log = loggerFactory.getLogger
+  private val prefix: Prefix = cswCtx.componentInfo.prefix
+  private val hcdConnection = PekkoConnection(ComponentId(Prefix(Subsystem.ESW, "SampleHcd"), ComponentType.HCD))
+  private var hcdLocation: PekkoLocation = _
+  private var hcdCS: Option[CommandService] = None
 
   //#initialize
   private var maybeEventSubscription: Option[EventSubscription] = None
 
-  override def initialize(): Unit = {
+  override def initialize(): Unit =
     log.info(s"Assembly: $prefix initialize")
     maybeEventSubscription = Some(subscribeToHcd())
-  }
 
-  override def onShutdown(): Unit = {
+  override def onShutdown(): Unit =
     log.info(s"Assembly: $prefix is shutting down.")
-  }
+
   //#initialize
 
   //#track-location
   //#resolve-hcd-and-create-commandservice
-  override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {
+  override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit =
     log.debug(s"onLocationTrackingEvent called: $trackingEvent")
-    trackingEvent match {
+    trackingEvent match
       case LocationUpdated(location) =>
-        hcdLocation = location.asInstanceOf[AkkaLocation]
+        hcdLocation = location.asInstanceOf[PekkoLocation]
         hcdCS = Some(CommandServiceFactory.make(location))
         val _ = onSetup(Id(), Setup(prefix, shortCommand, None))
       case LocationRemoved(connection) =>
-        if (connection == hcdConnection) {
+        if (connection == hcdConnection)
           hcdCS = None
-        }
-    }
-  }
+
+
   //#resolve-hcd-and-create-commandservice
   //#track-location
 
   //#subscribe
   private val counterEventKey = EventKey(Prefix("CSW.samplehcd"), EventName("HcdCounter"))
-  private val hcdCounterKey   = KeyType.IntKey.make("counter")
+  private val hcdCounterKey = KeyType.IntKey.make("counter")
 
-  private def processEvent(event: Event): Unit = {
+  private def processEvent(event: Event): Unit =
     log.info(s"Assembly: $prefix received event: ${event.eventKey}")
-    event match {
+    event match
       case e: SystemEvent =>
-        e.eventKey match {
+        e.eventKey match
           case `counterEventKey` =>
             val counter = e(hcdCounterKey).head
             log.info(s"Counter = $counter")
           case _ => log.warn("Unexpected event received.")
-        }
       case _: ObserveEvent => log.warn("Unexpected ObserveEvent received.") // not expected
-    }
-  }
 
-  private def subscribeToHcd(): EventSubscription = {
+
+  private def subscribeToHcd(): EventSubscription =
     log.info(s"Assembly: $prefix starting subscription.")
     eventService.defaultSubscriber.subscribeCallback(Set(counterEventKey), processEvent)
-  }
 
   //noinspection ScalaUnusedSymbol
-  private def unsubscribeHcd(): Unit = {
+  private def unsubscribeHcd(): Unit =
     log.info(s"Assembly: $prefix stopping subscription.")
     maybeEventSubscription.foreach(_.unsubscribe())
-  }
   //#subscribe
 
   //#validate
   override def validateCommand(runId: Id, command: ControlCommand): ValidateCommandResponse =
-    command match {
+    command match
       case setup: Setup =>
-        setup.commandName match {
+        setup.commandName match
           case `sleep` =>
             validateSleep(runId, setup)
           case `immediateCommand` | `shortCommand` | `mediumCommand` | `longCommand` | `complexCommand` =>
             Accepted(runId)
           case _ =>
             Invalid(runId, UnsupportedCommandIssue(s"Command: ${setup.commandName.name} is not supported for sample Assembly."))
-        }
       case _ =>
         Invalid(runId, UnsupportedCommandIssue(s"Command: ${command.commandName.name} is not supported for sample Assembly."))
-    }
+
 
   private def validateSleep(runId: Id, setup: Setup): ValidateCommandResponse =
-    if (setup.exists(sleepTimeKey)) {
+    if (setup.exists(sleepTimeKey))
       val sleepTime: Long = setup(sleepTimeKey).head
       if (sleepTime < maxSleep)
         Accepted(runId)
       else
         Invalid(runId, ParameterValueOutOfRangeIssue("sleepTime must be < 2000"))
-    }
-    else {
+    else
       Invalid(runId, MissingKeyIssue(s"required sleep command key: $sleepTimeKey is missing."))
-    }
+
   //#validate
 
   //#submit-split
   override def onSubmit(runId: Id, command: ControlCommand): SubmitResponse =
-    command match {
+    command match
       case s: Setup => onSetup(runId, s)
       case _: Observe =>
         Invalid(runId, UnsupportedCommandIssue("Observe commands not supported"))
-    }
+
   //#submit-split
 
   //#sending-command
   //#immediate-command
   private def onSetup(runId: Id, setup: Setup): SubmitResponse =
-    setup.commandName match {
+    setup.commandName match
       case `immediateCommand` =>
         val localValue = 1000L
         // Assembly preforms a calculation or reads state information storing in a result
@@ -169,7 +162,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
 
       case `complexCommand` =>
         val medium = simpleHCD(runId, setSleepTime(Setup(prefix, hcdSleep, setup.maybeObsId), mediumSleepPeriod))
-        val long   = simpleHCD(runId, setSleepTime(Setup(prefix, hcdSleep, setup.maybeObsId), longSleepPeriod))
+        val long = simpleHCD(runId, setSleepTime(Setup(prefix, hcdSleep, setup.maybeObsId), longSleepPeriod))
 
         commandResponseManager
           .queryFinalAll(medium, long)
@@ -190,21 +183,21 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
         Started(runId)
       case _ =>
         Invalid(runId, CommandIssue.UnsupportedCommandIssue(s"${setup.commandName.name}"))
-    }
+
 
   private def simpleHCD(runId: Id, setup: Setup): Future[SubmitResponse] =
-    hcdCS match {
+    hcdCS match
       case Some(cs) =>
         cs.submitAndWait(setup)
       case None =>
         Future(Error(runId, s"A needed HCD is not available: ${hcdConnection.componentId}"))
-    }
+
   //#queryF
 
   //#updateCommand
   //#submitAndQueryFinal
   private def sleepHCD(runId: Id, setup: Setup, sleepTime: Long): Unit =
-    hcdCS match {
+    hcdCS match
       case Some(cs) =>
         val s = setSleepTime(Setup(prefix, hcdSleep, None), sleepTime)
         cs.submit(s).foreach {
@@ -218,7 +211,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
         commandResponseManager.updateCommand(
           Error(runId, s"A needed HCD is not available: ${hcdConnection.componentId} for $prefix")
         )
-    }
+
   //#updateCommand
   //#submitAndQueryFinal
   //#sending-command

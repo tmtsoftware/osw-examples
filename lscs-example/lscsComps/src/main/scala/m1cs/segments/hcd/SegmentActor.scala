@@ -1,8 +1,8 @@
 package m1cs.segments.hcd
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.util.Timeout
 import csw.logging.api.scaladsl.Logger
 import m1cs.segments.streams.client.SocketClientStream
 import m1cs.segments.segcommands.SegmentId

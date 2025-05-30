@@ -1,9 +1,9 @@
 package org.tmt.osw.moderate
 
-import akka.actor.typed.ActorSystem
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.util.Timeout
 import csw.command.client.CommandServiceFactory
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Cancelled, Completed, Started}
 import csw.params.commands.{CommandResponse, Setup}
@@ -32,10 +32,10 @@ class ModerateSampleHcdTest extends ScalaTestFrameworkTestKit(AlarmServer, Event
 
   import scala.concurrent.duration.*
   test("HCD should be locatable using Location Service") {
-    val connection   = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-    val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val connection   = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+    val location = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
-    akkaLocation.connection shouldBe connection
+    location.connection shouldBe connection
   }
   //#setup
 
@@ -86,7 +86,7 @@ class ModerateSampleHcdTest extends ScalaTestFrameworkTestKit(AlarmServer, Event
     val sleepTimeParam: Parameter[Long] = sleepTimeKey.set(3000).withUnits(Units.millisecond)
     val setupCommand                    = Setup(Prefix("csw.move"), hcdSleep, Some(ObsId("2020A-001-123"))).add(sleepTimeParam)
 
-    val connection = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+    val connection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
     val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
@@ -100,7 +100,7 @@ class ModerateSampleHcdTest extends ScalaTestFrameworkTestKit(AlarmServer, Event
 
   test("should handle long command and cancel") {
     implicit val timeout: Timeout = 10.seconds
-    val connection                = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+    val connection                = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
     val akkaLocation              = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
     val hcdCS = CommandServiceFactory.make(akkaLocation)
@@ -128,11 +128,11 @@ class ModerateSampleHcdTest extends ScalaTestFrameworkTestKit(AlarmServer, Event
     val sleepTimeParam: Parameter[Long] = sleepTimeKey.set(4000).withUnits(Units.millisecond)
     val setupCommand                    = Setup(Prefix("csw.move"), hcdSleep, Some(ObsId("2020A-001-123"))).add(sleepTimeParam)
 
-    val connection = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+    val connection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
-    val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val location = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
-    val hcd = CommandServiceFactory.make(akkaLocation)
+    val hcd = CommandServiceFactory.make(location)
 
     // submit command and handle response
     intercept[java.util.concurrent.TimeoutException] {

@@ -1,9 +1,9 @@
 package org.tmt.osw.moderate.samplehcd
 
-import akka.actor.Cancellable
-import akka.actor.typed.scaladsl.ActorContext
-import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
-import akka.util.Timeout
+import org.apache.pekko.actor.Cancellable
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Scheduler}
+import org.apache.pekko.util.Timeout
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers

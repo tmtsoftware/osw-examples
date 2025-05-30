@@ -1,3 +1,4 @@
+/*
 import sbt.{AutoPlugin, Plugins, Setting}
 
 object Coverage extends AutoPlugin {
@@ -16,3 +17,4 @@ object Coverage extends AutoPlugin {
   )
 
 }
+*/

@@ -3,7 +3,7 @@ import Dependencies._
 ThisBuild / organization := "com.github.tmtsoftware.osw-examples"
 ThisBuild / organizationName := "TMT International Observatory"
 ThisBuild / organizationHomepage := Some(url("http://www.tmt.org"))
-ThisBuild / scalaVersion := "2.13.7"
+ThisBuild / scalaVersion := "3.6.2"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / resolvers += "jitpack" at "https://jitpack.io"
@@ -20,10 +20,10 @@ lazy val `osw-examples` = project
   .in(file("."))
   .aggregate(
     `command-example`,
-    lscsComps,
+    //lscsComps,
     lscsCommands,
-    lscsDeploy,
-    docs
+    //lscsDeploy,
+    //docs
   )
 
 // Command Example
@@ -46,7 +46,7 @@ lazy val lscsComps = project
     libraryDependencies ++= Seq(
       `csw-framework`,
       `csw-testkit` % Test,
-      `akka-testkit` % Test,
+      `pekko-testkit` % Test,
       `scalatest` % Test
     )
   )
@@ -63,6 +63,7 @@ lazy val lscsCommands = project
   )
 
 // LSCS deploy module
+/*
 lazy val lscsDeploy = project
   .in(file("lscs-example/lscsDeploy"))
   .dependsOn(lscsComps, lscsCommands)
@@ -73,7 +74,9 @@ lazy val lscsDeploy = project
       `csw-testkit` % Test
     )
   )
+*/
 
+/*
 // Docs for all projects
 lazy val docs = project
   .in(file("docs"))
@@ -114,8 +117,8 @@ lazy val docs = project
       `scalatest` % Test
     )
   )
-
-
+*/
+/*
 // Shared compile scalac options
 ThisBuild / Compile / scalacOptions ++= Seq(
   "-deprecation",                     // Emit warning and location for usages of deprecated APIs.
@@ -147,3 +150,5 @@ ThisBuild / Compile / scalacOptions ++= Seq(
   //"-Wunused",                         // Enable -Wunused:imports,privates,locals,implicits.
   "-Wvalue-discard"                   // Warn when non-Unit expression results are unused.
 )
+
+ */

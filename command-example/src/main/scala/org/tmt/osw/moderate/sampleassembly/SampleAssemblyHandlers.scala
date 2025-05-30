@@ -1,8 +1,8 @@
 package org.tmt.osw.moderate.sampleassembly
 
-import akka.actor.typed.scaladsl.ActorContext
-import akka.actor.typed.{ActorSystem, Scheduler}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.{ActorSystem, Scheduler}
+import org.apache.pekko.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandResponseManager.{OverallFailure, OverallSuccess}
 import csw.command.client.CommandServiceFactory
@@ -10,7 +10,7 @@ import csw.command.client.messages.TopLevelActorMessage
 import csw.event.api.scaladsl.EventSubscription
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models._
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
 import csw.params.commands.CommandResponse._
@@ -43,8 +43,8 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   private implicit val timeout: Timeout             = 10.seconds
   private implicit val sched: Scheduler             = ctx.system.scheduler
   private val log                                   = loggerFactory.getLogger
-  private val hcdConnection                         = AkkaConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-  private var hcdLocation: AkkaLocation             = _
+  private val hcdConnection                         = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+  private var hcdLocation: PekkoLocation             = _
   private var hcdCS: Option[CommandService]         = None
   private val prefix: Prefix                        = cswCtx.componentInfo.prefix
   // Var to store most recent long command for cancel demo - not a great implementation, but showing async is possible
@@ -68,7 +68,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     trackingEvent match {
       case LocationUpdated(location) =>
         log.debug(s"HCD: $location created")
-        hcdLocation = location.asInstanceOf[AkkaLocation]
+        hcdLocation = location.asInstanceOf[PekkoLocation]
         hcdCS = Some(CommandServiceFactory.make(location))
       case LocationRemoved(connection) =>
         if (connection == hcdConnection) {

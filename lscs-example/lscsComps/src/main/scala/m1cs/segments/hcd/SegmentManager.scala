@@ -1,6 +1,6 @@
 package m1cs.segments.hcd
 
-import akka.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorRef
 import csw.logging.api.scaladsl.Logger
 import m1cs.segments.segcommands.{Sector, SegmentId}
 

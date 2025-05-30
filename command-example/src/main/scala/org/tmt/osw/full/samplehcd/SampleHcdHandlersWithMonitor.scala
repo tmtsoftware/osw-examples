@@ -1,10 +1,10 @@
 package org.tmt.osw.full.samplehcd
 
-import akka.actor.Cancellable
-import akka.actor.typed.scaladsl.ActorContext
-import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, Scheduler}
-import akka.util.Timeout
+import org.apache.pekko.actor.Cancellable
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.scaladsl.AskPattern._
+import org.apache.pekko.actor.typed.{ActorRef, Scheduler}
+import org.apache.pekko.util.Timeout
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers

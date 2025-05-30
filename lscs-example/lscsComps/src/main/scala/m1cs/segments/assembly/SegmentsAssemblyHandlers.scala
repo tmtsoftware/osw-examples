@@ -1,13 +1,13 @@
 package m1cs.segments.assembly
 
-import akka.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
 import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.{Accepted, Invalid, Started, SubmitResponse, ValidateCommandResponse}
@@ -40,7 +40,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     "The Assembly Component Configuration File must have a tracking connection to the Segments HCD."
   )
   private val hcdPrefix                     = Prefix(cswCtx.componentInfo.getConnections.get(0).prefix.toString())
-  private val hcdConnection                 = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
+  private val hcdConnection                 = PekkoConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private var hcdCS: Option[CommandService] = None // Initially, there is no CommandService for HCD
 
   // This assembly prefix
@@ -65,7 +65,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
       case LocationUpdated(location) =>
         log.debug(s"Assembly received HCD location: $location")
         // Should be safe here since we are tracking only Akka location
-        val hcdLocation = location.asInstanceOf[AkkaLocation]
+        val hcdLocation = location.asInstanceOf[PekkoLocation]
         hcdCS = Some(CommandServiceFactory.make(hcdLocation)(ctx.system))
       case LocationRemoved(connection) =>
         if (connection == hcdConnection) {

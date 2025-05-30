@@ -1,8 +1,8 @@
 package org.tmt.osw.full.samplehcd
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.scaladsl.adapter.TypedActorRefOps
-import akka.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.scaladsl.adapter.TypedActorRefOps
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import csw.framework.models.CswContext
 import csw.params.commands.CommandResponse.{Cancelled, Completed}
 import csw.params.commands.Result

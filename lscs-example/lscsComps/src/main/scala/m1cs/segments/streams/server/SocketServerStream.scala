@@ -1,8 +1,8 @@
 package m1cs.segments.streams.server
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.ByteString
-import akka.stream.scaladsl.{Flow, Framing, Sink, Tcp}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.util.ByteString
+import org.apache.pekko.stream.scaladsl.{Flow, Framing, Sink, Tcp}
 import m1cs.segments.streams.shared.SocketMessage
 import m1cs.segments.streams.shared.SocketMessage.{MAX_FRAME_LEN, MsgHdr, NET_HDR_LEN, RSP_TYPE, SourceId}
 
