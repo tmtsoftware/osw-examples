@@ -100,7 +100,7 @@ object SegmentActor {
       }
     }
 
-  sealed trait Command //extends akka.actor.NoSerializationVerificationNeeded
+  sealed trait Command //extends pekko.actor.NoSerializationVerificationNeeded
 
   sealed trait Response {
     val commandName: String

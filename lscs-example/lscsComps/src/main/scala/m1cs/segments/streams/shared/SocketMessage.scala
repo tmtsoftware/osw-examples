@@ -1,6 +1,6 @@
 package m1cs.segments.streams.shared
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import SocketMessage.*
 
 import java.nio.{ByteBuffer, ByteOrder}

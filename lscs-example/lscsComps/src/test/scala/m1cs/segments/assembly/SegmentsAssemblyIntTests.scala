@@ -1,10 +1,10 @@
 package m1cs.segments.assembly
 
-import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
-import akka.util.Timeout
+import org.apache.pekko.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
+import org.apache.pekko.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.command.client.CommandServiceFactory
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.params.commands.CommandResponse.*
@@ -36,9 +36,9 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   // Hard-coding HCD and Assembly prefixes because they are not easily available
   private val clientPrefix              = Prefix("ESW.client")
   private val hcdPrefix                 = Prefix("M1CS.segmentsHCD")
-  private val hcdConnection             = AkkaConnection(ComponentId(hcdPrefix, ComponentType.HCD))
+  private val hcdConnection             = PekkoConnection(ComponentId(hcdPrefix, ComponentType.HCD))
   private val assemblyPrefix            = Prefix("M1CS.segmentsAssembly")
-  private val assemblyConnection        = AkkaConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
+  private val assemblyConnection        = PekkoConnection(ComponentId(assemblyPrefix, ComponentType.Assembly))
   private implicit val timeout: Timeout = 5.seconds
 
   private val shutdownSetup = Setup(clientPrefix, HcdShutdown.shutdownCommand)
@@ -67,14 +67,14 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   }
 
   test("Assembly should be locatable using Location Service") {
-    val akkaLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    val pekkoLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
 
-    akkaLocation.connection shouldBe assemblyConnection
+    pekkoLocation.connection shouldBe assemblyConnection
   }
 
   test("Assembly should see HCD") {
-    val akkaLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
-    akkaLocation.connection shouldBe assemblyConnection
+    val pekkoLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
+    pekkoLocation.connection shouldBe assemblyConnection
 
     val hcdLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
     hcdLocation.connection shouldBe hcdConnection

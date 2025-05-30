@@ -127,13 +127,13 @@ class ModerateSampleContainerTest extends ScalaTestFrameworkTestKit(AlarmServer,
       Await.result(assemblyCS.submitAndWait(complexSetup), 10.seconds) shouldBe a[Completed]
     }
     /*
-    import csw.command.client.extensions.AkkaLocationExt._
+    import csw.command.client.extensions.PekkoLocationExt._
     import scala.concurrent.Await
 
     "Lock HCD and send command then unlock and send again" in {
       val lockingStateProbe = TestProbe[LockingResponse]()
 
-      val hcdLocation2: AkkaLocation = Await.result(locationService.resolve(hcdConnection, 5.seconds), 5.seconds).get
+      val hcdLocation2: PekkoLocation = Await.result(locationService.resolve(hcdConnection, 5.seconds), 5.seconds).get
       hcdLocation2.componentRef ! LockCommandFactory.make(testPrefix, lockingStateProbe.ref)
       lockingStateProbe.expectMessage(LockAcquired)
 

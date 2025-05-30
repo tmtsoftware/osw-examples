@@ -88,9 +88,9 @@ class ModerateSampleHcdTest extends ScalaTestFrameworkTestKit(AlarmServer, Event
 
     val connection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
-    val akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val pekkoLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
-    val hcd = CommandServiceFactory.make(akkaLocation)
+    val hcd = CommandServiceFactory.make(pekkoLocation)
     // submit command and handle response
     val responseF = hcd.submitAndWait(setupCommand)
 
@@ -101,9 +101,9 @@ class ModerateSampleHcdTest extends ScalaTestFrameworkTestKit(AlarmServer, Event
   test("should handle long command and cancel") {
     implicit val timeout: Timeout = 10.seconds
     val connection                = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-    val akkaLocation              = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val pekkoLocation              = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
-    val hcdCS = CommandServiceFactory.make(akkaLocation)
+    val hcdCS = CommandServiceFactory.make(pekkoLocation)
 
     // Start a long command
     val longResponse = Await.result(hcdCS.submit(Setup(testPrefix, hcdLong, None)), 10.seconds)

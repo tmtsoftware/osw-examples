@@ -11,20 +11,21 @@ import csw.event.api.scaladsl.EventSubscription
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.Connection.PekkoConnection
-import csw.location.api.models._
+import csw.location.api.models.*
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.{ControlCommand, Observe, Result, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.models.Id
-import csw.params.events._
+import csw.params.events.*
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import org.tmt.osw.moderate.shared.SampleInfo.resultKey
-import org.tmt.osw.moderate.shared.SampleInfo._
+import org.tmt.osw.moderate.shared.SampleInfo.*
 import org.tmt.osw.moderate.shared.SampleValidation
 
-import scala.concurrent.duration._
+import scala.compiletime.uninitialized
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
@@ -44,7 +45,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   private implicit val sched: Scheduler             = ctx.system.scheduler
   private val log                                   = loggerFactory.getLogger
   private val hcdConnection                         = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-  private var hcdLocation: PekkoLocation             = _
+  private var hcdLocation: PekkoLocation             = uninitialized
   private var hcdCS: Option[CommandService]         = None
   private val prefix: Prefix                        = cswCtx.componentInfo.prefix
   // Var to store most recent long command for cancel demo - not a great implementation, but showing async is possible

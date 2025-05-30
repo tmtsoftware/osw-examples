@@ -1,11 +1,11 @@
 package m1cs.segments.streams
 
-import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
+import org.apache.pekko.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
 import org.scalatest.funsuite.AnyFunSuite
-import akka.util.Timeout
-import csw.logging.client.commons.AkkaTypedExtension.UserActorFactory
-import akka.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.util.Timeout
+import csw.logging.client.commons.PekkoTypedExtension.UserActorFactory
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration.*

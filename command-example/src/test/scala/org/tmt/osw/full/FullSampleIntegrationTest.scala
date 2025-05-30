@@ -132,7 +132,7 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
     "Lock HCD and send command then unlock and send again" in {
       val lockingStateProbe = TestProbe[LockingResponse]()
 
-      val hcdLocation2: AkkaLocation = Await.result(locationService.resolve(hcdConnection, 5.seconds), 5.seconds).get
+      val hcdLocation2: PekkoLocation = Await.result(locationService.resolve(hcdConnection, 5.seconds), 5.seconds).get
       hcdLocation2.componentRef ! LockCommandFactory.make(testPrefix, lockingStateProbe.ref)
       lockingStateProbe.expectMessage(LockAcquired)
 

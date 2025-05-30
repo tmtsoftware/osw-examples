@@ -10,19 +10,20 @@ import csw.command.client.messages.TopLevelActorMessage
 import csw.event.api.scaladsl.EventSubscription
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
-import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
+import csw.location.api.models.{ComponentId, ComponentType, LocationRemoved, LocationUpdated, PekkoLocation, TrackingEvent}
 import csw.location.api.models.Connection.PekkoConnection
 import csw.params.commands.CommandIssue.{MissingKeyIssue, ParameterValueOutOfRangeIssue, UnsupportedCommandIssue}
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.{CommandIssue, ControlCommand, Observe, Result, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.models.Id
-import csw.params.events._
+import csw.params.events.*
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
-import org.tmt.osw.basic.shared.SampleInfo._
+import org.tmt.osw.basic.shared.SampleInfo.*
 
-import scala.concurrent.duration._
+import scala.compiletime.uninitialized
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
@@ -44,7 +45,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   private val log = loggerFactory.getLogger
   private val prefix: Prefix = cswCtx.componentInfo.prefix
   private val hcdConnection = PekkoConnection(ComponentId(Prefix(Subsystem.ESW, "SampleHcd"), ComponentType.HCD))
-  private var hcdLocation: PekkoLocation = _
+  private var hcdLocation: PekkoLocation = uninitialized
   private var hcdCS: Option[CommandService] = None
 
   //#initialize

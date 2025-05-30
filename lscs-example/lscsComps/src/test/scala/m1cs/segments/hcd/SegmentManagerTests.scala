@@ -1,6 +1,6 @@
 package m1cs.segments.hcd
 
-import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
+import org.apache.pekko.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.hcd

@@ -107,7 +107,7 @@ the Completed SubmitResponse is sent to the caller through the replyTo function.
 becomes `Behaviors.stopped`, which causes the monitor actor to stop.
 
 @@@ note { title=Note }
-The SegComMonitor is written in the functional typed actor style. See [akka.io](https://doc.akka.io/docs/akka/current/typed/index.html).
+The SegComMonitor is written in the functional typed actor style. See [pekko.io](https://doc.pekko.io/docs/pekko/current/typed/index.html).
 @@@
 
 @@@ warning

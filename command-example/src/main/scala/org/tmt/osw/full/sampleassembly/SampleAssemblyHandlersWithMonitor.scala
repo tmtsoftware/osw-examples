@@ -11,7 +11,7 @@ import csw.command.client.messages.TopLevelActorMessage
 import csw.event.api.scaladsl.EventSubscription
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
-import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, LocationRemoved, LocationUpdated, TrackingEvent}
+import csw.location.api.models.{ComponentId, ComponentType, LocationRemoved, LocationUpdated, PekkoLocation, TrackingEvent}
 import csw.location.api.models.Connection.PekkoConnection
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
 import csw.params.commands.CommandResponse.*
@@ -25,6 +25,7 @@ import org.tmt.osw.full.shared.{SampleValidation, WorkerMonitor}
 import org.tmt.osw.full.shared.WorkerMonitor.{AddWorker, GetWorker, RemoveWorker, Response}
 import org.tmt.osw.full.shared.SampleInfo.*
 
+import scala.compiletime.uninitialized
 import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
@@ -46,7 +47,7 @@ class SampleAssemblyHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage],
   private implicit val sched: Scheduler             = ctx.system.scheduler
   private val log                                   = loggerFactory.getLogger
   private val hcdConnection                         = PekkoConnection(ComponentId(Prefix(Subsystem.ESW, "SampleHcd"), ComponentType.HCD))
-  private var hcdLocation: PekkoLocation             = _
+  private var hcdLocation: PekkoLocation             = uninitialized
   private var hcdCS: Option[CommandService]         = None
   private val prefix: Prefix                        = cswCtx.componentInfo.prefix
 

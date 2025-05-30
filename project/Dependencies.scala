@@ -3,8 +3,8 @@ import sbt._
 object Dependencies {
 
   private val Org = "com.github.tmtsoftware.csw"
-  lazy val cswVersion = "0.1.0-SNAPSHOT" //4.0.0"
-  lazy val pekkoVersion = "1.1.3" //all akka is Apache License 2.0
+  lazy val cswVersion = "6.0.0"
+  lazy val pekkoVersion = "1.1.3" //all pekko is Apache License 2.0
   lazy val scalaTestVersion = "3.2.19" // Apache License 2.0
 
   val `csw-framework` = Org %% "csw-framework" % cswVersion

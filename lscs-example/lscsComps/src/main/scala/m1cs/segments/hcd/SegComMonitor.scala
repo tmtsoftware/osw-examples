@@ -89,7 +89,7 @@ object SegComMonitor {
 
     /**
      * The waiting state is entered once the command is sent to the segments. Every time a response from a segment
-     * is received, the Behavior calls itself with updated state. This is not a recursive call in Akka.
+     * is received, the Behavior calls itself with updated state. This is not a recursive call in Pekko.
      * @param totalSegments the number of expected responses
      * @param responsesReceived number of responses received so far
      * @return a typed Behavior

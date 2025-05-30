@@ -64,7 +64,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     trackingEvent match {
       case LocationUpdated(location) =>
         log.debug(s"Assembly received HCD location: $location")
-        // Should be safe here since we are tracking only Akka location
+        // Should be safe here since we are tracking only Pekko location
         val hcdLocation = location.asInstanceOf[PekkoLocation]
         hcdCS = Some(CommandServiceFactory.make(hcdLocation)(ctx.system))
       case LocationRemoved(connection) =>

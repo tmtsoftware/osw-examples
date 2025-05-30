@@ -108,7 +108,7 @@ about the Segments HCD, which it must have to send it commands.
 As a reminder, connections (i.e. hosts and ports) are not hard-coded in CSW. When a component starts up, its
 Supervisor registers itself with the Location Service on behalf of the TLA
 and that location information includes enough information so that one component can create an
-appropriate connection to the other. CSW supports Akka-based connections and HTTP-based connections.
+appropriate connection to the other. CSW supports Pekko-based connections and HTTP-based connections.
 
 When the Segments Assembly starts up, its Component Configuration File contains an entry that indicates to the Supervisor that it wants
 to `track` the HCD. The "SegmentsAssemblyStandalone.conf" conf file is shown here.
@@ -122,12 +122,12 @@ connections = [
   {
     prefix: "m1cs.segmentsHCD"
     componentType: hcd
-    connectionType: akka
+    connectionType: pekko
   }
 ]
 ```
 This file is discussed in the CSW documentation.  The key in this discussion is that the `connections` array has an entry for the
-an HCD with prefix `m1cs.segmentsHCD` and connectionType: Akka.  This indicates to CSW and the Supervisor of the Assembly
+an HCD with prefix `m1cs.segmentsHCD` and connectionType: Pekko.  This indicates to CSW and the Supervisor of the Assembly
 that it should track the Segments HCD and deliver events to the Assembly when the Segments
 HCD is available and also when/if it shuts down or crashes.  To receive tracking events, the assembly overrides the
 `onLocationTrackingEvent` handler as shown here.

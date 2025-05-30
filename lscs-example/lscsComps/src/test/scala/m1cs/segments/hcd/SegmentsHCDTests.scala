@@ -1,10 +1,10 @@
 package m1cs.segments.hcd
 
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import akka.util.Timeout
+import org.apache.pekko.actor.testkit.typed.scaladsl.ActorTestKit
+import org.apache.pekko.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.command.client.CommandServiceFactory
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.params.commands.CommandResponse.Completed
@@ -31,7 +31,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   private val config = ConfigFactory.load("SegmentsHcdStandalone.conf")
 
   private val prefix: Prefix = Prefix(config.getString("prefix")) // TEMP
-  private val hcdConnection  = AkkaConnection(ComponentId(prefix, ComponentType.HCD))
+  private val hcdConnection  = PekkoConnection(ComponentId(prefix, ComponentType.HCD))
 
   // Used for waiting for submits
   private implicit val timeout: Timeout = 15.seconds
@@ -55,9 +55,9 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
 
   test("HCD should be locatable using Location Service") {
 
-    val akkaLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
+    val pekkoLocation = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
 
-    akkaLocation.connection shouldBe hcdConnection
+    pekkoLocation.connection shouldBe hcdConnection
   }
 
   test("Try sending one command") {

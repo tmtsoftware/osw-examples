@@ -1,7 +1,7 @@
 package m1cs.segments.hcd
 
-import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
-import akka.util.Timeout
+import org.apache.pekko.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
+import org.apache.pekko.util.Timeout
 import csw.logging.client.scaladsl.{GenericLoggerFactory, LoggingSystemFactory}
 import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
