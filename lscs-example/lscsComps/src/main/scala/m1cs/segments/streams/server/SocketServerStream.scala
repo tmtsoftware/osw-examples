@@ -10,6 +10,17 @@ import java.nio.ByteOrder
 import scala.concurrent.duration.*
 import scala.concurrent.{Future, Promise}
 
+object SocketServer {
+  // Command has completed
+  val completed = "Completed."
+
+  // Command resulted in an error
+  val error = "Error."
+
+  // Command is in progress
+  val processing = "Processing."
+}
+
 /**
  * A TCP socket server that listens on the given host:port for connections
  * and accepts String messages in the format "id cmd". A reply is sent for
@@ -37,7 +48,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   private def handleMessage(bs: ByteString): Future[ByteString] = {
     val msg = SocketMessage.parse(bs)
     val cmd = msg.cmd.split(' ').head
-    val s = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
+    val s = if (cmd.toUpperCase().startsWith("ERROR")) SocketServer.error else SocketServer.completed
     val respMsg = s"$cmd: $s"
     val resp = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
     val delayMs = if (cmd.toUpperCase() == "DELAY")
@@ -49,8 +60,18 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
       Future.successful(resp.toByteString)
     }
     else {
+      val sched = system.classicSystem.scheduler
+      // XXX TODO FIXME
+      // From: https://docushare.tmt.org/docushare/dsweb/Get/Document-89545/
+      // If a command requires more than one second to complete the subsystem should send an initial Response message:
+      // <command name> : ["Processing"]. <command execution status>
+      // Additional processing responses will follow every 3 seconds until the command either fails or finishes
+      // executing and generates the normal ["Completed"|"Error"] response.
+      if (delayMs > 1000) {
+
+      }
       val p = Promise[ByteString]()
-      system.classicSystem.scheduler.scheduleOnce(delayMs.millis)(p.success(resp.toByteString))
+      sched.scheduleOnce(delayMs.millis)(p.success(resp.toByteString))
       p.future
     }
   }
@@ -69,7 +90,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
           .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
           .via(commandParser)
 
-        val _ = connection.handleWith(serverLogic)
+        connection.handleWith(serverLogic)
       })
       .run()
 

@@ -2,6 +2,7 @@ package m1cs.segments.streams.shared
 
 import akka.util.ByteString
 import SocketMessage.*
+import m1cs.segments.streams.server.SocketServer
 
 import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.StandardCharsets
@@ -98,6 +99,11 @@ object SocketMessage {
  */
 case class SocketMessage(hdr: MsgHdr, cmd: String) {
 //#SocketMessage
+
+  /**
+   * True if message is final response (and not a status update for a long-running command)
+   */
+  def isFinal: Boolean = cmd.endsWith(SocketServer.completed) || cmd.endsWith(SocketServer.error)
 
   /**
    * Encodes the command for sending (see parse)

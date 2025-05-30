@@ -13,6 +13,7 @@ import akka.actor.typed.scaladsl.adapter.*
 import akka.actor.typed.scaladsl.AskPattern.*
 import SocketClientActor.*
 import SocketClientStream.*
+import m1cs.segments.streams.server.SocketServer
 import m1cs.segments.streams.shared.SocketMessage
 import m1cs.segments.streams.shared.SocketMessage.{CMD_TYPE, MAX_FRAME_LEN, MessageId, MsgHdr, NET_HDR_LEN, SourceId}
 
@@ -50,12 +51,15 @@ private[client] class SocketClientActor(name: String, ctx: ActorContext[SocketCl
   override def onMessage(msg: SocketClientActorMessage): Behavior[SocketClientActorMessage] = {
     msg match {
       case SetResponse(resp) =>
-        if (clientMap.contains(resp.hdr.seqNo)) {
-          clientMap(resp.hdr.seqNo) ! resp
-          clientMap = clientMap - resp.hdr.seqNo
-        }
-        else {
-          responseMap = responseMap + (resp.hdr.seqNo -> resp)
+        if (resp.isFinal) {
+          // Note: Currently ignoring non-final responses ("Processing")
+          if (clientMap.contains(resp.hdr.seqNo)) {
+            clientMap(resp.hdr.seqNo) ! resp
+            clientMap = clientMap - resp.hdr.seqNo
+          }
+          else {
+            responseMap = responseMap + (resp.hdr.seqNo -> resp)
+          }
         }
         Behaviors.same
 

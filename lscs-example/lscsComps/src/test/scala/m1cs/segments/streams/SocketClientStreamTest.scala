@@ -11,7 +11,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration.*
 import TestActor.*
 import m1cs.segments.streams.client.SocketClientStream
-import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.server.{SocketServer, SocketServerStream}
 import m1cs.segments.streams.shared.SocketMessage
 
 private object TestActor {
@@ -36,7 +36,7 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
         val fList       = clientPairs.map(p => p._2.send(s"DELAY ${p._1 * 10}"))
         Future
           .sequence(fList)
-          .map(_.forall(_.cmd.endsWith("Completed.")))
+          .map(_.forall(_.cmd.endsWith(SocketServer.completed)))
           .foreach(replyTo ! _)
         Behaviors.same
 
