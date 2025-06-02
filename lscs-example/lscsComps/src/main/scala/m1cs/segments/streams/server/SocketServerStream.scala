@@ -10,6 +10,18 @@ import java.nio.ByteOrder
 import scala.concurrent.duration.*
 import scala.concurrent.{Future, Promise}
 
+sealed trait SocketServerStreamBase {
+  def terminate(): Future[Unit]
+}
+
+//noinspection ScalaUnusedSymbol
+// No-op class: Assume socket server is running externally
+class NoOpSocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?])
+    extends SocketServerStreamBase {
+
+  override def terminate(): Future[Unit] = Future.successful(())
+}
+
 /**
  * A TCP socket server that listens on the given host:port for connections
  * and accepts String messages in the format "id cmd". A reply is sent for
@@ -19,7 +31,8 @@ import scala.concurrent.{Future, Promise}
  * If the command is "DELAY ms" the reply is made after the given ms delay,
  * otherwise after a random delay configured in reference.conf.
  */
-class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?]) {
+class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?])
+    extends SocketServerStreamBase {
 
   import system.*
 
@@ -84,8 +97,17 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
    *
    * @return
    */
-  def terminate(): Future[Unit] = {
+  override def terminate(): Future[Unit] = {
     binding.flatMap(_.unbind())
+  }
+}
+
+object MaybeSocketServerStream {
+  def apply(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?]): SocketServerStreamBase = {
+    if (sys.env.contains("USE_NATIVE_SOCKET_SERVER") || sys.props.contains("USE_NATIVE_SOCKET_SERVER"))
+      NoOpSocketServerStream(host, port)
+    else
+      SocketServerStream(host, port)
   }
 }
 
@@ -93,6 +115,6 @@ object SocketServerStreamApp {
   def main(args: Array[String]): Unit = {
     implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
     // TODO: Add host, port options
-    SocketServerStream()
+    MaybeSocketServerStream.apply()
   }
 }

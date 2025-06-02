@@ -8,7 +8,7 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.hcd
-import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import m1cs.segments.segcommands.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
@@ -35,7 +35,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
   private val testCreator: SegmentManager.SegmentCreator = (s, log) => testKit.spawn(hcd.SegmentActor(s, log), s.toString)
 
-  private val server: SocketServerStream = SocketServerStream()(testKit.internalSystem)
+  private val server = MaybeSocketServerStream.apply()(testKit.internalSystem)
   // Used for asks
   implicit val timeout: Timeout = 10.seconds
 

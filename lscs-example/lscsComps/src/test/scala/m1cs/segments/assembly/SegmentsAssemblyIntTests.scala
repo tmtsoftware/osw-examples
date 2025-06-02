@@ -14,7 +14,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.segcommands.Common.ALL_ACTUATORS
 import m1cs.segments.segcommands.{CFG_CUR_LOOP, SegmentId}
 import m1cs.segments.shared.HcdShutdown
-import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
@@ -46,7 +46,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   LoggingSystemFactory.forTestingOnly()
   private val log = GenericLoggerFactory.getLogger
 
-  private val socketServer = new SocketServerStream()(testKit.internalSystem)
+  private val socketServer = MaybeSocketServerStream.apply()(testKit.internalSystem)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

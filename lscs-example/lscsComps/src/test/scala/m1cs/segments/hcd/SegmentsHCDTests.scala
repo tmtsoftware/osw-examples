@@ -12,7 +12,7 @@ import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.shared.{HcdDirectCommand, HcdShutdown}
-import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import m1cs.segments.segcommands.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
@@ -38,7 +38,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
 
   LoggingSystemFactory.forTestingOnly()
   private val log          = GenericLoggerFactory.getLogger
-  private val socketServer = new SocketServerStream()(testKit.internalSystem)
+  private val socketServer = MaybeSocketServerStream.apply()(testKit.internalSystem)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

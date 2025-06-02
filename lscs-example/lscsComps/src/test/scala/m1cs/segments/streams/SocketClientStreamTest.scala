@@ -11,7 +11,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration.*
 import TestActor.*
 import m1cs.segments.streams.client.SocketClientStream
-import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import m1cs.segments.streams.shared.SocketMessage
 import org.scalatest.BeforeAndAfterAll
 
@@ -54,7 +54,7 @@ class SocketClientStreamTest extends AnyFunSuite with BeforeAndAfterAll {
   implicit val timout: Timeout                            = Timeout(30.seconds)
 
   // Start the server
-  val socketServer = new SocketServerStream()(system)
+  private val socketServer = MaybeSocketServerStream.apply()(system)
 
   override def afterAll(): Unit = {
     Await.ready(socketServer.terminate(), 5.seconds)

@@ -13,7 +13,7 @@ import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.TRACK
 import m1cs.segments.segcommands.{ACTUATOR, SegmentId}
-import m1cs.segments.streams.server.SocketServerStream
+import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
 import scala.concurrent.Await
@@ -44,7 +44,7 @@ class SegmentsContainerTests extends ScalaTestFrameworkTestKit() with AnyFunSuit
   private val log = GenericLoggerFactory.getLogger
 
   log.info(">>>>>STARTING socket server -- add -DsimulatorHost for external <<<<")
-  val socketServer = new SocketServerStream()(testKit.internalSystem)
+  private val socketServer = MaybeSocketServerStream.apply()(testKit.internalSystem)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
