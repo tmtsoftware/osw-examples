@@ -89,8 +89,10 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   }
 }
 
-object SocketServerStream extends App {
-  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
-  // TODO: Add host, port options
-  new SocketServerStream()
+object SocketServerStreamApp {
+  def main(args: Array[String]): Unit = {
+    implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
+    // TODO: Add host, port options
+    SocketServerStream()
+  }
 }

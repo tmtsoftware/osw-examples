@@ -13,6 +13,7 @@ import TestActor.*
 import m1cs.segments.streams.client.SocketClientStream
 import m1cs.segments.streams.server.SocketServerStream
 import m1cs.segments.streams.shared.SocketMessage
+import org.scalatest.BeforeAndAfterAll
 
 private object TestActor {
   sealed trait TestMessages
@@ -46,14 +47,18 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
   }
 }
 
-class SocketClientStreamTest extends AnyFunSuite {
+class SocketClientStreamTest extends AnyFunSuite with BeforeAndAfterAll {
   // #socketClientWithSystem
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
   implicit val ece: ExecutionContextExecutor              = system.executionContext
   implicit val timout: Timeout                            = Timeout(30.seconds)
 
   // Start the server
-  new SocketServerStream()(system)
+  val socketServer = new SocketServerStream()(system)
+
+  override def afterAll(): Unit = {
+    Await.ready(socketServer.terminate(), 5.seconds)
+  }
 
   test("Basic test") {
     val client1 = SocketClientStream.withSystem("client1")

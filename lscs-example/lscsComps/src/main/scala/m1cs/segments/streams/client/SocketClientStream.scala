@@ -3,7 +3,6 @@ package m1cs.segments.streams.client
 import org.apache.pekko.stream.OverflowStrategy
 import org.apache.pekko.stream.scaladsl.*
 import org.apache.pekko.util.{ByteString, Timeout}
-import org.apache.pekko.stream.scaladsl.Framing
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import org.apache.pekko.NotUsed
@@ -203,17 +202,19 @@ class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: 
   }
 }
 
-object SocketClientStreamApp extends App {
-  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketClientStream")
-  implicit val timout: Timeout                            = Timeout(5.seconds)
-  val client                                              = SocketClientStream.withSystem("socketClientStream")
-  try {
-    val resp = Await.result(client.send(args.mkString(" ")), timout.duration)
-    println(s"XXX resp = ${resp.cmd}")
+object SocketClientStreamApp {
+  def main(args: Array[String]): Unit = {
+    implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketClientStream")
+    implicit val timout: Timeout                            = Timeout(5.seconds)
+    val client                                              = SocketClientStream.withSystem("socketClientStream")
+    try {
+      val resp = Await.result(client.send(args.mkString(" ")), timout.duration)
+      println(s"XXX resp = ${resp.cmd}")
+    }
+    catch {
+      case ex: Exception =>
+        println(s"Error: Failed to send to server: ${ex.getMessage}")
+    }
+    system.terminate()
   }
-  catch {
-    case ex: Exception =>
-      println(s"Error: Failed to send to server: ${ex.getMessage}")
-  }
-  system.terminate()
 }

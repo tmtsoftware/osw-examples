@@ -9,6 +9,7 @@ import m1cs.segments.streams.server.SocketServerStream
 import m1cs.segments.segcommands.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
+import scala.concurrent.Await
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
@@ -24,17 +25,16 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
   import frameworkTestKit.*
 
   LoggingSystemFactory.forTestingOnly()
-  private val log = GenericLoggerFactory.getLogger
+  private val log          = GenericLoggerFactory.getLogger
+  private val socketServer = new SocketServerStream()(testKit.internalSystem)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
-    // Start a local simulator
-    val _ = new SocketServerStream()(testKit.system)
   }
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
+    Await.ready(socketServer.terminate(), 5.seconds)
     super.afterAll()
   }
 

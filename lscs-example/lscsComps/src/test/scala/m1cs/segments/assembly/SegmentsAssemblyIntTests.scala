@@ -60,6 +60,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
     val cs               = CommandServiceFactory.make(assemblyLocation)
     log.info("Shutting down segments")
+    Await.ready(socketServer.terminate(), 5.seconds)
     Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
 
     // socketServer.terminate()

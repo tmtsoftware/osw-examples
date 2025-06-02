@@ -37,12 +37,11 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
   private implicit val timeout: Timeout = 15.seconds
 
   LoggingSystemFactory.forTestingOnly()
-  private val log = GenericLoggerFactory.getLogger
+  private val log          = GenericLoggerFactory.getLogger
+  private val socketServer = new SocketServerStream()(testKit.internalSystem)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
-    val _ = new SocketServerStream()(testKit.internalSystem)
 
     // uncomment if you want one HCD run for all tests
     val _ = spawnStandalone(config)
@@ -50,6 +49,7 @@ class SegmentsHCDTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike 
 
   override def afterAll(): Unit = {
     testKit.shutdownTestKit()
+    Await.ready(socketServer.terminate(), 5.seconds)
     super.afterAll()
   }
 
