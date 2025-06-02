@@ -22,7 +22,7 @@ object SegmentActor {
   def apply(segmentId: SegmentId, log: Logger): Behavior[Command] = {
     Behaviors.setup[Command] { ctx =>
       // Here we check to see if there is a property called simulatorHost
-      val simulatorHost          = Properties.propOrElse("simulatorHost", "localhost")
+      val simulatorHost = Properties.propOrElse("simulatorHost", "localhost")
       log.debug(s"Connecting to: $simulatorHost")
       val io: SocketClientStream = SocketClientStream(ctx, segmentId.toString, host = simulatorHost)
       handle(io, segmentId, log)
@@ -42,7 +42,8 @@ object SegmentActor {
           // This will only happen if the error command is sent to error segment
           val simCommand = if (commandName == ERROR_COMMAND_NAME && segmentId.number == ERROR_SEG_ID) {
             s"ERROR $command"
-          } else {
+          }
+          else {
             command
           }
           io.send(simCommand).onComplete {
@@ -52,7 +53,8 @@ object SegmentActor {
               val seqNum = m.hdr.seqNo
               if (m.cmd.toLowerCase.contains("completed")) {
                 replyTo ! Completed(commandName, seqNum, segmentId)
-              } else {
+              }
+              else {
                 replyTo ! Error(commandName, seqNum, segmentId, "Error received from simulator.")
               }
               log.debug(s"Segment $segmentId: ${m.cmd}")
@@ -80,7 +82,7 @@ object SegmentActor {
               replyTo ! Error(commandName, errorSeqNum, segmentId, "Error received from simulator.")
           }
           handle(io, segmentId, log)
-         //#segment-actor
+        // #segment-actor
 
         case ShutdownSegment2(replyTo) =>
           log.debug(s"Shutting down segment: $segmentId")
@@ -100,7 +102,7 @@ object SegmentActor {
       }
     }
 
-  sealed trait Command //extends pekko.actor.NoSerializationVerificationNeeded
+  sealed trait Command // extends pekko.actor.NoSerializationVerificationNeeded
 
   sealed trait Response {
     val commandName: String

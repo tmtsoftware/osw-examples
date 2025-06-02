@@ -69,14 +69,14 @@ object TARG_GEN_ACT {
 
     // Make a copy -- do any checks here
     override def asSetup: Setup = {
-      //val mode       = s.get(targetGenModeKey)
-      //val shape      = s.get(targetShapeKey)
-      //val amplitude  = s.get(targetAmplitudeKey)
-      //val period     = s.get(targetPeriodKey)
-      //val offset     = s.get(targetOffsetKey)
+      // val mode       = s.get(targetGenModeKey)
+      // val shape      = s.get(targetShapeKey)
+      // val amplitude  = s.get(targetAmplitudeKey)
+      // val period     = s.get(targetPeriodKey)
+      // val offset     = s.get(targetOffsetKey)
 
       // Put any checks here - not sure this is true...
-      //require(mode.isDefined || shape.isDefined, " must have one or more of: mode, or shape.")
+      // require(mode.isDefined || shape.isDefined, " must have one or more of: mode, or shape.")
 
       // Should require a segment set
       Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)

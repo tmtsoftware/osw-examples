@@ -28,7 +28,7 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
 
   private val frameworkTestKit = FrameworkTestKit()
 
-  //ScalaTestFrameworkTestKit(AlarmServer, EventServer) wit
+  // ScalaTestFrameworkTestKit(AlarmServer, EventServer) wit
   import frameworkTestKit.*
 
   override def beforeAll(): Unit = {
@@ -50,8 +50,8 @@ class BasicSampleHcdTest extends AnyFunSuite with BeforeAndAfterAll with Matcher
     val counterEventKey = EventKey(Prefix("CSW.samplehcd"), EventName("HcdCounter"))
     val hcdCounterKey   = KeyType.IntKey.make("counter")
 
-    //val eventService = eventServiceFactory.make(locationService)(actorSystem)
-    val subscriber   = eventService.defaultSubscriber
+    // val eventService = eventServiceFactory.make(locationService)(actorSystem)
+    val subscriber = eventService.defaultSubscriber
 
     // wait for a bit to ensure HCD has started and published an event
     Thread.sleep(2000)

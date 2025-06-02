@@ -188,7 +188,7 @@ class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: 
   def send(msg: String, msgId: MessageId = CMD_TYPE, srcId: SourceId = SourceId(0))(implicit
       timeout: Timeout
   ): Future[SocketMessage] = {
-    clientActor.ask(GetSeqNo).flatMap { seqNo =>
+    clientActor.ask(GetSeqNo.apply).flatMap { seqNo =>
       val cmd = SocketMessage(MsgHdr(msgId, srcId, msgLen = msg.length + MsgHdr.encodedSize, seqNo = seqNo), msg)
       send(cmd)
     }
@@ -208,9 +208,10 @@ object SocketClientStreamApp extends App {
   implicit val timout: Timeout                            = Timeout(5.seconds)
   val client                                              = SocketClientStream.withSystem("socketClientStream")
   try {
-    val resp                                                = Await.result(client.send(args.mkString(" ")), timout.duration)
+    val resp = Await.result(client.send(args.mkString(" ")), timout.duration)
     println(s"XXX resp = ${resp.cmd}")
-  } catch {
+  }
+  catch {
     case ex: Exception =>
       println(s"Error: Failed to send to server: ${ex.getMessage}")
   }

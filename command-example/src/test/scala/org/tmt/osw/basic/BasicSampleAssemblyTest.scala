@@ -14,20 +14,20 @@ class BasicSampleAssemblyTest extends ScalaTestFrameworkTestKit(AlarmServer, Eve
   import frameworkTestKit.*
 //#intro
 
-  //#setup
+  // #setup
   override def beforeAll(): Unit = {
     super.beforeAll()
     val _ = spawnStandalone(com.typesafe.config.ConfigFactory.load("BasicSampleAssemblyStandalone.conf"))
   }
 //#setup
 
-  //#locate
+  // #locate
   import scala.concurrent.duration.*
   test("Assembly should be locatable using Location Service") {
-    val connection   = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "sample"), ComponentType.Assembly))
-    val location = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val connection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "sample"), ComponentType.Assembly))
+    val location   = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
     location.connection shouldBe connection
   }
-  //#locate
+  // #locate
 }

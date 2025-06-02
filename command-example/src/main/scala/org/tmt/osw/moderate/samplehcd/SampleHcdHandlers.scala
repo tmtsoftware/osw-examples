@@ -46,11 +46,11 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
   private val mediumSleepPeriod: Long = 2000L
   private val longSleepPeriod: Long   = 4000L
 
-  //#worker-actor
+  // #worker-actor
 
-  //#worker-actor
+  // #worker-actor
 
-  //#initialize
+  // #initialize
   var maybePublishingGenerator: Option[Cancellable] = None
   override def initialize(): Unit = {
     log.info("In HCD initialize")
@@ -64,9 +64,9 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
   override def onShutdown(): Unit = {
     log.info("HCD is shutting down")
   }
-  //#initialize
+  // #initialize
 
-  //#publish
+  // #publish
   import scala.concurrent.duration._
   private def publishCounter(): Cancellable = {
     var counter = 0
@@ -85,15 +85,15 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
     log.info("Stopping publish stream")
     maybePublishingGenerator.foreach(_.cancel())
   }
-  //#publish
+  // #publish
 
-  //#validate
+  // #validate
   override def validateCommand(runId: Id, command: ControlCommand): ValidateCommandResponse = {
     log.info(s"Validating command: ${command.commandName.name}")
     SampleValidation.doHcdValidation(runId, command)
   }
 
-  //#onSetup
+  // #onSetup
   override def onSubmit(runId: Id, command: ControlCommand): SubmitResponse = {
     log.info(s"Handling command: ${command.commandName}")
 
@@ -138,7 +138,7 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
         Invalid(runId, UnsupportedCommandIssue(s"Sample HCD does not support: $other"))
     }
   }
-  //#onSetup
+  // #onSetup
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 

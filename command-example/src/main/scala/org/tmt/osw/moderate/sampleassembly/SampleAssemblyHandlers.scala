@@ -44,14 +44,14 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   private implicit val timeout: Timeout             = 10.seconds
   private implicit val sched: Scheduler             = ctx.system.scheduler
   private val log                                   = loggerFactory.getLogger
-  private val hcdConnection                         = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-  private var hcdLocation: PekkoLocation             = uninitialized
-  private var hcdCS: Option[CommandService]         = None
-  private val prefix: Prefix                        = cswCtx.componentInfo.prefix
+  private val hcdConnection                 = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+  private var hcdLocation: PekkoLocation    = uninitialized
+  private var hcdCS: Option[CommandService] = None
+  private val prefix: Prefix                = cswCtx.componentInfo.prefix
   // Var to store most recent long command for cancel demo - not a great implementation, but showing async is possible
   private var saveLastLongId: Option[Id] = None
 
-  //#initialize
+  // #initialize
   private var maybeEventSubscription: Option[EventSubscription] = None
   override def initialize(): Unit = {
     log.info("In Assembly initialize")
@@ -61,9 +61,9 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   override def onShutdown(): Unit = {
     log.info("Assembly is shutting down.")
   }
-  //#initialize
+  // #initialize
 
-  //#track-location
+  // #track-location
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {
     log.debug(s"onLocationTrackingEvent called: $trackingEvent")
     trackingEvent match {
@@ -78,9 +78,9 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
         }
     }
   }
-  //#track-location
+  // #track-location
 
-  //#subscribe
+  // #subscribe
   private val counterEventKey = EventKey(Prefix("CSW.samplehcd"), EventName("HcdCounter"))
   private val hcdCounterKey   = KeyType.IntKey.make("counter")
 
@@ -107,7 +107,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     log.info("Stopping subscription.")
     maybeEventSubscription.foreach(_.unsubscribe())
   }
-  //#subscribe
+  // #subscribe
 
   override def validateCommand(runId: Id, command: ControlCommand): ValidateCommandResponse = {
     SampleValidation.doAssemblyValidation(runId, command)
@@ -209,7 +209,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     }
   }
 
-  //#worker-actor
+  // #worker-actor
   private def simpleHCD(runId: Id, setup: Setup): Future[SubmitResponse] = {
     hcdCS match {
       case Some(cs) =>
@@ -218,7 +218,7 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
         Future(Error(runId, s"A needed HCD is not available: ${hcdConnection.componentId}"))
     }
   }
-  //#worker-actor
+  // #worker-actor
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 

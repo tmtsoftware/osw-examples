@@ -15,7 +15,7 @@ Lower Segment Control System.  It is built using TMT Common Software ([CSW](http
 
 ## Upgrading CSW Version
 
-This example is build with CSW 4.0. To change the version, change version in build.sbt. Make sure you are
+This example is built with CSW 6.0.0. To change the version, modify project/Dependencies.scala and Make sure you are
 using the correct csw-services.
 
 ## Build Instructions

@@ -39,7 +39,7 @@ object SegComMonitor {
     }
   }
 
-  //#seg-mon
+  // #seg-mon
   /**
    * These are the commands for the Command Sequence Monitor. The WrappedSegmentResponse is needed to receive
    * the SegmentActor.Response and transform it into a SegComMonitor.Command.
@@ -48,7 +48,7 @@ object SegComMonitor {
   sealed trait Command
   final private case class WrappedSegmentResponse(response: SegmentActor.Response) extends Command
   case object Start                                                                extends Command
-  final private case object CommandTimeout                                         extends Command
+  private case object CommandTimeout                                               extends Command
 
   /**
    * This private class implements the Segment Command Monitor.
@@ -143,9 +143,6 @@ object SegComMonitor {
                 )
               )
               Behaviors.stopped
-            case other =>
-              log.error(s"SegComMonitor received some other message.  Just FYI: $other")
-              Behaviors.same
           }
           .receiveSignal { case (_, PostStop) =>
             log.debug(s">>>SegComMonitor for $runId STOPPED<<<")
@@ -153,5 +150,5 @@ object SegComMonitor {
           }
       }
   }
-  //#seg-mon
+  // #seg-mon
 }

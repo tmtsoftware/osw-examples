@@ -42,7 +42,7 @@ class SegmentIdTests extends AnyFunSuite with Matchers {
 
     sr1.toString shouldBe "B[22-33]"
 
-    //sr1.map((s:SegmentId) => println(s.number))
+    // sr1.map((s:SegmentId) => println(s.number))
   }
 
   test("from strings for sectors, ranges, etc.") {

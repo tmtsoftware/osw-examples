@@ -12,6 +12,7 @@ import m1cs.segments.streams.server.SocketServerStream
 import m1cs.segments.segcommands.{A, SegmentId}
 import org.scalatest.funsuite.AnyFunSuiteLike
 
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike {
@@ -34,6 +35,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
   private val testCreator: SegmentManager.SegmentCreator = (s, log) => testKit.spawn(hcd.SegmentActor(s, log), s.toString)
 
+  private val server: SocketServerStream = SocketServerStream()(testKit.internalSystem)
   // Used for asks
   implicit val timeout: Timeout = 10.seconds
 
@@ -42,11 +44,11 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     // Start an internal socket server
     log.debug("Starting an external socket server")
-    val _ = new SocketServerStream()(testKit.internalSystem)
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
+    Await.ready(server.terminate(), 5.seconds)
     testKit.shutdownTestKit()
   }
 
@@ -166,7 +168,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     testKit.stop(mon3, 5.seconds)
   }
 
-  //#test1
+  // #test1
   test("492 segments - all sectors - send 1") {
     // Note: This test fails on Mac, server must be running on Linux due to open file issue?
 
@@ -192,9 +194,9 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
 
     testKit.stop(mon, 5.seconds)
   }
-  //#test1
+  // #test1
 
-  //#test2
+  // #test2
   test("492 segments - all sectors - overlap") {
     // Note: This test fails on Mac, server must be running on Linux due to open file issue?
 
@@ -229,5 +231,5 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
     testKit.stop(mon1, 5.seconds)
     testKit.stop(mon2, 5.seconds)
   }
-  //#test2
+  // #test2
 }

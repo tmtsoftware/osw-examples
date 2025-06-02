@@ -4,6 +4,7 @@ import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import org.apache.pekko.util.Timeout
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ContainerMessage
+import csw.command.client.messages.SupervisorContainerCommonMessages.Shutdown
 import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Cancelled, Completed, Started}
@@ -30,17 +31,22 @@ class FullSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, E
   )
   private val hcdConnection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
-  private var containerRef: ActorRef[ContainerMessage] = _
+  private var containerRef: ActorRef[ContainerMessage] = scala.compiletime.uninitialized
+
+  private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
+  private implicit val timeout: Timeout                                = 12.seconds
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     containerRef = spawnContainer(com.typesafe.config.ConfigFactory.load("FullSampleContainer.conf"))
   }
 
-  private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
-  private implicit val timeout: Timeout                                = 12.seconds
+  override def afterAll(): Unit = {
+    super.afterAll()
+    containerRef ! Shutdown
+  }
 
-  //#locate
+  // #locate
 
   import org.tmt.osw.moderate.shared.SampleInfo.*
 

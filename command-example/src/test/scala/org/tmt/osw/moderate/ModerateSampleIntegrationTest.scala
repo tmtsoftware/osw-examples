@@ -42,7 +42,7 @@ class ModerateSampleContainerTest extends ScalaTestFrameworkTestKit(AlarmServer,
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
   private implicit val timeout: Timeout                                = 12.seconds
 
-  //#locate
+  // #locate
   import org.tmt.osw.moderate.shared.SampleInfo.*
 
   import scala.concurrent.duration.*

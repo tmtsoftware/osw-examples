@@ -16,7 +16,7 @@ object Common {
   // Shared keys
   val actuatorIdKey: Key[Int] = KeyType.IntKey.make("ACT_ID")
   // Shortcut for full Set
-  val ALL_ACTUATORS = Set(1, 2, 3)
+  val ALL_ACTUATORS: Set[Int] = Set(1, 2, 3)
 
   // Use by commands that have actuators to check for basic consistency
   def addActuators(setup: Setup, actId: Set[Int]): Setup = {
@@ -40,7 +40,7 @@ object Common {
     warpingHarnessId.toString
   }
 
-  //#command-support
+  // #command-support
   /**
    * This map is used by the Assembly to access the correct toCommand for an incoming command Setup
    * It maps command name to a function that returns the formatted command
@@ -61,7 +61,7 @@ object Common {
   // This is used by validation of Assembly and HCD to verify that the received command is currently supported. Could
   // be removed when all commands are supported
   val ALL_COMMANDS: List[CommandName] = CommandMap.keys.toList
-  //#command-support
+  // #command-support
 
   // Used by every command that has an array of values to print in the correct format x=(1,2,3)
   def valuesToString[A](items: Array[A]): String = items.mkString("(", ",", ")")

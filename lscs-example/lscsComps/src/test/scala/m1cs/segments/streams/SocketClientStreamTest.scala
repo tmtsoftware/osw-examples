@@ -47,7 +47,7 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
 }
 
 class SocketClientStreamTest extends AnyFunSuite {
-  //#socketClientWithSystem
+  // #socketClientWithSystem
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")
   implicit val ece: ExecutionContextExecutor              = system.executionContext
   implicit val timout: Timeout                            = Timeout(30.seconds)
@@ -88,11 +88,11 @@ class SocketClientStreamTest extends AnyFunSuite {
     println(s"XXX test1 result = $list")
     assert(list.forall(_.cmd.endsWith(" Completed.")))
   }
-  //#socketClientWithSystem
+  // #socketClientWithSystem
 
   test("Test with actor") {
     val actorRef = system.spawn(TestActor.behavior(), "TestActor")
-    assert(Await.result(actorRef.ask(Start), 30.seconds))
+    assert(Await.result(actorRef.ask(Start.apply), 30.seconds))
     actorRef ! Stop
   }
 }

@@ -35,7 +35,7 @@ class BasicSampleIntegrationTest extends ScalaTestFrameworkTestKit(AlarmServer, 
   )
   private val hcdConnection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
 
-  private var containerRef: ActorRef[ContainerMessage] = _
+  private var containerRef: ActorRef[ContainerMessage] = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

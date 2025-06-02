@@ -32,9 +32,9 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
   // there is a different ActorContext
   private val creator: SegmentManager.SegmentCreator = (s, log) => ctx.spawn(hcd.SegmentActor(s, log), s.toString)
 
-  //#initialize
+  // #initialize
   // Set this during initialization to be a Segments instance
-  private var createdSegments: Segments = _
+  private var createdSegments: Segments = scala.compiletime.uninitialized
 
   /**
    * The TLA initialize reads the number of segments from the reference.conf file.  This is convenient for
@@ -47,13 +47,13 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
       if (ctx.system.settings.config.hasPath(segPath))
         ctx.system.settings.config.getInt(segPath)
       else SegmentId.MAX_SEGMENT_NUMBER
-    val segmentRange = 1 to maxSegments //SegmentId.MAX_SEGMENT_NUMBER
+    val segmentRange = 1 to maxSegments // SegmentId.MAX_SEGMENT_NUMBER
     log.info(
       s"Initializing Segments HCD with ${segmentRange.max} segments in each sector for a total of ${segmentRange.max * SegmentId.ALL_SECTORS.size} segments."
     )
     createdSegments = SegmentManager.createSegments(creator, segmentRange, log)
   }
-  //#initialize
+  // #initialize
 
   /**
    * This is the validate handler of the HCD TLA. This should perform all validation needed so that
@@ -71,7 +71,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
-  //#handle-validation
+  // #handle-validation
   /*
    * All Setup validation is performed here. Three checks are done for a lscsDirectCommand:
    * 1. is there a valid LSCS command
@@ -105,7 +105,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         Invalid(runId, CommandIssue.UnsupportedCommandIssue(s"HCD does not accept the command: $other"))
     }
   }
-  //#handle-validation
+  // #handle-validation
 
   /**
    * The HCD receives a Setup command with the String LSCS command and a destination.
@@ -118,7 +118,7 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
     }
   }
 
-  //#handle-submit
+  // #handle-submit
   /**
    * Processes commands as Setups for the HCD.
    * @param runId command runId
@@ -158,14 +158,14 @@ class SegmentsHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCo
         mon1 ! SegComMonitor.Start
         Started(runId)
       case HcdShutdown.shutdownCommand =>
-        //This just sends shutdown to all the online segments
+        // This just sends shutdown to all the online segments
         createdSegments.shutdownAll()
         Completed(runId)
       case other =>
         Error(runId, s"This HCD does not handle this command: $other")
     }
   }
-  //#handle-submit
+  // #handle-submit
 
   // The following were ignored for this demonstration
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}

@@ -51,7 +51,7 @@ object CFG_ACT_SNUB {
     // Make a copy -- do any checks here
     override def asSetup: Setup = {
       // Check that there is at least one
-      //require( )
+      // require( )
 
       // This causes a copy
       Setup(setup.source, setup.commandName, setup.maybeObsId, setup.paramSet)

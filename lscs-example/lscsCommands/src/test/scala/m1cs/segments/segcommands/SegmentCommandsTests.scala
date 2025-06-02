@@ -25,7 +25,7 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     // Currently not handling ranges
   }
 
-  //#example-tests
+  // #example-tests
   test("To From ACTUATOR") {
     import m1cs.segments.segcommands.ACTUATOR.*
     import m1cs.segments.segcommands.ACTUATOR.ActuatorModes.*
@@ -72,7 +72,7 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
       toActuator(prefix, Set(1, 2, 4))
     }
   }
-  //#example-tests
+  // #example-tests
 
   test("To From TARG_GEN_ACT") {
     import m1cs.segments.segcommands.TARG_GEN_ACT.*
@@ -232,14 +232,14 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
       toCfgActVc(prefix, ALL_ACTUATORS).withSlewParams(Array(1.0, 2.0, 3.0))
     }
     // Check for right error message
-    caught.getMessage contains "4"
+    caught.getMessage `contains` "4"
 
     // Check for bad number of trk params
     caught = intercept[IllegalArgumentException] {
       toCfgActVc(prefix, Set(3)).withTrkParams(Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
     }
     // Check for right error message
-    caught.getMessage contains "4"
+    caught.getMessage `contains` "4"
   }
 
   test("To From CFG_ACT_OFFLD") {

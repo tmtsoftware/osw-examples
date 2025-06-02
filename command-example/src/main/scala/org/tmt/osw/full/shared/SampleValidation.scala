@@ -37,7 +37,7 @@ object SampleValidation {
         Invalid(runId, UnsupportedCommandIssue("Sample HCD only supports Setup commands."))
     }
 
-  //#validate
+  // #validate
   private def doHcdSetupValidation(runId: Id, setup: Setup): ValidateCommandResponse =
     setup.commandName match {
       case `hcdSleep` =>
@@ -61,7 +61,7 @@ object SampleValidation {
     else {
       Invalid(runId, MissingKeyIssue(s"required sleep command key: $sleepTimeKey is missing."))
     }
-  //#validate
+  // #validate
 
   private def validateCancel(runId: Id, setup: Setup): ValidateCommandResponse =
     if (setup.exists(cancelKey)) {

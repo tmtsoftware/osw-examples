@@ -35,20 +35,20 @@ class FullSampleHcdTest
 
   import scala.concurrent.duration.*
   test("HCD should be locatable using Location Service") {
-    val connection   = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-    val location = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val connection = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
+    val location   = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
     location.connection shouldBe connection
   }
-  //#setup
+  // #setup
 
-  //#subscribe
+  // #subscribe
   test("should be able to subscribe to HCD events") {
     val counterEventKey = EventKey(Prefix("CSW.samplehcd"), EventName("HcdCounter"))
     val hcdCounterKey   = KeyType.IntKey.make("counter")
 
-    //val eventService = eventServiceFactory.make(locationService)(actorSystem)
-    val subscriber   = eventService.defaultSubscriber
+    // val eventService = eventServiceFactory.make(locationService)(actorSystem)
+    val subscriber = eventService.defaultSubscriber
 
     // wait for a bit to ensure HCD has started and published an event
     Thread.sleep(2000)
@@ -77,9 +77,9 @@ class FullSampleHcdTest
 
     counterList shouldBe expectedCounterList
   }
-  //#subscribe
+  // #subscribe
 
-  //#submit
+  // #submit
   implicit val typedActorSystem: ActorSystem[?] = actorSystem
   test("full: should be able to send sleep command to HCD") {
     import scala.concurrent.duration.*
@@ -99,12 +99,12 @@ class FullSampleHcdTest
 
     Await.result(responseF, 10000.millis) shouldBe a[CommandResponse.Completed]
   }
-  //#submit
+  // #submit
 
   test("should handle long command and cancel") {
     implicit val timeout: Timeout = 10.seconds
     val connection                = PekkoConnection(ComponentId(Prefix(Subsystem.CSW, "samplehcd"), ComponentType.HCD))
-    val location              = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    val location                  = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
 
     val hcdCS = CommandServiceFactory.make(location)
 
@@ -122,7 +122,7 @@ class FullSampleHcdTest
     finalResponse shouldBe a[Cancelled]
   }
 
-  //#exception
+  // #exception
   test("should get timeout exception if submit timeout is too small") {
     import scala.concurrent.duration.*
     implicit val sleepCommandTimeout: Timeout = Timeout(1000.millis)
@@ -143,5 +143,5 @@ class FullSampleHcdTest
       Await.result(responseF, 10000.millis) shouldBe a[CommandResponse.Completed]
     }
   }
-  //#exception
+  // #exception
 }

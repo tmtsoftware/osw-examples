@@ -26,7 +26,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   private val connections = Tcp()(system.classicSystem).bind(host, port)
 
   // For random delay before replying to message
-  private val rnd = new scala.util.Random
+  private val rnd      = new scala.util.Random
   private val minDelay = system.settings.config.getInt("m1cs.segment.streams.server.minDelay") // ms
   private val maxDelay = system.settings.config.getInt("m1cs.segment.streams.server.maxDelay") // ms
 
@@ -35,15 +35,16 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   // which just sleeps for that amount of time before replying with: "DELAY: Completed".
   // For now, all other commands get an immediate reply.
   private def handleMessage(bs: ByteString): Future[ByteString] = {
-    val msg = SocketMessage.parse(bs)
-    val cmd = msg.cmd.split(' ').head
-    val s = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
+    val msg     = SocketMessage.parse(bs)
+    val cmd     = msg.cmd.split(' ').head
+    val s       = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
     val respMsg = s"$cmd: $s"
-    val resp = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
-    val delayMs = if (cmd.toUpperCase() == "DELAY")
-      msg.cmd.split(" ")(1).toInt
-    else
-      minDelay + rnd.nextInt((maxDelay - minDelay) + 1)
+    val resp    = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
+    val delayMs =
+      if (cmd.toUpperCase() == "DELAY")
+        msg.cmd.split(" ")(1).toInt
+      else
+        minDelay + rnd.nextInt((maxDelay - minDelay) + 1)
 
     if (delayMs == 0) {
       Future.successful(resp.toByteString)
@@ -63,7 +64,7 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
           .takeWhile(_ != ByteString("BYE"))
           .mapAsyncUnordered(100)(handleMessage)
 
-        //noinspection DuplicatedCode
+        // noinspection DuplicatedCode
         // XXX Note: Looks like there might be a bug in Framing.lengthField, requiring the function arg!
         val serverLogic = Flow[ByteString]
           .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))

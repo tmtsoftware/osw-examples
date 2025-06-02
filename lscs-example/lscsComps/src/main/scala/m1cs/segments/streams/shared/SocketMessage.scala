@@ -45,7 +45,7 @@ object SocketMessage {
     val encodedSize: Int = 4 * 2
   }
 
-  //#MsgHdr
+  // #MsgHdr
   /**
    * @param msgId message type
    * @param srcId sender application id
@@ -53,7 +53,7 @@ object SocketMessage {
    * @param seqNo sequence number
    */
   case class MsgHdr(msgId: MessageId, srcId: SourceId, msgLen: Int, seqNo: Int)
-  //#MsgHdr
+  // #MsgHdr
 
   /**
    * Parses the command from the given ByteString

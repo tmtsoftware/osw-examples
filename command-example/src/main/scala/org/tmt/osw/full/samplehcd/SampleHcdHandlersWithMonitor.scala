@@ -31,7 +31,8 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
  * and if validation is successful, then onSubmit hook gets invoked.
  * You can find more information on this here : https://tmtsoftware.github.io/csw/framework.html
  */
-class SampleHcdHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
+class SampleHcdHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
+    extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx._
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private val log                           = loggerFactory.getLogger
@@ -43,11 +44,11 @@ class SampleHcdHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswC
 
   private val workerMonitor = ctx.spawnAnonymous(WorkerMonitor[ActorRef[SleepWorkerWithMonitorMessages]](cswCtx))
 
-  //#worker-actor
+  // #worker-actor
 
-  //#worker-actor
+  // #worker-actor
 
-  //#initialize
+  // #initialize
   var maybePublishingGenerator: Option[Cancellable] = None
   override def initialize(): Unit = {
     log.info("In HCD initialize")
@@ -61,9 +62,9 @@ class SampleHcdHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswC
   override def onShutdown(): Unit = {
     log.info("HCD is shutting down")
   }
-  //#initialize
+  // #initialize
 
-  //#publish
+  // #publish
   import scala.concurrent.duration._
   private def publishCounter(): Cancellable = {
     var counter = 0
@@ -82,16 +83,16 @@ class SampleHcdHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswC
     log.info("Stopping publish stream")
     maybePublishingGenerator.foreach(_.cancel())
   }
-  //#publish
+  // #publish
 
-  //#validate
+  // #validate
   override def validateCommand(runId: Id, command: ControlCommand): ValidateCommandResponse = {
     log.info(s"Validating command: ${command.commandName.name}")
     SampleValidation.doHcdValidation(runId, command)
   }
-  //#validate
+  // #validate
 
-  //#onSetup
+  // #onSetup
   override def onSubmit(runId: Id, command: ControlCommand): SubmitResponse = {
     log.info(s"Handling command: ${command.commandName}")
 
@@ -138,7 +139,7 @@ class SampleHcdHandlersWithMonitor(ctx: ActorContext[TopLevelActorMessage], cswC
       case other =>
         Invalid(runId, UnsupportedCommandIssue(s"Sample HCD does not support: $other"))
     }
-  //#onSetup
+  // #onSetup
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 

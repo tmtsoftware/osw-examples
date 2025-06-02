@@ -62,7 +62,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     log.info("Shutting down segments")
     Await.ready(cs.submitAndWait(shutdownSetup), 10.seconds)
 
-    //socketServer.terminate()
+    // socketServer.terminate()
     super.afterAll()
   }
 
@@ -89,7 +89,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     hcdLocation.connection shouldBe hcdConnection
 
     // Form the external command going to the Assembly
-    val to    = ACTUATOR.toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5"))
+    val to = ACTUATOR.toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(SegmentId("A5"))
     val setup = to.asSetup
 
     val cs     = CommandServiceFactory.make(assemblyLocation)

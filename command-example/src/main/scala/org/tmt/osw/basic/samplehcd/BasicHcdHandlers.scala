@@ -46,7 +46,7 @@ class BasicHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswConte
 
   override def onOperationsMode(): Unit = {}
 
-  //#initialize
+  // #initialize
   var maybePublishingGenerator: Option[Cancellable] = None
 
   override def initialize(): Unit = {
@@ -61,9 +61,9 @@ class BasicHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswConte
   override def onShutdown(): Unit = {
     log.info(s"HCD: $prefix is shutting down")
   }
-  //#initialize
+  // #initialize
 
-  //#publish
+  // #publish
   import scala.concurrent.duration._
   private def publishCounter(): Cancellable = {
     var counter = 0
@@ -82,9 +82,9 @@ class BasicHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswConte
     log.info(s"HCD: $prefix stops publishing stream")
     maybePublishingGenerator.foreach(_.cancel())
   }
-  //#publish
+  // #publish
 
-  //#validate
+  // #validate
   override def validateCommand(runId: Id, command: ControlCommand): ValidateCommandResponse =
     command.commandName match {
       case `hcdSleep` | `hcdImmediate` =>
@@ -93,9 +93,9 @@ class BasicHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswConte
         log.error(s"HCD: $prefix received an unsupported command: ${command.commandName.name}")
         Invalid(runId, UnsupportedCommandIssue(s"Command: ${command.commandName.name} is not supported for HCD: $prefix."))
     }
-  //#validate
+  // #validate
 
-  //#onSetup
+  // #onSetup
   override def onSubmit(runId: Id, command: ControlCommand): SubmitResponse = {
     log.info(s"HCD: $prefix handling command: ${command.commandName}")
 
@@ -123,5 +123,5 @@ class BasicHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswConte
         Invalid(runId, UnsupportedCommandIssue(s"HCD: $prefix does not implement command: $other"))
     }
   }
-  //#onSetup
+  // #onSetup
 }

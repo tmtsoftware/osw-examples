@@ -50,7 +50,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
     log.info("Initializing SegmentsAssembly...")
   }
 
-  //#tracking-events
+  // #tracking-events
   /**
    * This is overriding tracking events to gain events for Segments HCD. The Assembly should be started
    * with a Component Configuration file that includes tracking and the info for the Segments HCD.
@@ -73,9 +73,9 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
         }
     }
   }
-  //#tracking-events
+  // #tracking-events
 
-  //#handle-validation
+  // #handle-validation
   /**
    * This is the validate handler. This should perform all validation needed so that
    * the command can execute, or it should return a validation error.
@@ -103,9 +103,9 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
       )
     }
   }
-  //#handle-validation
+  // #handle-validation
 
-  //#important-code
+  // #important-code
   /**
    * The Assembly receives a Setup command with the name of the low-level command.
    * It transforms it into an HCD command, which is just the String command to all or one segment.
@@ -169,7 +169,7 @@ class SegmentsAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: 
       case None =>
         Future(CommandResponse.Error(runId, s"The Segment HCD is not currently available: ${hcdConnection.componentId}"))
     }
-  //#important-code
+  // #important-code
   // The following were ignored for this demonstration
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 
