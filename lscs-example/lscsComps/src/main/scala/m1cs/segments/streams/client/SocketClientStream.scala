@@ -104,7 +104,7 @@ object SocketClientStream {
     val spawnHelper = new SpawnHelper {
       def spawn[U](behavior: Behavior[U], name: String, props: Props = Props.empty): ActorRef[U] = {
         import csw.logging.client.commons
-       // import org.apache.pekko.TypedExtension.UserActorFactory
+        import csw.logging.client.commons.PekkoTypedExtension.UserActorFactory
         system.spawn(behavior, name, props)
       }
     }
