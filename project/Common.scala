@@ -44,7 +44,11 @@ object Common {
     // we make use of it so that the version in class metadata (e.g. classOf[LocationService].getPackage.getSpecificationVersion)
     // and the maven repo match
     version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
-    fork    := true,
+    fork := true,
+    javaOptions ++= Seq(
+      // Comment this out to use the simulation server, leave it here to use the native bin/CmdSrvSim from m1cs-lscs-sim
+      "-DUSE_NATIVE_SOCKET_SERVER"
+    ),
     parallelExecution := false,
     autoCompilerPlugins := true,
     Global / cancelable := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt

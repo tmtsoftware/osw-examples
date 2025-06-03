@@ -13,7 +13,7 @@ import TestActor.*
 import m1cs.segments.streams.client.SocketClientStream
 import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import m1cs.segments.streams.shared.SocketMessage
-import org.scalatest.BeforeAndAfterAll
+import org.scalatest.{BeforeAndAfterAll, Ignore}
 
 private object TestActor {
   sealed trait TestMessages
@@ -47,6 +47,8 @@ private class TestActor(ctx: ActorContext[TestMessages]) extends AbstractBehavio
   }
 }
 
+// This test only works with the simulator
+@Ignore
 class SocketClientStreamTest extends AnyFunSuite with BeforeAndAfterAll {
   // #socketClientWithSystem
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SocketServerStream")

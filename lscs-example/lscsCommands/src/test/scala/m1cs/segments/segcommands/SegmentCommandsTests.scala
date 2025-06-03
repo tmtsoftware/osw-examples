@@ -40,13 +40,13 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
 
     // Only 2 actuators
     to = toActuator(prefix, Set(1, 3)).withMode(TRACK)
-    ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=(1,3), MODE=TRACK"
+    ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=1, MODE=TRACK"
 
     to = toActuator(prefix, Set(1, 3)).withTarget(22.34)
-    ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=(1,3), TARGET=22.34"
+    ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=1, TARGET=22.34"
 
     to = toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34)
-    ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
+    ACTUATOR.toCommand(to.asSetup) shouldBe s"${COMMAND_NAME.name} ACT_ID=1, MODE=TRACK, TARGET=22.34"
 
     // Verify All
     to = toActuator(prefix, ALL_ACTUATORS).withMode(TRACK).withTarget(22.34)
