@@ -19,8 +19,8 @@ class SegmentActorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLike
   private val cn1     = "ACTUATOR"
   private val cn1full = "ACTUATOR ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
 
-  private val cn2     = "CFG_CUR_LOOP"
-  private val cn2full = "CFG_CUR_LOOP ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=Kp"
+  private val cn2     = "CONFIG_CUR_LOOP"
+  private val cn2full = "CONFIG_CUR_LOOP ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=43.2,CTRL_PARAMS=Kp"
 
   import frameworkTestKit.*
 

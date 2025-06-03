@@ -6,10 +6,10 @@ import csw.params.core.models.Choice
 import csw.prefix.models.Prefix
 
 //noinspection DuplicatedCode
-object CFG_ACT_VC {
+object CONFIG_ACT_VC {
   import Common.*
 
-  val COMMAND_NAME: CommandName = CommandName("CFG_ACT_VC")
+  val COMMAND_NAME: CommandName = CommandName("CONFIG_ACT_VC")
 
   val slewCtrlParamsKey: Key[Float] = KeyType.FloatKey.make("SLEW_CTRL_PARAMS")
   val trkCtrlParamsKey: Key[Float]  = KeyType.FloatKey.make("TRK_CTRL_PARAMS")
@@ -51,7 +51,7 @@ object CFG_ACT_VC {
   }
 
   /**
-   * Returns a formatted CFG_ACT_VC command from a Setup
+   * Returns a formatted CONFIG_ACT_VC command from a Setup
    *
    * @param setup Setup created with toActuator
    * @return String command ready to send

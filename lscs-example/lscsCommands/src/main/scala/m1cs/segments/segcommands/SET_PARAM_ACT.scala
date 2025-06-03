@@ -49,7 +49,7 @@ object SET_PARAM_ACT {
   }
 
   /**
-   * Returns a formatted CFG_ACT_OFFLD command from a Setup
+   * Returns a formatted CONFIG_ACT_OFFLD command from a Setup
    *
    * @param setup Setup created with toActuator
    * @return String command ready to send

@@ -12,7 +12,7 @@ import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import m1cs.segments.segcommands.Common.ALL_ACTUATORS
-import m1cs.segments.segcommands.{CFG_CUR_LOOP, SegmentId}
+import m1cs.segments.segcommands.{CONFIG_CUR_LOOP, SegmentId}
 import m1cs.segments.shared.HcdShutdown
 import m1cs.segments.streams.server.{MaybeSocketServerStream, SocketServerStream}
 import org.scalatest.funsuite.AnyFunSuiteLike
@@ -115,7 +115,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
   }
 
   test("Assembly receives multiple commands all the way to HCD -- All Segments") {
-    import m1cs.segments.segcommands.CFG_CUR_LOOP.CfgCurLoopMotor.*
+    import m1cs.segments.segcommands.CONFIG_CUR_LOOP.CfgCurLoopMotor.*
 
     val assemblyLocation = Await.result(locationService.resolve(assemblyConnection, 10.seconds), 10.seconds).get
     val hcdLocation      = Await.result(locationService.resolve(hcdConnection, 10.seconds), 10.seconds).get
@@ -125,7 +125,7 @@ class SegmentsAssemblyIntTests extends ScalaTestFrameworkTestKit() with AnyFunSu
     // Form the external command going to the Assembly
     val setup1 = ACTUATOR.toActuator(assemblyPrefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
 
-    val setup2 = CFG_CUR_LOOP.toCfgActCurLoop(assemblyPrefix, ALL_ACTUATORS, SNUB).withCtrlParams(Array(1.2, 3.4, 5.6)).asSetup
+    val setup2 = CONFIG_CUR_LOOP.toCfgActCurLoop(assemblyPrefix, ALL_ACTUATORS, SNUB).withCtrlParams(Array(1.2, 3.4, 5.6)).asSetup
 
     val cs = CommandServiceFactory.make(assemblyLocation)
 

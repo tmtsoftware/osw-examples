@@ -7,11 +7,11 @@ import csw.params.core.models.{Choice, Choices}
 import csw.prefix.models.Prefix
 
 //noinspection DuplicatedCode
-object CFG_ACT_OFFLD {
+object CONFIG_ACT_OFFLD {
   import Common.*
   import ControllerModes.*
 
-  val COMMAND_NAME: CommandName     = CommandName("CFG_ACT_OFFLD")
+  val COMMAND_NAME: CommandName     = CommandName("CONFIG_ACT_OFFLD")
   val offloaderModeChoices: Choices = Choices.from(OFF.toString, CONTINUOUS.toString, DISCRETE.toString)
   val offloaderModeKey: GChoiceKey  = ChoiceKey.make("MODE", offloaderModeChoices)
 
@@ -60,7 +60,7 @@ object CFG_ACT_OFFLD {
   }
 
   /**
-   * Returns a formatted CFG_ACT_OFFLD command from a Setup
+   * Returns a formatted CONFIG_ACT_OFFLD command from a Setup
    *
    * @param setup Setup created with toActuator
    * @return String command ready to send

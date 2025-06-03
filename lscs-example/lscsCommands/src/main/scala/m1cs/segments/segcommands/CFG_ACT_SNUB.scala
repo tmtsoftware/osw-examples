@@ -6,11 +6,11 @@ import csw.params.core.generics.KeyType.ChoiceKey
 import csw.params.core.models.{Choice, Choices}
 import csw.prefix.models.Prefix
 
-object CFG_ACT_SNUB {
+object CONFIG_ACT_SNUB {
   import Common.*
   import Common.ControllerModes.*
 
-  val COMMAND_NAME: CommandName   = CommandName("CFG_ACT_SNUB")
+  val COMMAND_NAME: CommandName   = CommandName("CONFIG_ACT_SNUB")
   val snubberModeChoices: Choices = Choices.from(OFF.toString, CONTINUOUS.toString, DISCRETE.toString)
   val snubberModeKey: GChoiceKey  = ChoiceKey.make("MODE", snubberModeChoices)
 
@@ -59,7 +59,7 @@ object CFG_ACT_SNUB {
   }
 
   /**
-   * Returns a formatted CFG_ACT_OFFLD command from a Setup
+   * Returns a formatted CONFIG_ACT_OFFLD command from a Setup
    *
    * @param setup Setup created with toActuator
    * @return String command ready to send

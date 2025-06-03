@@ -211,7 +211,7 @@ object SocketClientStreamApp {
     val client                                              = SocketClientStream.withSystem("socketClientStream")
     try {
       val resp = Await.result(client.send(args.mkString(" ")), timout.duration)
-      println(s"XXX resp = ${resp.cmd}")
+//      println(s"XXX resp = ${resp.cmd}")
     }
     catch {
       case ex: Exception =>

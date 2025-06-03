@@ -74,10 +74,10 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
   }
   // #example-tests
 
-  test("To From TARG_GEN_ACT") {
-    import m1cs.segments.segcommands.TARG_GEN_ACT.*
-    import m1cs.segments.segcommands.TARG_GEN_ACT.TargetGenModes.*
-    import m1cs.segments.segcommands.TARG_GEN_ACT.TargetShapes.*
+  test("To From TARG_GEN") {
+    import m1cs.segments.segcommands.TARG_GEN.*
+    import m1cs.segments.segcommands.TARG_GEN.TargetGenModes.*
+    import m1cs.segments.segcommands.TARG_GEN.TargetShapes.*
 
     // Only 2 actuators with LoopMode
     var setup = toActTargetGen(prefix, Set(1, 3)).withMode(ON).asSetup
@@ -127,9 +127,9 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     }
   }
 
-  test("To From CFG_CUR_LOOP") {
-    import m1cs.segments.segcommands.CFG_CUR_LOOP.*
-    import m1cs.segments.segcommands.CFG_CUR_LOOP.CfgCurLoopMotor.*
+  test("To From CONFIG_CUR_LOOP") {
+    import m1cs.segments.segcommands.CONFIG_CUR_LOOP.*
+    import m1cs.segments.segcommands.CONFIG_CUR_LOOP.CfgCurLoopMotor.*
     import m1cs.segments.segcommands.Common.CfgLoopModes.*
 
     // Only 2 actuators with LoopMode
@@ -178,8 +178,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     }
   }
 
-  test("To From CFG_ACT_VC") {
-    import m1cs.segments.segcommands.CFG_ACT_VC.*
+  test("To From CONFIG_ACT_VC") {
+    import m1cs.segments.segcommands.CONFIG_ACT_VC.*
     import m1cs.segments.segcommands.Common.CfgLoopModes.*
 
     // All 3 actuators
@@ -242,8 +242,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     caught.getMessage `contains` "4"
   }
 
-  test("To From CFG_ACT_OFFLD") {
-    import m1cs.segments.segcommands.CFG_ACT_OFFLD.*
+  test("To From CONFIG_ACT_OFFLD") {
+    import m1cs.segments.segcommands.CONFIG_ACT_OFFLD.*
     import m1cs.segments.segcommands.Common.ControllerModes.*
 
     // All 3 actuators
@@ -306,8 +306,8 @@ class SegmentCommandsTests extends AnyFunSuite with Matchers {
     }
   }
 
-  test("To From CFG_ACT_SNUB") {
-    import m1cs.segments.segcommands.CFG_ACT_SNUB.*
+  test("To From CONFIG_ACT_SNUB") {
+    import m1cs.segments.segcommands.CONFIG_ACT_SNUB.*
     import m1cs.segments.segcommands.Common.ControllerModes.*
 
     // All 3 actuators

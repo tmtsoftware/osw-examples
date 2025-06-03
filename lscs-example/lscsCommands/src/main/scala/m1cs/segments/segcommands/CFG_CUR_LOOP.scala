@@ -7,10 +7,10 @@ import csw.params.core.models.{Choice, Choices}
 import csw.prefix.models.Prefix
 
 //noinspection DuplicatedCode
-object CFG_CUR_LOOP {
+object CONFIG_CUR_LOOP {
   import Common.*
 
-  val COMMAND_NAME: CommandName = CommandName("CFG_CUR_LOOP")
+  val COMMAND_NAME: CommandName = CommandName("CONFIG_CUR_LOOP")
 
   val MIN_BUS_VOLTAGE = 0
   val MAX_BUS_VOLTAGE = 24
@@ -78,7 +78,7 @@ object CFG_CUR_LOOP {
   }
 
   /**
-   * Returns a formatted CFG_CUR_LOOP command from a Setup
+   * Returns a formatted CONFIG_CUR_LOOP command from a Setup
    *
    * @param setup Setup created with toActuator
    * @return String command ready to send

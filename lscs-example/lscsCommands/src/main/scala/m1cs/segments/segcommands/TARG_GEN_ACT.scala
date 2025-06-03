@@ -7,10 +7,10 @@ import csw.params.core.models.{Choice, Choices}
 import csw.prefix.models.Prefix
 
 //noinspection DuplicatedCode
-object TARG_GEN_ACT {
+object TARG_GEN {
   import Common.*
 
-  val COMMAND_NAME = CommandName("TARG_GEN_ACT")
+  val COMMAND_NAME = CommandName("TARG_GEN")
 
   object TargetGenModes extends Enumeration {
     type TargetGenMode = Value
@@ -84,7 +84,7 @@ object TARG_GEN_ACT {
   }
 
   /**
-   * Returns a formatted TARG_GEN_ACT command from a [Setup]
+   * Returns a formatted TARG_GEN command from a [Setup]
    *
    * @param setup Setup created with toActTargetGen
    * @return String command ready to send
