@@ -81,9 +81,9 @@ object SocketMessage {
       val buffer1 = buffer.order(ByteOrder.LITTLE_ENDIAN)
 
       // MsgHdr
-      val msgId = MessageId(buffer1.getShort() & 0x0ffff)
-      val srcId = SourceId(buffer1.getShort() & 0x0ffff)
-      val seqNo = buffer1.getShort() & 0x0ffff
+      val msgId = MessageId(buffer1.getInt() & 0x0ffff)
+      val srcId = SourceId(buffer1.getInt() & 0x0ffff)
+      val seqNo = buffer1.getInt() & 0x0ffff
 
       // Message/Command contents
       val msgHdr = MsgHdr(msgId, srcId, seqNo)
