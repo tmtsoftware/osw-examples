@@ -107,10 +107,14 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
 
 object MaybeSocketServerStream {
   def apply(host: String = "127.0.0.1", port: Int = 8023)(implicit system: ActorSystem[?]): SocketServerStreamBase = {
-    if (sys.env.contains("USE_NATIVE_SOCKET_SERVER") || sys.props.contains("USE_NATIVE_SOCKET_SERVER"))
+    if (sys.env.contains("USE_NATIVE_SOCKET_SERVER") || sys.props.contains("USE_NATIVE_SOCKET_SERVER")) {
+      println("XXX Using bin/CmdSrvSim")
       NoOpSocketServerStream(host, port)
-    else
+    }
+    else {
+      println("XXX Using simulation")
       SocketServerStream(host, port)
+    }
   }
 }
 
