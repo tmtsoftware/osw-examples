@@ -27,7 +27,7 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
     val setup = ACTUATOR.toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).asSetup
 
     val command: String = CommandMap(setup.commandName)(setup)
-    command shouldBe "ACTUATOR ACT_ID=1, MODE=TRACK, TARGET=22.34"
+    command shouldBe "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
   }
 
   test("prepare an HCD command for one segment") {
@@ -36,7 +36,7 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
     val assemblySetup =
       ACTUATOR.toActuator(prefix, Set(1, 3)).withMode(TRACK).withTarget(target = 22.34).toSegment(testSegment).asSetup
 
-    val testCommand     = "ACTUATOR ACT_ID=1, MODE=TRACK, TARGET=22.34"
+    val testCommand     = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
     val command: String = CommandMap(assemblySetup.commandName)(assemblySetup)
     command shouldBe testCommand
 
@@ -54,7 +54,7 @@ class HcdCommandsTests extends AnyFunSuite with Matchers with BeforeAndAfterAll 
 
     log.info(s"Assembly setup: $assemblySetup")
 
-    val testCommand     = "ACTUATOR ACT_ID=1, MODE=TRACK, TARGET=22.34"
+    val testCommand     = "ACTUATOR ACT_ID=(1,3), MODE=TRACK, TARGET=22.34"
     val command: String = CommandMap(assemblySetup.commandName)(assemblySetup)
     command shouldBe testCommand
 

@@ -25,7 +25,7 @@ class SegComMonitorTests extends ScalaTestFrameworkTestKit() with AnyFunSuiteLik
   private val cn1full = "ACTUATOR ACT_ID=ALL,MODE=SLEW,TARGET=22.3"
 
   private val cn2     = "CONFIG_CUR_LOOP"
-  private val cn2full = "CONFIG_CUR_LOOP ACT_ID=1,MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=24.0,CTRL_PARAMS=(1.2,2.3,3.4)"
+  private val cn2full = "CONFIG_CUR_LOOP ACT_ID=(1,2),MOTOR=SNUB,MODE=ON,BUS_VOLTAGE=24.0,CTRL_PARAMS=(1.2,2.3,3.4)"
 
   private val cn3     = "TARG_GEN"
   private val cn3full = "TARG_GEN ACT_ID=ALL, AMPL=2.3"
