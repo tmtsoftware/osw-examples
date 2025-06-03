@@ -46,6 +46,7 @@ object SegmentActor {
           else {
             command
           }
+          println(s"XXX send $simCommand")
           io.send(simCommand).onComplete {
             case Success(m) =>
               // This is the sequence number used by the low level socket code to send the command

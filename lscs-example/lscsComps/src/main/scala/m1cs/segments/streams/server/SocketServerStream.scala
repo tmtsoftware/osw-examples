@@ -4,7 +4,7 @@ import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import org.apache.pekko.util.ByteString
 import org.apache.pekko.stream.scaladsl.{Flow, Framing, Sink, Tcp}
 import m1cs.segments.streams.shared.SocketMessage
-import m1cs.segments.streams.shared.SocketMessage.{MAX_FRAME_LEN, MsgHdr, NET_HDR_LEN, RSP_TYPE, SourceId}
+import m1cs.segments.streams.shared.SocketMessage.{MAX_FRAME_LEN, MsgHdr, MsgHdrDcl, NET_HDR_ID, NET_HDR_LEN, RSP_TYPE, SourceId}
 
 import java.nio.ByteOrder
 import scala.concurrent.duration.*
@@ -48,11 +48,13 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
   // which just sleeps for that amount of time before replying with: "DELAY: Completed".
   // For now, all other commands get an immediate reply.
   private def handleMessage(bs: ByteString): Future[ByteString] = {
-    val msg     = SocketMessage.parse(bs)
-    val cmd     = msg.cmd.split(' ').head
-    val s       = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
-    val respMsg = s"$cmd: $s"
-    val resp    = SocketMessage(MsgHdr(RSP_TYPE, SourceId(120), MsgHdr.encodedSize + respMsg.length, msg.hdr.seqNo), respMsg)
+    val msg       = SocketMessage.parse(bs)
+    val cmd       = msg.cmd.split(' ').head
+    val s         = if (cmd.toUpperCase().startsWith("ERROR")) "Error." else "Completed."
+    val respMsg   = s"$cmd: $s"
+    val msgHdrDcl = MsgHdrDcl(NET_HDR_ID, MsgHdr.encodedSize + respMsg.length)
+    val msgHdr    = MsgHdr(RSP_TYPE, SourceId(120), msg.hdr.seqNo)
+    val resp      = SocketMessage(msgHdrDcl, msgHdr, respMsg)
     val delayMs =
       if (cmd.toUpperCase() == "DELAY")
         msg.cmd.split(" ")(1).toInt
@@ -80,7 +82,8 @@ class SocketServerStream(host: String = "127.0.0.1", port: Int = 8023)(implicit 
         // noinspection DuplicatedCode
         // XXX Note: Looks like there might be a bug in Framing.lengthField, requiring the function arg!
         val serverLogic = Flow[ByteString]
-          .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
+//          .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
+          .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN))
           .via(commandParser)
 
         val _ = connection.handleWith(serverLogic)

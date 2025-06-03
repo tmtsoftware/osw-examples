@@ -13,7 +13,7 @@ import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 import SocketClientActor.*
 import SocketClientStream.*
 import m1cs.segments.streams.shared.SocketMessage
-import m1cs.segments.streams.shared.SocketMessage.{CMD_TYPE, MAX_FRAME_LEN, MessageId, MsgHdr, NET_HDR_LEN, SourceId}
+import m1cs.segments.streams.shared.SocketMessage.*
 
 import scala.concurrent.duration.*
 import java.nio.ByteOrder
@@ -160,7 +160,8 @@ class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: 
 
   // XXX Note: Looks like there might be a bug in Framing.lengthField, requiring the function arg!
   private val flow = Flow[ByteString]
-    .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
+//    .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN, (_, i) => i + NET_HDR_LEN))
+    .via(Framing.lengthField(4, 4, MAX_FRAME_LEN, ByteOrder.BIG_ENDIAN))
     .via(clientFlow)
     .via(parser)
 
@@ -187,8 +188,9 @@ class SocketClientStream private (spawnHelper: SpawnHelper, name: String, host: 
   def send(msg: String, msgId: MessageId = CMD_TYPE, srcId: SourceId = SourceId(0))(implicit
       timeout: Timeout
   ): Future[SocketMessage] = {
+    val msgHdrDcl = MsgHdrDcl(SocketMessage.NET_HDR_ID, msg.length + MsgHdr.encodedSize)
     clientActor.ask(GetSeqNo.apply).flatMap { seqNo =>
-      val cmd = SocketMessage(MsgHdr(msgId, srcId, msgLen = msg.length + MsgHdr.encodedSize, seqNo = seqNo), msg)
+      val cmd = SocketMessage(msgHdrDcl, MsgHdr(msgId, srcId, seqNo), msg)
       send(cmd)
     }
   }
