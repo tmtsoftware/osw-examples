@@ -69,7 +69,6 @@ object SocketMessage {
    * Parses the command from the given ByteString
    */
   def parse(bs: ByteString): SocketMessage = {
-    println("XXX SocketMessage.parse() ")
     try {
       val buffer = bs.toByteBuffer.order(ByteOrder.BIG_ENDIAN)
 
